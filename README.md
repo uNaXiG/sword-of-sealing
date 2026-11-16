@@ -1,75 +1,25 @@
-# React + TypeScript + Vite
+# 封印之劍
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+使用 React、TypeScript、Vite 和 React Three Fiber 製作的奇幻 RPG 原型。
 
-Currently, two official plugins are available:
+## 本機開發
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+建議使用 Node.js 24。
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+開啟終端機顯示的網址。主選單的「開始新遊戲」可進入 3D 戰場測試場景，也可在網址後加上 `#battle`。
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+執行 `npm run lint` 檢查程式碼，或執行 `npm run build` 建置正式版本。建置結果位於 `dist`。
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 部署至 GitHub Pages
 
-```
+1. 將程式碼推送至 GitHub 儲存庫的 `main` 分支。
+2. 在儲存庫的 **Settings → Pages → Build and deployment**，將 **Source** 設為 **GitHub Actions**。
+3. 推送到 `main` 後，`Deploy to GitHub Pages` 工作流程會自動檢查、建置及部署。也可在 **Actions** 頁面手動執行。
+4. 部署完成後，從工作流程的部署連結開啟網站。以目前的儲存庫名稱為例，網址為 `https://unaxig.github.io/sword-of-sealing/`。
+
+`vite.config.ts` 的 `base` 目前設定為 `/sword-of-sealing/`。若變更儲存庫名稱，請將它改為 `/<儲存庫名稱>/`；若部署至使用者網站根目錄或自訂網域根目錄，請改為 `/`。戰場使用網址片段 `#battle`，可直接在 Pages 上重新整理。
