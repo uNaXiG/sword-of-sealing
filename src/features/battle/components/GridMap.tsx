@@ -31,7 +31,7 @@ export default function GridMap({
   reachable,
   onSelect,
 }: {
-  position: Cell
+  position: Cell | null
   selected: boolean
   moving: boolean
   reachable: ReadonlyMap<string, Cell[]>
@@ -44,7 +44,7 @@ export default function GridMap({
       {Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, index) => {
         const cell = { column: index % GRID_SIZE, row: Math.floor(index / GRID_SIZE) }
         const key = cellKey(cell)
-        const occupied = sameCell(cell, position)
+        const occupied = position !== null && sameCell(cell, position)
         const canMove = selected && !moving && reachable.has(key)
         const handleClick = (event: ThreeEvent<MouseEvent>) => {
           event.stopPropagation()
