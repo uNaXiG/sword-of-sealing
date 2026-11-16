@@ -1,0 +1,58 @@
+.battle-screen {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  color: #f9f5e8;
+  background: #c8e3eb;
+}
+.battle-canvas { position: absolute; inset: 0; }
+.battle-canvas canvas { display: block; touch-action: none; }
+.battle-header {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  right: 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  pointer-events: none;
+}
+.battle-header > div, .battle-info {
+  padding: 17px 21px;
+  border: 1px solid rgba(228, 205, 157, .8);
+  background: rgba(25, 47, 62, .88);
+  box-shadow: 0 8px 26px rgba(27, 47, 52, .2);
+}
+.battle-header p { margin: 0 0 7px; color: #e2ca95; font-size: 10px; letter-spacing: .16em; }
+.battle-header h1 { margin: 0; font-size: 25px; letter-spacing: .13em; }
+.battle-header span { display: block; margin-top: 7px; color: #d7e2db; font-size: 12px; }
+.battle-header a {
+  padding: 11px 16px;
+  border: 1px solid #e3c991;
+  color: #fff9e9;
+  background: rgba(25, 47, 62, .88);
+  font-size: 13px;
+  text-decoration: none;
+  pointer-events: auto;
+}
+.battle-header a:hover { background: #446478; }
+.battle-header a:focus-visible { outline: 3px solid #c5984d; outline-offset: 4px; }
+.battle-info { position: absolute; right: 28px; bottom: 60px; min-width: 220px; pointer-events: none; }
+.battle-info-title { color: #ecd39e; font-size: 13px; letter-spacing: .1em; }
+.battle-info p { margin: 12px 0 0; font-size: 12px; }
+.battle-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 9px; border: 2px solid; }
+.battle-swatch.occupied { border-color: #f4d36d; }
+.battle-swatch.selected { border-color: #5bbff4; }
+.battle-selection { margin-top: 15px; padding-top: 12px; border-top: 1px solid rgba(234, 215, 171, .35); color: #f9eac7; font-size: 12px; }
+.battle-hint { position: absolute; bottom: 19px; left: 28px; color: #fff; font-size: 12px; text-shadow: 0 1px 5px #213c44; pointer-events: none; }
+.battle-error { display: grid; height: 100%; place-items: center; padding: 24px; color: #263e4d; text-align: center; }
+@media (max-width: 700px) {
+  .battle-header { top: 14px; left: 14px; right: 14px; }
+  .battle-header > div { padding: 12px 14px; }
+  .battle-header h1 { font-size: 20px; }
+  .battle-header a { padding: 10px; font-size: 12px; }
+  .battle-info { right: 14px; bottom: 50px; min-width: 0; padding: 12px 14px; }
+  .battle-info p { margin-top: 8px; }
+  .battle-hint { bottom: 12px; left: 14px; right: 14px; font-size: 10px; }
+}

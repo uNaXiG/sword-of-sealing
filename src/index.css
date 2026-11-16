@@ -1,0 +1,26 @@
+:root {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #233a4d;
+  background: #dce8e7;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid #c5984d;
+  outline-offset: 4px;
+}
