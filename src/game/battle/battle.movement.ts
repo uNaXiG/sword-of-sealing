@@ -13,6 +13,11 @@ export function reachableForUnit(
   const occupancy = getOccupancy(units)
   const unit = units.find((candidate) => candidate.id === unitId)
   if (!unit) throw new Error(`Unknown unit: ${unitId}`)
+  for (const obstacle of obstacles) {
+    if (occupancy.has(cellKey(obstacle))) {
+      throw new Error(`Obstacle overlaps a unit at ${cellKey(obstacle)}`)
+    }
+  }
   const occupied = [...occupancy.values()].filter((other) => other.id !== unitId).map((other) => other.position)
   return findReachablePaths({ start: unit.position, range: unit.movement, size: GRID_SIZE, obstacles, occupied })
 }

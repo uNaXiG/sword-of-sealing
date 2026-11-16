@@ -4,6 +4,7 @@ import { MOUSE } from 'three'
 import GridMap from './components/GridMap'
 import UnitPlaceholder from './components/UnitPlaceholder'
 import Environment from './components/Environment'
+import ObstacleMap from './components/ObstacleMap'
 import { useBattleMovement } from './hooks/useBattleMovement'
 import './BattleScene.css'
 
@@ -13,7 +14,7 @@ function FitCamera() {
 }
 
 export default function BattleScene() {
-  const { units, selectedUnit, motion, reachable, selectUnit, clearSelection, selectCell, finishMove } = useBattleMovement()
+  const { units, obstacles, selectedUnit, motion, reachable, selectUnit, clearSelection, selectCell, finishMove } = useBattleMovement()
 
   return (
     <main className="battle-screen">
@@ -29,6 +30,7 @@ export default function BattleScene() {
           <directionalLight position={[5, 12, 7]} intensity={2} castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-12} shadow-camera-right={12} shadow-camera-top={12} shadow-camera-bottom={-12} />
           <Environment />
           <GridMap position={selectedUnit?.position ?? null} selected={selectedUnit !== null} moving={motion !== null} reachable={reachable} onSelect={selectCell} />
+          <ObstacleMap obstacles={obstacles} />
           {units.map((unit) => (
             <UnitPlaceholder
               key={unit.id}

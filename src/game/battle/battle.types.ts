@@ -1,4 +1,5 @@
 import type { Cell } from '../grid/grid.types'
+import type { BattleObstacle } from './obstacles'
 
 export type BattleUnit = {
   id: string
@@ -18,6 +19,7 @@ export type BattleMotion = {
 
 export type BattleState = {
   units: BattleUnit[]
+  obstacles: BattleObstacle[]
   selectedUnitId: string | null
   motion: BattleMotion | null
 }
