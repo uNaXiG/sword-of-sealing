@@ -29,6 +29,8 @@ jobs:
         run: npm ci
       - name: Check code
         run: npm run lint
+      - name: Test movement
+        run: npm test
       - name: Build
         run: npm run build
       - name: Upload Pages artifact

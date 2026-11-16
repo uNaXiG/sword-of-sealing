@@ -1,11 +1,54 @@
-import { cellPosition, knightCell } from './grid'
+import { useEffect, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import type { Group } from 'three'
+import type { Cell } from '../../../game/grid/grid.types'
+import { cellPosition } from './grid'
 
-export default function KnightPlaceholder() {
+export default function KnightPlaceholder({
+  position,
+  selected,
+  path,
+  onSelect,
+  onMoveComplete,
+}: {
+  position: Cell
+  selected: boolean
+  path: Cell[] | null
+  onSelect: () => void
+  onMoveComplete: () => void
+}) {
+  const group = useRef<Group>(null)
+  const progress = useRef(0)
+  const completed = useRef(false)
+
+  useEffect(() => {
+    progress.current = 0
+    completed.current = false
+  }, [path])
+
+  useFrame((_, delta) => {
+    if (!path || !group.current || completed.current) return
+    progress.current = Math.min(progress.current + delta * 3, path.length - 1)
+    const segment = Math.min(Math.floor(progress.current), path.length - 2)
+    const fraction = progress.current - segment
+    const start = cellPosition(path[segment])
+    const end = cellPosition(path[segment + 1])
+    group.current.position.set(
+      start[0] + (end[0] - start[0]) * fraction,
+      0,
+      start[2] + (end[2] - start[2]) * fraction,
+    )
+    if (progress.current >= path.length - 1) {
+      completed.current = true
+      onMoveComplete()
+    }
+  })
+
   return (
-    <group position={cellPosition(knightCell)}>
+    <group ref={group} position={cellPosition(position)} onClick={(event) => { event.stopPropagation(); onSelect() }}>
       <mesh position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.31, 0.39, 32]} />
-        <meshBasicMaterial color="#f7df8b" />
+        <ringGeometry args={[0.31, selected ? 0.43 : 0.36, 32]} />
+        <meshBasicMaterial color={selected ? '#ffe475' : '#dacb91'} />
       </mesh>
       <group position={[0, 0.08, 0]} rotation={[0, Math.PI / 4, 0]}>
         <mesh castShadow position={[-0.13, 0.23, 0]}>
