@@ -6,6 +6,7 @@ import { TERRAIN_MOVEMENT_COST } from '../grid/terrain.constants.ts'
 import { getTerrainType } from '../grid/terrain.data.ts'
 import type { BattleUnit } from './battle.types'
 import { getOccupancy } from './occupancy.ts'
+import { isUnitAlive } from './battle.unit.ts'
 
 export function reachableForUnit(
   units: readonly BattleUnit[],
@@ -20,6 +21,8 @@ export function reachableForUnit(
       throw new Error(`Obstacle overlaps a unit at ${cellKey(obstacle)}`)
     }
   }
+  if (!isUnitAlive(unit)) return new Map()
+
   const occupied = [...occupancy.values()]
     .filter((occupant) => occupant.id !== unitId && occupant.faction !== unit.faction)
     .map((occupant) => occupant.position)

@@ -2,6 +2,7 @@ import { GRID_SIZE } from '../grid/grid.constants.ts'
 import type { Cell } from '../grid/grid.types'
 import { isInsideGrid } from '../grid/grid.utils.ts'
 import type { BattleUnit } from './battle.types'
+import { isUnitAlive } from './battle.unit.ts'
 
 export function getManhattanDistance(from: Cell, to: Cell): number {
   return Math.abs(from.column - to.column) + Math.abs(from.row - to.row)
@@ -47,7 +48,14 @@ export function canAttackTarget(units: readonly BattleUnit[], attackerId: string
   if (attackerId === targetId) return false
   const attacker = units.find((unit) => unit.id === attackerId)
   const target = units.find((unit) => unit.id === targetId)
-  return Boolean(attacker && target && attacker.faction !== target.faction && isWithinAttackRange(attacker, target.position))
+  return Boolean(
+    attacker &&
+    target &&
+    isUnitAlive(attacker) &&
+    isUnitAlive(target) &&
+    attacker.faction !== target.faction &&
+    isWithinAttackRange(attacker, target.position),
+  )
 }
 
 export function getAttackableTargets(units: readonly BattleUnit[], attackerId: string): BattleUnit[] {

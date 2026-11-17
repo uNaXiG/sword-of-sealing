@@ -37,6 +37,12 @@ test('四個角色資料包含互不重疊的初始位置', () => {
   assert.deepEqual(state.units.map((unit) => unit.class), ['knight', 'mage', 'rogue', 'goblin'])
   assert.deepEqual(state.units[0].position, { column: 3, row: 3 })
   assert.deepEqual(state.units.map((unit) => unit.attackRange), [1, 1, 1, 1])
+  assert.deepEqual(state.units.map(({ hp, maxHp, atk, def }) => ({ hp, maxHp, atk, def })), [
+    { hp: 100, maxHp: 100, atk: 25, def: 15 },
+    { hp: 65, maxHp: 65, atk: 15, def: 5 },
+    { hp: 80, maxHp: 80, atk: 22, def: 8 },
+    { hp: 60, maxHp: 60, atk: 18, def: 5 },
+  ])
 })
 
 test('三個玩家角色可以切換，敵人不可選取', () => {
@@ -382,12 +388,15 @@ test('確認移動或切換角色後，先前移動不可再撤銷', () => {
   assert.equal(battleReducer(switched, { type: 'undo' }), switched)
 })
 
-test('有效的新移動確認舊紀錄，無效移動保留舊紀錄', () => {
+test('未確認移動時禁止直接再次移動，待命確認後可重新移動', () => {
   const completed = completeKnightMove()
   const invalidMove = battleReducer(completed, { type: 'cell', cell: { column: -1, row: 3 } })
   assert.equal(invalidMove.lastMove, completed.lastMove)
+  assert.equal(beginMove(completed), completed)
 
-  let nextMove = beginMove(completed)
+  let nextMove = battleReducer(completed, { type: 'standby' })
+  nextMove = battleReducer(nextMove, { type: 'select', unitId: 'knight' })
+  nextMove = beginMove(nextMove)
   nextMove = battleReducer(nextMove, { type: 'cell', cell: { column: 3, row: 3 } })
   assert.ok(nextMove.motion)
   assert.equal(nextMove.lastMove, null)
@@ -404,6 +413,8 @@ test('無有效攻擊者或移動動畫執行中時不可進入攻擊模式', ()
   assert.equal(battleReducer(moving, { type: 'set-mode', mode: 'ATTACK' }), moving)
   assert.equal(battleReducer(moving, { type: 'select-attack-target', targetId: 'goblin' }), moving)
   assert.equal(battleReducer(moving, { type: 'confirm-attack' }), moving)
+  const forcedAttack = { ...moving, interactionMode: 'ATTACK', selectedAttackTargetId: 'goblin' }
+  assert.equal(battleReducer(forcedAttack, { type: 'confirm-attack' }), forcedAttack)
 })
 
 test('攻擊模式點擊敵軍只選目標，空格或非法目標清除目標且保留移動撤銷紀錄', () => {
@@ -449,8 +460,10 @@ test('取消攻擊返回行動選單並保留移動撤銷能力', () => {
   assert.equal(state.lastMove, null)
 })
 
-test('確認攻擊重新驗證目標、確認移動並只記錄指令不造成傷害', () => {
+test('確認攻擊重新驗證目標、造成傷害並建立攻擊結果', () => {
   let state = completeMoveAdjacentToGoblin()
+  const attackerBefore = state.units.find((unit) => unit.id === 'knight')
+  const otherUnitBefore = state.units.find((unit) => unit.id === 'mage')
   const originalHp = state.units.find((unit) => unit.id === 'goblin').hp
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
@@ -459,15 +472,52 @@ test('確認攻擊重新驗證目標、確認移動並只記錄指令不造成�
   assert.equal(state.interactionMode, 'COMMAND')
   assert.equal(state.selectedAttackTargetId, null)
   assert.deepEqual(state.lastAttackCommand, { attackerId: 'knight', targetId: 'goblin' })
+  assert.deepEqual(state.lastAttackResult, {
+    attackerId: 'knight',
+    targetId: 'goblin',
+    damage: 20,
+    appliedDamage: 20,
+    previousHp: originalHp,
+    remainingHp: originalHp - 20,
+    isDefeated: false,
+  })
   assert.equal(state.lastMove, null)
-  assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, originalHp)
+  assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, originalHp - 20)
+  assert.equal(state.units.find((unit) => unit.id === 'knight'), attackerBefore)
+  assert.equal(state.units.find((unit) => unit.id === 'mage'), otherUnitBefore)
   assert.equal(canUndoLastMove(state), false)
   assert.equal(battleReducer(state, { type: 'confirm-attack' }), state)
+})
+
+test('Overkill 只扣除目標剩餘 HP，歸零角色仍保留模型資料與格子佔位', () => {
+  let state = completeMoveAdjacentToGoblin()
+  state = {
+    ...state,
+    units: state.units.map((unit) => unit.id === 'goblin' ? { ...unit, hp: 10 } : unit),
+  }
+  const goblinPosition = { ...state.units.find((unit) => unit.id === 'goblin').position }
+  state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
+  state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
+  state = battleReducer(state, { type: 'confirm-attack' })
+
+  assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, 0)
+  assert.deepEqual(state.lastAttackResult, {
+    attackerId: 'knight',
+    targetId: 'goblin',
+    damage: 20,
+    appliedDamage: 10,
+    previousHp: 10,
+    remainingHp: 0,
+    isDefeated: true,
+  })
+  assert.equal(unitAt(state.units, goblinPosition).id, 'goblin')
+  assert.equal(state.units.length, 4)
 })
 
 test('確認前目標若已失效則拒絕攻擊且不確認移動', () => {
   let state = completeMoveAdjacentToGoblin()
   const moveRecord = state.lastMove
+  const goblinHp = state.units.find((unit) => unit.id === 'goblin').hp
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
   state = {
@@ -480,7 +530,9 @@ test('確認前目標若已失效則拒絕攻擊且不確認移動', () => {
   assert.equal(rejected.interactionMode, 'ATTACK')
   assert.equal(rejected.selectedAttackTargetId, null)
   assert.equal(rejected.lastAttackCommand, null)
+  assert.equal(rejected.lastAttackResult, null)
   assert.equal(rejected.lastMove, moveRecord)
+  assert.equal(rejected.units.find((unit) => unit.id === 'goblin').hp, goblinHp)
 })
 
 test('攻擊模式切換其他友軍會返回行動選單並確認前一角色移動', () => {
@@ -499,4 +551,121 @@ test('建立戰場時拒絕非正整數攻擊距離', () => {
     () => createBattleState(INITIAL_UNITS.map((unit) => unit.id === 'knight' ? { ...unit, attackRange: 1.5 } : unit)),
     /positive integer/,
   )
+})
+
+test('戰鬥屬性必須是合法的安全整數且 HP 不得超過上限', () => {
+  const invalidStats = [
+    { maxHp: 0 },
+    { maxHp: -1 },
+    { maxHp: 1.5 },
+    { maxHp: Number.NaN },
+    { maxHp: Number.POSITIVE_INFINITY },
+    { maxHp: Number.MAX_SAFE_INTEGER + 1 },
+    { hp: -1 },
+    { hp: 101 },
+    { hp: 1.5 },
+    { hp: Number.NaN },
+    { hp: Number.POSITIVE_INFINITY },
+    { atk: -1 },
+    { atk: 1.5 },
+    { atk: Number.NaN },
+    { atk: Number.POSITIVE_INFINITY },
+    { atk: Number.MAX_SAFE_INTEGER + 1 },
+    { def: -1 },
+    { def: 1.5 },
+    { def: Number.NaN },
+    { def: Number.POSITIVE_INFINITY },
+    { def: Number.MAX_SAFE_INTEGER + 1 },
+  ]
+
+  for (const invalid of invalidStats) {
+    const units = INITIAL_UNITS.map((unit) => unit.id === 'knight' ? { ...unit, ...invalid } : unit)
+    assert.throws(() => createBattleState(units), RangeError)
+  }
+})
+
+test('HP 歸零的角色不可選取、移動、待命或撤銷，但仍保留佔位', () => {
+  const deadKnight = { ...INITIAL_UNITS[0], hp: 0 }
+  const units = [deadKnight, ...INITIAL_UNITS.slice(1)]
+  let state = createBattleState(units)
+
+  assert.equal(unitAt(state.units, deadKnight.position).id, 'knight')
+  assert.equal(reachableForUnit(state.units, 'knight').size, 0)
+  assert.throws(() => moveUnit(state.units, 'knight', { column: 4, row: 3 }), /Invalid movement/)
+  assert.equal(battleReducer(state, { type: 'select', unitId: 'knight' }), state)
+  const selectedDead = { ...state, selectedUnitId: 'knight' }
+  assert.equal(battleReducer(selectedDead, { type: 'set-mode', mode: 'MOVE' }), selectedDead)
+  assert.equal(battleReducer(selectedDead, { type: 'standby' }), selectedDead)
+  const forcedMove = { ...selectedDead, interactionMode: 'MOVE' }
+  assert.equal(battleReducer(forcedMove, { type: 'cell', cell: { column: 4, row: 3 } }), forcedMove)
+
+  const completed = completeKnightMove()
+  const completedDead = {
+    ...completed,
+    units: completed.units.map((unit) => unit.id === 'knight' ? { ...unit, hp: 0 } : unit),
+  }
+  assert.equal(canUndoLastMove(completedDead), false)
+  assert.equal(battleReducer(completedDead, { type: 'undo' }), completedDead)
+})
+
+test('HP 歸零的角色不可成為攻擊者，待機資料重建仍使用初始 HP', () => {
+  const deadKnight = { ...INITIAL_UNITS[0], hp: 0 }
+  const initialized = createBattleState([deadKnight, ...INITIAL_UNITS.slice(1)])
+  const selectedDead = { ...initialized, selectedUnitId: 'knight' }
+  assert.equal(battleReducer(selectedDead, { type: 'set-mode', mode: 'ATTACK' }), selectedDead)
+
+  let state = completeMoveAdjacentToGoblin()
+  state = {
+    ...state,
+    units: state.units.map((unit) => unit.id === 'knight' ? { ...unit, hp: 0 } : unit),
+    interactionMode: 'ATTACK',
+    selectedAttackTargetId: 'goblin',
+  }
+  const rejected = battleReducer(state, { type: 'confirm-attack' })
+  assert.equal(rejected.units.find((unit) => unit.id === 'goblin').hp, INITIAL_UNITS[3].hp)
+  assert.equal(rejected.lastAttackResult, null)
+
+  assert.deepEqual(createBattleState(INITIAL_UNITS).units.map((unit) => unit.hp), [100, 65, 80, 60])
+})
+
+test('HP 歸零目標不能由 Reducer 攻擊，且死亡友軍的穿越規則不變', () => {
+  let state = completeMoveAdjacentToGoblin()
+  state = {
+    ...state,
+    units: state.units.map((unit) => unit.id === 'goblin' ? { ...unit, hp: 0 } : unit),
+  }
+  state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
+  state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
+  assert.equal(state.selectedAttackTargetId, null)
+
+  const invalidSelection = { ...state, selectedAttackTargetId: 'goblin' }
+  const rejected = battleReducer(invalidSelection, { type: 'confirm-attack' })
+  assert.equal(rejected.units.find((unit) => unit.id === 'goblin').hp, 0)
+  assert.equal(rejected.lastAttackResult, null)
+  assert.equal(unitAt(rejected.units, { column: 4, row: 2 }).id, 'goblin')
+
+  const knight = { ...INITIAL_UNITS[0], position: { column: 1, row: 1 }, movementPoints: 3 }
+  const deadAlly = { ...INITIAL_UNITS[2], position: { column: 2, row: 1 }, hp: 0 }
+  const allyPaths = reachableForUnit([knight, deadAlly], knight.id)
+  assert.equal(allyPaths.has('2,1'), false)
+  assert.deepEqual(allyPaths.get('3,1')?.path, [
+    { column: 1, row: 1 },
+    { column: 2, row: 1 },
+    { column: 3, row: 1 },
+  ])
+})
+
+test('成功攻擊後可在新操作中再次攻擊並累計傷害', () => {
+  let state = completeMoveAdjacentToGoblin()
+  state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
+  state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
+  state = battleReducer(state, { type: 'confirm-attack' })
+  assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, 40)
+
+  state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
+  state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
+  state = battleReducer(state, { type: 'confirm-attack' })
+  assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, 20)
+  assert.equal(state.lastAttackResult?.previousHp, 40)
+  assert.equal(state.lastAttackResult?.remainingHp, 20)
 })

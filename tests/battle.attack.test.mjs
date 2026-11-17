@@ -60,6 +60,14 @@ test('合法攻擊目標限於範圍內敵軍，陣營規則不綁定玩家角�
   assert.equal(canAttackTarget([enemyAttacker, playerTarget], enemyAttacker.id, playerTarget.id), true)
 })
 
+test('HP 歸零的攻擊者或目標都不是合法攻擊目標', () => {
+  const attacker = { ...knightAtCenter, position: { column: 3, row: 3 } }
+  const target = { ...INITIAL_UNITS[3], position: { column: 4, row: 3 } }
+  assert.equal(canAttackTarget([attacker, { ...target, hp: 0 }], attacker.id, target.id), false)
+  assert.equal(canAttackTarget([{ ...attacker, hp: 0 }, target], attacker.id, target.id), false)
+  assert.deepEqual(getAttackableTargets([attacker, { ...target, hp: 0 }], attacker.id), [])
+})
+
 test('攻擊範圍計算獨立於地形成本與棋格佔位', () => {
   const attacker = { ...knightAtCenter, attackRange: 2 }
   const range = new Set(getAttackableTiles(attacker).map(({ column, row }) => `${column},${row}`))

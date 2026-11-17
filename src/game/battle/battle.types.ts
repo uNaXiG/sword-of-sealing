@@ -9,6 +9,8 @@ export type BattleUnit = {
   position: Cell
   movementPoints: number
   attackRange: number
+  atk: number
+  def: number
   hp: number
   maxHp: number
 }
@@ -18,6 +20,16 @@ export type InteractionMode = 'COMMAND' | 'MOVE' | 'ATTACK'
 export type AttackCommand = {
   attackerId: string
   targetId: string
+}
+
+export type AttackResult = {
+  attackerId: string
+  targetId: string
+  damage: number
+  appliedDamage: number
+  previousHp: number
+  remainingHp: number
+  isDefeated: boolean
 }
 
 export type BattleMotion = {
@@ -46,4 +58,5 @@ export type BattleState = {
   interactionMode: InteractionMode
   selectedAttackTargetId: string | null
   lastAttackCommand: AttackCommand | null
+  lastAttackResult: AttackResult | null
 }

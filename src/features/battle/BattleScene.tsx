@@ -18,19 +18,19 @@ function FitCamera() {
 
 export default function BattleScene() {
   const {
-    units, obstacles, selectedUnit, selectedAttackTarget, selectedAttackTargetDistance,
-    motion, lastMove, reachable, interactionMode, selectedAttackTargetId, lastAttackCommand,
+    units, obstacles, selectedUnit, selectedAttackTarget, selectedAttackTargetDistance, lastAttackResult,
+    motion, lastMove, reachable, interactionMode, selectedAttackTargetId,
     attackRange, attackableTargets, attackableTargetIds, attackableTargetCells,
     canUndoMove, canConfirmAttack, selectUnit, clearSelection, standby, selectCell,
     finishMove, cancelMove, undoMove, setInteractionMode, cancelMoveMode, cancelAttack, confirmAttack,
   } = useBattleMovement()
   const [hoveredCell, setHoveredCell] = useState<Cell | null>(null)
   const preview = interactionMode === 'MOVE' && hoveredCell ? reachable.get(cellKey(hoveredCell)) ?? null : null
-  const attackResultAttacker = lastAttackCommand
-    ? units.find((unit) => unit.id === lastAttackCommand.attackerId) ?? null
+  const attackResultAttacker = lastAttackResult
+    ? units.find((unit) => unit.id === lastAttackResult.attackerId) ?? null
     : null
-  const attackResultTarget = lastAttackCommand
-    ? units.find((unit) => unit.id === lastAttackCommand.targetId) ?? null
+  const attackResultTarget = lastAttackResult
+    ? units.find((unit) => unit.id === lastAttackResult.targetId) ?? null
     : null
   const clearBattleSelection = () => {
     setHoveredCell(null)
@@ -130,7 +130,8 @@ export default function BattleScene() {
         {selectedUnit && (
           <div className="battle-selection">
             <p>{selectedUnit.name}</p>
-            <p>生命：{selectedUnit.hp} / {selectedUnit.maxHp} · 行動力：{selectedUnit.movementPoints}</p>
+            <p>HP：{selectedUnit.hp} / {selectedUnit.maxHp} · ATK：{selectedUnit.atk} · DEF：{selectedUnit.def}</p>
+            <p>行動力：{selectedUnit.movementPoints} · 攻擊距離：{selectedUnit.attackRange}</p>
           </div>
         )}
         {selectedUnit && !motion && interactionMode === 'COMMAND' && (
@@ -168,9 +169,12 @@ export default function BattleScene() {
             </div>
           </div>
         )}
-        {attackResultAttacker && attackResultTarget && (
+        {lastAttackResult && attackResultAttacker && attackResultTarget && (
           <p className="battle-combat-feedback" role="status">
-            {attackResultAttacker.name} 對 {attackResultTarget.name} 執行攻擊指令。
+            {attackResultAttacker.name} 對 {attackResultTarget.name} 造成 {lastAttackResult.damage} 點傷害
+            {lastAttackResult.appliedDamage !== lastAttackResult.damage && `（實際扣除 ${lastAttackResult.appliedDamage} 點 HP）`}
+            {lastAttackResult.isDefeated && `；${attackResultTarget.name}失去戰鬥能力。`}
+            {!lastAttackResult.isDefeated && '。'}
           </p>
         )}
       </aside>

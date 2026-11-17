@@ -8,6 +8,8 @@ import { unitAt } from './occupancy.ts'
 import { obstacleCell, validateObstacles, type BattleObstacle } from './obstacles.ts'
 import { TERRAIN_MOVEMENT_COST } from '../grid/terrain.constants.ts'
 import { getTerrainType } from '../grid/terrain.data.ts'
+import { calculatePhysicalDamage } from './battle.damage.ts'
+import { isUnitAlive } from './battle.unit.ts'
 
 type BattleAction =
   | { type: 'select'; unitId: string }
@@ -25,6 +27,20 @@ type BattleAction =
   | { type: 'confirm-attack' }
 
 export function createBattleState(units: readonly BattleUnit[], obstacles: readonly BattleObstacle[] = []): BattleState {
+  for (const unit of units) {
+    if (!Number.isSafeInteger(unit.maxHp) || unit.maxHp <= 0) {
+      throw new RangeError(`Battle unit max HP must be a positive safe integer: ${unit.id}`)
+    }
+    if (!Number.isSafeInteger(unit.hp) || unit.hp < 0 || unit.hp > unit.maxHp) {
+      throw new RangeError(`Battle unit HP must be a safe integer between 0 and max HP: ${unit.id}`)
+    }
+    if (!Number.isSafeInteger(unit.atk) || unit.atk < 0) {
+      throw new RangeError(`Battle unit attack must be a non-negative safe integer: ${unit.id}`)
+    }
+    if (!Number.isSafeInteger(unit.def) || unit.def < 0) {
+      throw new RangeError(`Battle unit defense must be a non-negative safe integer: ${unit.id}`)
+    }
+  }
   if (units.some((unit) => !Number.isInteger(unit.attackRange) || unit.attackRange <= 0)) {
     throw new RangeError('Battle unit attack range must be a positive integer')
   }
@@ -39,6 +55,7 @@ export function createBattleState(units: readonly BattleUnit[], obstacles: reado
     interactionMode: 'COMMAND',
     selectedAttackTargetId: null,
     lastAttackCommand: null,
+    lastAttackResult: null,
   }
 }
 
@@ -50,6 +67,7 @@ export function canUndoLastMove(state: BattleState): boolean {
   if (
     !unit ||
     unit.faction !== 'player' ||
+    !isUnitAlive(unit) ||
     !isInsideGrid(unit.position, GRID_SIZE) ||
     !isInsideGrid(record.to, GRID_SIZE) ||
     cellKey(unit.position) !== cellKey(record.to) ||
@@ -72,13 +90,14 @@ export function canUndoLastMove(state: BattleState): boolean {
 
 function selectPlayerUnit(state: BattleState, unitId: string): BattleState {
   const unit = state.units.find((candidate) => candidate.id === unitId)
-  if (unit?.faction !== 'player' || unit.id === state.selectedUnitId) return state
+  if (unit?.faction !== 'player' || !isUnitAlive(unit) || unit.id === state.selectedUnitId) return state
   return {
     ...state,
     selectedUnitId: unit.id,
     interactionMode: 'COMMAND',
     selectedAttackTargetId: null,
     lastAttackCommand: null,
+    lastAttackResult: null,
     lastMove: state.lastMove?.unitId === unit.id ? state.lastMove : null,
   }
 }
@@ -89,6 +108,7 @@ function selectAttackTarget(state: BattleState, targetId: string): BattleState {
     ...state,
     selectedAttackTargetId: canAttackTarget(state.units, state.selectedUnitId ?? '', targetId) ? targetId : null,
     lastAttackCommand: null,
+    lastAttackResult: null,
   }
 }
 
@@ -113,6 +133,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       units: moveUnit(state.units, motion.unitId, destination, state.obstacles.map(obstacleCell)),
       motion: null,
       interactionMode: 'COMMAND',
+      lastAttackResult: null,
       lastMove: {
         motionId: motion.motionId,
         unitId: motion.unitId,
@@ -132,6 +153,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       units: state.units.map((unit) => unit.id === record.unitId ? { ...unit, position: { ...record.from } } : unit),
       lastMove: null,
       interactionMode: 'COMMAND',
+      lastAttackResult: null,
     }
   }
 
@@ -142,16 +164,19 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
   if (action.type === 'set-mode') {
     if (state.motion) return state
     if (state.interactionMode !== 'COMMAND') return state
-    if (action.mode === 'MOVE' && !state.selectedUnitId) return state
-    if (action.mode === 'ATTACK') {
-      const attacker = state.units.find((unit) => unit.id === state.selectedUnitId)
-      if (attacker?.faction !== 'player') return state
-    }
+    const selectedUnit = state.units.find((unit) => unit.id === state.selectedUnitId)
+    if (action.mode === 'MOVE' && (
+      selectedUnit?.faction !== 'player' ||
+      !isUnitAlive(selectedUnit) ||
+      state.lastMove?.unitId === selectedUnit.id
+    )) return state
+    if (action.mode === 'ATTACK' && (selectedUnit?.faction !== 'player' || !isUnitAlive(selectedUnit))) return state
     return {
       ...state,
       interactionMode: action.mode,
       selectedAttackTargetId: null,
       lastAttackCommand: null,
+      lastAttackResult: null,
     }
   }
 
@@ -162,6 +187,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       interactionMode: 'COMMAND',
       selectedAttackTargetId: null,
       lastAttackCommand: null,
+      lastAttackResult: null,
     }
   }
 
@@ -172,12 +198,18 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       interactionMode: 'COMMAND',
       selectedAttackTargetId: null,
       lastAttackCommand: null,
+      lastAttackResult: null,
     }
   }
 
   if (action.type === 'standby') {
     const selectedUnit = state.units.find((unit) => unit.id === state.selectedUnitId)
-    if (state.motion || state.interactionMode !== 'COMMAND' || selectedUnit?.faction !== 'player') return state
+    if (
+      state.motion ||
+      state.interactionMode !== 'COMMAND' ||
+      selectedUnit?.faction !== 'player' ||
+      !isUnitAlive(selectedUnit)
+    ) return state
     return {
       ...state,
       selectedUnitId: null,
@@ -185,6 +217,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       interactionMode: 'COMMAND',
       selectedAttackTargetId: null,
       lastAttackCommand: null,
+      lastAttackResult: null,
     }
   }
 
@@ -192,14 +225,31 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     if (state.motion || state.interactionMode !== 'ATTACK' || !state.selectedAttackTargetId) return state
     const attackerId = state.selectedUnitId
     const targetId = state.selectedAttackTargetId
-    if (!attackerId || !canAttackTarget(state.units, attackerId, targetId)) {
-      return { ...state, selectedAttackTargetId: null, lastAttackCommand: null }
+    if (!attackerId || !targetId) return state
+    const attacker = state.units.find((unit) => unit.id === attackerId)
+    const target = state.units.find((unit) => unit.id === targetId)
+    if (
+      !attacker ||
+      attacker.faction !== 'player' ||
+      !isUnitAlive(attacker) ||
+      !target ||
+      !isUnitAlive(target) ||
+      !canAttackTarget(state.units, attackerId, targetId)
+    ) {
+      return { ...state, selectedAttackTargetId: null, lastAttackCommand: null, lastAttackResult: null }
+    }
+    const result = {
+      attackerId,
+      targetId,
+      ...calculatePhysicalDamage(attacker, target),
     }
     return {
       ...state,
+      units: state.units.map((unit) => unit.id === targetId ? { ...unit, hp: result.remainingHp } : unit),
       interactionMode: 'COMMAND',
       selectedAttackTargetId: null,
       lastAttackCommand: { attackerId, targetId },
+      lastAttackResult: result,
       lastMove: null,
     }
   }
@@ -210,9 +260,15 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
 
   if (action.type === 'clear') {
     if (state.interactionMode === 'ATTACK') {
-      return { ...state, selectedAttackTargetId: null, lastAttackCommand: null }
+      return { ...state, selectedAttackTargetId: null, lastAttackCommand: null, lastAttackResult: null }
     }
-    return { ...state, selectedUnitId: null, selectedAttackTargetId: null, lastAttackCommand: null }
+    return {
+      ...state,
+      selectedUnitId: null,
+      selectedAttackTargetId: null,
+      lastAttackCommand: null,
+      lastAttackResult: null,
+    }
   }
   if (action.type === 'select') {
     return selectUnitOrAttackTarget(state, action.unitId)
@@ -227,27 +283,41 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     return selectUnitOrAttackTarget(state, occupant.id)
   }
   if (state.interactionMode === 'ATTACK') {
-    return { ...state, selectedAttackTargetId: null, lastAttackCommand: null }
+    return { ...state, selectedAttackTargetId: null, lastAttackCommand: null, lastAttackResult: null }
   }
   if (state.interactionMode !== 'MOVE') {
     return state.selectedUnitId
-      ? { ...state, selectedUnitId: null, interactionMode: 'COMMAND', selectedAttackTargetId: null, lastAttackCommand: null }
+      ? {
+        ...state,
+        selectedUnitId: null,
+        interactionMode: 'COMMAND',
+        selectedAttackTargetId: null,
+        lastAttackCommand: null,
+        lastAttackResult: null,
+      }
       : state
   }
-  if (!state.selectedUnitId) return state
-  const destination = reachableForUnit(state.units, state.selectedUnitId, state.obstacles.map(obstacleCell)).get(cellKey(action.cell))
+  const movingUnit = state.units.find((unit) => unit.id === state.selectedUnitId)
+  if (
+    !movingUnit ||
+    movingUnit.faction !== 'player' ||
+    !isUnitAlive(movingUnit) ||
+    state.lastMove?.unitId === movingUnit.id
+  ) return state
+  const destination = reachableForUnit(state.units, movingUnit.id, state.obstacles.map(obstacleCell)).get(cellKey(action.cell))
   return destination
     ? {
       ...state,
       motion: {
         motionId: state.nextMotionId,
-        unitId: state.selectedUnitId,
+        unitId: movingUnit.id,
         path: destination.path,
         cost: destination.cost,
       },
       nextMotionId: state.nextMotionId + 1,
       lastMove: null,
       lastAttackCommand: null,
+      lastAttackResult: null,
     }
     : { ...state, selectedUnitId: null, interactionMode: 'COMMAND' }
 }
