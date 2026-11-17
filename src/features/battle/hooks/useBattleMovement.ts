@@ -1,8 +1,11 @@
 import { useCallback, useMemo, useReducer } from 'react'
 import { INITIAL_UNITS } from '../../../game/battle/battle.data'
+import { canAttackTarget, getAttackableTargets, getAttackableTiles, getManhattanDistance } from '../../../game/battle/battle.attack'
 import { reachableForUnit } from '../../../game/battle/battle.movement'
 import { battleReducer, canUndoLastMove, createBattleState } from '../../../game/battle/battle.state'
 import { INITIAL_OBSTACLES, obstacleCell } from '../../../game/battle/obstacles'
+import type { InteractionMode } from '../../../game/battle/battle.types'
+import { cellKey } from '../../../game/grid/grid.utils'
 import type { Cell } from '../../../game/grid/grid.types'
 import type { ReachableTile } from '../../../game/grid/movement'
 
@@ -13,6 +16,30 @@ export function useBattleMovement() {
     () => selectedUnit ? reachableForUnit(state.units, selectedUnit.id, state.obstacles.map(obstacleCell)) : new Map<string, ReachableTile>(),
     [state.units, state.obstacles, selectedUnit],
   )
+  const attackRange = useMemo(
+    () => state.interactionMode === 'ATTACK' && selectedUnit
+      ? new Set(getAttackableTiles(selectedUnit).map(cellKey))
+      : new Set<string>(),
+    [state.interactionMode, selectedUnit],
+  )
+  const attackableTargets = useMemo(
+    () => state.interactionMode === 'ATTACK' && selectedUnit
+      ? getAttackableTargets(state.units, selectedUnit.id)
+      : [],
+    [state.interactionMode, selectedUnit, state.units],
+  )
+  const attackableTargetIds = useMemo(
+    () => new Set(attackableTargets.map((unit) => unit.id)),
+    [attackableTargets],
+  )
+  const attackableTargetCells = useMemo(
+    () => new Set(attackableTargets.map((unit) => cellKey(unit.position))),
+    [attackableTargets],
+  )
+  const selectedAttackTarget = state.units.find((unit) => unit.id === state.selectedAttackTargetId) ?? null
+  const selectedAttackTargetDistance = selectedUnit && selectedAttackTarget
+    ? getManhattanDistance(selectedUnit.position, selectedAttackTarget.position)
+    : null
 
   const selectUnit = useCallback((unitId: string) => dispatch({ type: 'select', unitId }), [])
   const clearSelection = useCallback(() => dispatch({ type: 'clear' }), [])
@@ -21,12 +48,25 @@ export function useBattleMovement() {
   const cancelMove = useCallback((unitId: string, motionId: number) => dispatch({ type: 'cancel', unitId, motionId }), [])
   const undoMove = useCallback(() => dispatch({ type: 'undo' }), [])
   const commitMove = useCallback(() => dispatch({ type: 'commit' }), [])
+  const setInteractionMode = useCallback((mode: Exclude<InteractionMode, 'COMMAND'>) => dispatch({ type: 'set-mode', mode }), [])
+  const cancelMoveMode = useCallback(() => dispatch({ type: 'cancel-move-mode' }), [])
+  const selectAttackTarget = useCallback((targetId: string) => dispatch({ type: 'select-attack-target', targetId }), [])
+  const cancelAttack = useCallback(() => dispatch({ type: 'cancel-attack' }), [])
+  const confirmAttack = useCallback(() => dispatch({ type: 'confirm-attack' }), [])
 
   return {
     ...state,
     selectedUnit,
+    selectedAttackTarget,
+    selectedAttackTargetDistance,
     reachable,
-    canUndoMove: canUndoLastMove(state),
+    attackRange,
+    attackableTargets,
+    attackableTargetIds,
+    attackableTargetCells,
+    canConfirmAttack: state.interactionMode === 'ATTACK' &&
+      Boolean(state.selectedAttackTargetId && canAttackTarget(state.units, state.selectedUnitId ?? '', state.selectedAttackTargetId)),
+    canUndoMove: state.interactionMode === 'COMMAND' && canUndoLastMove(state),
     selectUnit,
     clearSelection,
     selectCell,
@@ -34,5 +74,10 @@ export function useBattleMovement() {
     cancelMove,
     undoMove,
     commitMove,
+    setInteractionMode,
+    cancelMoveMode,
+    selectAttackTarget,
+    cancelAttack,
+    confirmAttack,
   }
 }

@@ -8,6 +8,7 @@ import { TERRAIN_COLORS } from '../../../game/grid/terrain.constants'
 import { getTerrainType } from '../../../game/grid/terrain.data'
 import { TerrainType } from '../../../game/grid/terrain.types'
 import type { BattleObstacle } from '../../../game/battle/obstacles'
+import type { InteractionMode } from '../../../game/battle/battle.types'
 import { cellPosition } from './grid'
 
 const CLICK_DRAG_THRESHOLD = 2
@@ -37,6 +38,10 @@ export default function GridMap({
   moving,
   reachable,
   obstacles,
+  interactionMode,
+  attackRange,
+  attackableTargetCells,
+  selectedAttackTargetCell,
   preview,
   onSelect,
   onHover,
@@ -46,6 +51,10 @@ export default function GridMap({
   moving: boolean
   reachable: ReadonlyMap<string, ReachableTile>
   obstacles: readonly BattleObstacle[]
+  interactionMode: InteractionMode
+  attackRange: ReadonlySet<string>
+  attackableTargetCells: ReadonlySet<string>
+  selectedAttackTargetCell: Cell | null
   preview: readonly Cell[] | null
   onSelect: (cell: Cell) => void
   onHover: (cell: Cell | null) => void
@@ -62,6 +71,9 @@ export default function GridMap({
         const occupied = position !== null && sameCell(cell, position)
         const canMove = selected && !moving && reachable.has(key)
         const isOnPreviewPath = selected && !moving && previewKeys.has(key)
+        const inAttackRange = interactionMode === 'ATTACK' && attackRange.has(key)
+        const isAttackableTarget = inAttackRange && attackableTargetCells.has(key)
+        const isSelectedAttackTarget = interactionMode === 'ATTACK' && selectedAttackTargetCell !== null && sameCell(cell, selectedAttackTargetCell)
         const handleClick = (event: ThreeEvent<MouseEvent>) => {
           event.stopPropagation()
           if (event.delta > CLICK_DRAG_THRESHOLD) return
@@ -95,6 +107,12 @@ export default function GridMap({
               />
             </mesh>
             {occupied && selected && !moving && <CellOutline color="#f4d36d" height={0.08} />}
+            {inAttackRange && (
+              <mesh position={[0, 0.074, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[0.93, 0.93]} />
+                <meshBasicMaterial color="#e65359" transparent opacity={isAttackableTarget ? 0.48 : 0.3} depthWrite={false} />
+              </mesh>
+            )}
             {(canMove || isOnPreviewPath) && (
               <mesh position={[0, 0.074, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                 <planeGeometry args={[0.93, 0.93]} />
@@ -103,6 +121,8 @@ export default function GridMap({
             )}
             {isOnPreviewPath && <CellOutline color="#fff0b3" height={0.085} />}
             {canMove && hovered === key && !isOnPreviewPath && <CellOutline color="#d2f3ff" height={0.085} />}
+            {isAttackableTarget && <CellOutline color="#ff827e" height={0.085} />}
+            {isSelectedAttackTarget && <CellOutline color="#fff1a8" height={0.095} />}
           </group>
         )
       })}

@@ -20,6 +20,8 @@ function isCurrentGeneration(generationRef: { current: number }, generation: num
 export default function UnitPlaceholder({
   unit,
   selected,
+  attackableTarget,
+  selectedAttackTarget,
   path,
   motionId,
   onSelect,
@@ -28,6 +30,8 @@ export default function UnitPlaceholder({
 }: {
   unit: BattleUnit
   selected: boolean
+  attackableTarget: boolean
+  selectedAttackTarget: boolean
   path: Cell[] | null
   motionId: number | null
   onSelect: (unitId: string) => void
@@ -38,6 +42,11 @@ export default function UnitPlaceholder({
   const progress = useRef(0)
   const completed = useRef(false)
   const effectGeneration = useRef(0)
+  const ringColor = selectedAttackTarget ? '#fff1a8'
+    : attackableTarget ? '#f05252'
+      : selected ? '#ffe475'
+        : unit.faction === 'enemy' ? '#e27063' : '#91c9ef'
+  const ringRadius = selectedAttackTarget ? 0.52 : attackableTarget ? 0.48 : selected ? 0.43 : 0.36
 
   useEffect(() => {
     const generation = ++effectGeneration.current
@@ -80,8 +89,8 @@ export default function UnitPlaceholder({
     <group ref={group} position={cellPosition(unit.position)}>
       <UnitLabel unit={unit} />
       <mesh position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.31, selected ? 0.43 : 0.36, 32]} />
-        <meshBasicMaterial color={selected ? '#ffe475' : unit.faction === 'enemy' ? '#e27063' : '#91c9ef'} />
+        <ringGeometry args={[0.31, ringRadius, 32]} />
+        <meshBasicMaterial color={ringColor} />
       </mesh>
       <group
         position={[0, 0.08, 0]}

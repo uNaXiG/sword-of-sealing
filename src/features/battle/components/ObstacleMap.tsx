@@ -1,4 +1,5 @@
 import { obstacleCell, type BattleObstacle } from '../../../game/battle/obstacles'
+import type { Cell } from '../../../game/grid/grid.types'
 import { cellPosition } from './grid'
 
 function ObstacleModel({ obstacle }: { obstacle: BattleObstacle }) {
@@ -44,11 +45,24 @@ function ObstacleModel({ obstacle }: { obstacle: BattleObstacle }) {
   )
 }
 
-export default function ObstacleMap({ obstacles }: { obstacles: readonly BattleObstacle[] }) {
+export default function ObstacleMap({
+  obstacles,
+  onObstacleClick,
+}: {
+  obstacles: readonly BattleObstacle[]
+  onObstacleClick: (cell: Cell) => void
+}) {
   return (
     <group>
       {obstacles.map((obstacle) => (
-        <group key={obstacle.id} position={cellPosition(obstacleCell(obstacle))} onClick={(event) => event.stopPropagation()}>
+        <group
+          key={obstacle.id}
+          position={cellPosition(obstacleCell(obstacle))}
+          onClick={(event) => {
+            event.stopPropagation()
+            onObstacleClick(obstacleCell(obstacle))
+          }}
+        >
           <ObstacleModel obstacle={obstacle} />
         </group>
       ))}

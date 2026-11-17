@@ -38,7 +38,7 @@
 }
 .battle-header a:hover { background: #446478; }
 .battle-header a:focus-visible { outline: 3px solid #c5984d; outline-offset: 4px; }
-.battle-info { position: absolute; right: 28px; bottom: 60px; min-width: 220px; pointer-events: none; }
+.battle-info { position: absolute; right: 28px; bottom: 60px; min-width: 220px; max-height: calc(100svh - 100px); overflow-y: auto; overscroll-behavior: contain; pointer-events: none; }
 .battle-info-title { color: #ecd39e; font-size: 13px; letter-spacing: .1em; }
 .battle-info p { margin: 12px 0 0; font-size: 12px; }
 .battle-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 9px; border: 2px solid; }
@@ -49,17 +49,22 @@
 .battle-selection p { margin: 0 0 7px; }
 .battle-deselect { padding: 7px 12px; border: 1px solid #e3c991; color: #fff9e9; background: #34566a; cursor: pointer; pointer-events: auto; }
 .battle-deselect:hover { background: #446d82; }
+.battle-deselect:disabled { opacity: .5; cursor: not-allowed; }
+.battle-deselect:disabled:hover { background: #34566a; }
+.battle-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.battle-actions .battle-deselect { margin: 0; }
+.battle-combat-details { margin-top: 10px; }
+.battle-combat-details p { margin: 8px 0; color: #f9eac7; }
+.battle-combat-feedback { color: #f3d89e; line-height: 1.5; }
 .battle-undo { margin-left: 8px; }
-.battle-undo:disabled { opacity: .5; cursor: not-allowed; }
-.battle-undo:disabled:hover { background: #34566a; }
-.battle-hint { position: absolute; bottom: 19px; left: 28px; color: #fff; font-size: 12px; text-shadow: 0 1px 5px #213c44; pointer-events: none; }
 .battle-error { display: grid; height: 100%; place-items: center; padding: 24px; color: #263e4d; text-align: center; }
 @media (max-width: 700px) {
   .battle-header { top: 14px; left: 14px; right: 14px; }
   .battle-header > div { padding: 12px 14px; }
   .battle-header h1 { font-size: 20px; }
   .battle-header a { padding: 10px; font-size: 12px; }
-  .battle-info { right: 14px; bottom: 50px; min-width: 0; padding: 12px 14px; }
+  .battle-info { right: 14px; bottom: 50px; min-width: 0; max-height: calc(100svh - 80px); padding: 12px 14px; }
   .battle-info p { margin-top: 8px; }
-  .battle-hint { bottom: 12px; left: 14px; right: 14px; font-size: 10px; }
+  .battle-actions { gap: 6px; }
+  .battle-actions .battle-deselect { padding: 7px 9px; font-size: 11px; }
 }

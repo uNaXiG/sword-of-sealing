@@ -8,8 +8,16 @@ export type BattleUnit = {
   class: 'knight' | 'mage' | 'rogue' | 'goblin'
   position: Cell
   movementPoints: number
+  attackRange: number
   hp: number
   maxHp: number
+}
+
+export type InteractionMode = 'COMMAND' | 'MOVE' | 'ATTACK'
+
+export type AttackCommand = {
+  attackerId: string
+  targetId: string
 }
 
 export type BattleMotion = {
@@ -35,4 +43,7 @@ export type BattleState = {
   motion: BattleMotion | null
   nextMotionId: number
   lastMove: BattleMoveRecord | null
+  interactionMode: InteractionMode
+  selectedAttackTargetId: string | null
+  lastAttackCommand: AttackCommand | null
 }
