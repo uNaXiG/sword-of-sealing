@@ -49,6 +49,9 @@
 .battle-selection p { margin: 0 0 7px; }
 .battle-deselect { padding: 7px 12px; border: 1px solid #e3c991; color: #fff9e9; background: #34566a; cursor: pointer; pointer-events: auto; }
 .battle-deselect:hover { background: #446d82; }
+.battle-undo { margin-left: 8px; }
+.battle-undo:disabled { opacity: .5; cursor: not-allowed; }
+.battle-undo:disabled:hover { background: #34566a; }
 .battle-hint { position: absolute; bottom: 19px; left: 28px; color: #fff; font-size: 12px; text-shadow: 0 1px 5px #213c44; pointer-events: none; }
 .battle-error { display: grid; height: 100%; place-items: center; padding: 24px; color: #263e4d; text-align: center; }
 @media (max-width: 700px) {

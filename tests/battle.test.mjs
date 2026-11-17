@@ -2,8 +2,16 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { INITIAL_UNITS } from '../src/game/battle/battle.data.ts'
 import { reachableForUnit, moveUnit } from '../src/game/battle/battle.movement.ts'
-import { battleReducer, createBattleState } from '../src/game/battle/battle.state.ts'
+import { battleReducer, canUndoLastMove, createBattleState } from '../src/game/battle/battle.state.ts'
 import { getOccupancy, unitAt } from '../src/game/battle/occupancy.ts'
+
+function completeKnightMove(destination = { column: 4, row: 3 }) {
+  let state = createBattleState(INITIAL_UNITS)
+  state = battleReducer(state, { type: 'select', unitId: 'knight' })
+  state = battleReducer(state, { type: 'cell', cell: destination })
+  assert.ok(state.motion)
+  return battleReducer(state, { type: 'finish', unitId: 'knight', motionId: state.motion.motionId })
+}
 
 test('四個角色資料包含互不重疊的初始位置', () => {
   const state = createBattleState(INITIAL_UNITS)
@@ -79,11 +87,12 @@ test('移動動畫期間鎖定所有指令，完成後原格可供其他角色�
   state = battleReducer(state, { type: 'select', unitId: 'knight' })
   state = battleReducer(state, { type: 'cell', cell: { column: 3, row: 2 } })
   assert.ok(state.motion)
+  const firstMotionId = state.motion.motionId
   assert.deepEqual(unitAt(state.units, { column: 3, row: 3 }).id, 'knight')
   assert.equal(battleReducer(state, { type: 'select', unitId: 'mage' }), state)
   assert.equal(battleReducer(state, { type: 'cell', cell: { column: 3, row: 3 } }), state)
-  assert.equal(battleReducer(state, { type: 'finish', unitId: 'mage' }), state)
-  state = battleReducer(state, { type: 'finish', unitId: 'knight' })
+  assert.equal(battleReducer(state, { type: 'finish', unitId: 'mage', motionId: firstMotionId }), state)
+  state = battleReducer(state, { type: 'finish', unitId: 'knight', motionId: firstMotionId })
   assert.equal(state.motion, null)
   assert.equal(unitAt(state.units, { column: 3, row: 3 }), undefined)
   assert.equal(unitAt(state.units, { column: 3, row: 2 }).id, 'knight')
@@ -91,9 +100,44 @@ test('移動動畫期間鎖定所有指令，完成後原格可供其他角色�
   assert.equal(reachableForUnit(state.units, 'mage').has('3,3'), true)
   state = battleReducer(state, { type: 'select', unitId: 'mage' })
   state = battleReducer(state, { type: 'cell', cell: { column: 3, row: 3 } })
-  state = battleReducer(state, { type: 'finish', unitId: 'mage' })
+  state = battleReducer(state, { type: 'finish', unitId: 'mage', motionId: state.motion.motionId })
   assert.equal(unitAt(state.units, { column: 3, row: 3 }).id, 'mage')
   assert.equal(getOccupancy(state.units).size, 4)
+})
+
+test('取消移動保留原座標、解除佔位鎖定並忽略過期或重複事件', () => {
+  let state = createBattleState(INITIAL_UNITS)
+  const origin = { column: 3, row: 3 }
+  const destination = { column: 4, row: 3 }
+  state = battleReducer(state, { type: 'select', unitId: 'knight' })
+  state = battleReducer(state, { type: 'cell', cell: destination })
+  const cancelledMotionId = state.motion.motionId
+  const staleFinish = { type: 'finish', unitId: 'knight', motionId: cancelledMotionId }
+  const cancel = { type: 'cancel', unitId: 'knight', motionId: cancelledMotionId }
+
+  state = battleReducer(state, cancel)
+  assert.equal(state.motion, null)
+  assert.equal(state.selectedUnitId, 'knight')
+  assert.deepEqual(state.units[0].position, origin)
+  assert.equal(unitAt(state.units, origin).id, 'knight')
+  assert.equal(unitAt(state.units, destination), undefined)
+  assert.equal(battleReducer(state, cancel), state)
+  assert.equal(battleReducer(state, staleFinish), state)
+
+  state = battleReducer(state, { type: 'cell', cell: destination })
+  const activeMotionId = state.motion.motionId
+  assert.notEqual(activeMotionId, cancelledMotionId)
+  assert.equal(battleReducer(state, staleFinish), state)
+  assert.equal(battleReducer(state, cancel), state)
+
+  state = battleReducer(state, { type: 'finish', unitId: 'knight', motionId: activeMotionId })
+  const completedState = state
+  assert.equal(state.motion, null)
+  assert.deepEqual(state.units[0].position, destination)
+  assert.equal(unitAt(state.units, origin), undefined)
+  assert.equal(unitAt(state.units, destination).id, 'knight')
+  assert.equal(battleReducer(state, { type: 'finish', unitId: 'knight', motionId: activeMotionId }), completedState)
+  assert.equal(battleReducer(state, { type: 'cancel', unitId: 'knight', motionId: activeMotionId }), completedState)
 })
 
 test('不論陣營，移動後均不可產生重複佔位', () => {
@@ -104,4 +148,92 @@ test('不論陣營，移動後均不可產生重複佔位', () => {
   assert.equal(getOccupancy(units).size, 4)
   assert.throws(() => createBattleState([...units, { ...units[0], id: 'duplicate' }]), /duplicate/)
   assert.throws(() => createBattleState([...units, { ...units[0], position: { column: 7, row: 7 } }]), /duplicate/)
+})
+
+test('成功完成移動後建立包含路徑與成本的單次撤銷紀錄', () => {
+  const state = completeKnightMove()
+  assert.deepEqual(state.lastMove, {
+    motionId: 1,
+    unitId: 'knight',
+    from: { column: 3, row: 3 },
+    to: { column: 4, row: 3 },
+    path: [{ column: 3, row: 3 }, { column: 4, row: 3 }],
+    cost: 1,
+  })
+  assert.equal(canUndoLastMove(state), true)
+})
+
+test('移動取消不建立成功移動紀錄', () => {
+  let state = createBattleState(INITIAL_UNITS)
+  state = battleReducer(state, { type: 'select', unitId: 'knight' })
+  state = battleReducer(state, { type: 'cell', cell: { column: 4, row: 3 } })
+  state = battleReducer(state, { type: 'cancel', unitId: 'knight', motionId: state.motion.motionId })
+  assert.equal(state.lastMove, null)
+  assert.deepEqual(state.units[0].position, { column: 3, row: 3 })
+})
+
+test('撤銷還原座標與佔位、不消耗 MP，且可重新移動', () => {
+  let state = completeKnightMove()
+  const originalMovementPoints = state.units[0].movementPoints
+  const oldMotionId = state.lastMove.motionId
+  state = battleReducer(state, { type: 'undo' })
+  assert.deepEqual(state.units[0].position, { column: 3, row: 3 })
+  assert.equal(unitAt(state.units, { column: 3, row: 3 }).id, 'knight')
+  assert.equal(unitAt(state.units, { column: 4, row: 3 }), undefined)
+  assert.equal(state.units[0].movementPoints, originalMovementPoints)
+  assert.equal(state.lastMove, null)
+  assert.equal(getOccupancy(state.units).size, 4)
+  assert.equal(battleReducer(state, { type: 'undo' }), state)
+
+  state = battleReducer(state, { type: 'cell', cell: { column: 4, row: 3 } })
+  assert.ok(state.motion)
+  assert.notEqual(state.motion.motionId, oldMotionId)
+  const activeMotion = state
+  assert.equal(battleReducer(state, { type: 'finish', unitId: 'knight', motionId: oldMotionId }), activeMotion)
+})
+
+test('無紀錄、移動中或撤銷條件失效時拒絕撤銷', () => {
+  const initial = createBattleState(INITIAL_UNITS)
+  assert.equal(canUndoLastMove(initial), false)
+  assert.equal(battleReducer(initial, { type: 'undo' }), initial)
+
+  let moving = battleReducer(initial, { type: 'select', unitId: 'knight' })
+  moving = battleReducer(moving, { type: 'cell', cell: { column: 4, row: 3 } })
+  assert.equal(canUndoLastMove(moving), false)
+  assert.equal(battleReducer(moving, { type: 'undo' }), moving)
+
+  const completed = completeKnightMove()
+  const invalidStates = [
+    { ...completed, selectedUnitId: 'mage' },
+    { ...completed, units: completed.units.filter((unit) => unit.id !== 'knight') },
+    { ...completed, units: completed.units.map((unit) => unit.id === 'knight' ? { ...unit, position: { column: 5, row: 3 } } : unit) },
+    { ...completed, units: completed.units.map((unit) => unit.id === 'mage' ? { ...unit, position: { column: 3, row: 3 } } : unit) },
+    { ...completed, obstacles: [{ id: 'origin-wall', type: 'wall', position: { x: 3, y: 3 }, walkable: false }] },
+  ]
+  for (const invalid of invalidStates) {
+    assert.equal(canUndoLastMove(invalid), false)
+    assert.equal(battleReducer(invalid, { type: 'undo' }), invalid)
+  }
+})
+
+test('確認移動或切換角色後，先前移動不可再撤銷', () => {
+  const completed = completeKnightMove()
+  const committed = battleReducer(completed, { type: 'commit' })
+  assert.equal(committed.lastMove, null)
+  assert.equal(battleReducer(committed, { type: 'undo' }), committed)
+
+  const switched = battleReducer(completed, { type: 'select', unitId: 'mage' })
+  assert.equal(switched.selectedUnitId, 'mage')
+  assert.equal(switched.lastMove, null)
+  assert.equal(battleReducer(switched, { type: 'undo' }), switched)
+})
+
+test('有效的新移動確認舊紀錄，無效移動保留舊紀錄', () => {
+  const completed = completeKnightMove()
+  const invalidMove = battleReducer(completed, { type: 'cell', cell: { column: -1, row: 3 } })
+  assert.equal(invalidMove.lastMove, completed.lastMove)
+
+  const nextMove = battleReducer(completed, { type: 'cell', cell: { column: 3, row: 3 } })
+  assert.ok(nextMove.motion)
+  assert.equal(nextMove.lastMove, null)
 })

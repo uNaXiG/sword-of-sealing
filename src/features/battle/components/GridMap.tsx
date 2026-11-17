@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ThreeEvent } from '@react-three/fiber'
 import { GRID_SIZE } from '../../../game/grid/grid.constants'
 import type { Cell } from '../../../game/grid/grid.types'
@@ -9,6 +9,8 @@ import { getTerrainType } from '../../../game/grid/terrain.data'
 import { TerrainType } from '../../../game/grid/terrain.types'
 import type { BattleObstacle } from '../../../game/battle/obstacles'
 import { cellPosition } from './grid'
+
+const CLICK_DRAG_THRESHOLD = 2
 
 function CellOutline({ color, height }: { color: string; height: number }) {
   return (
@@ -49,6 +51,7 @@ export default function GridMap({
   onHover: (cell: Cell | null) => void
 }) {
   const [hovered, setHovered] = useState<string | null>(null)
+  const hoveredRef = useRef<string | null>(null)
   const previewKeys = new Set((preview ?? []).slice(1).map(cellKey))
 
   return (
@@ -58,16 +61,20 @@ export default function GridMap({
         const key = cellKey(cell)
         const occupied = position !== null && sameCell(cell, position)
         const canMove = selected && !moving && reachable.has(key)
-        const isOnPreviewPath = previewKeys.has(key)
+        const isOnPreviewPath = selected && !moving && previewKeys.has(key)
         const handleClick = (event: ThreeEvent<MouseEvent>) => {
           event.stopPropagation()
+          if (event.delta > CLICK_DRAG_THRESHOLD) return
           onSelect(cell)
         }
         const handlePointerOver = () => {
+          hoveredRef.current = key
           setHovered(key)
           onHover(cell)
         }
         const handlePointerOut = () => {
+          if (hoveredRef.current !== key) return
+          hoveredRef.current = null
           setHovered(null)
           onHover(null)
         }
@@ -88,13 +95,14 @@ export default function GridMap({
               />
             </mesh>
             {occupied && selected && !moving && <CellOutline color="#f4d36d" height={0.08} />}
-            {canMove && (
+            {(canMove || isOnPreviewPath) && (
               <mesh position={[0, 0.074, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                 <planeGeometry args={[0.93, 0.93]} />
-                <meshBasicMaterial color={isOnPreviewPath ? '#f5d477' : hovered === key ? '#a4e5ff' : '#4baff0'} transparent opacity={isOnPreviewPath ? 0.55 : hovered === key ? 0.62 : 0.35} depthWrite={false} />
+                <meshBasicMaterial color={isOnPreviewPath ? '#f5d477' : hovered === key ? '#a4e5ff' : '#4baff0'} transparent opacity={isOnPreviewPath ? 0.68 : hovered === key ? 0.62 : 0.35} depthWrite={false} />
               </mesh>
             )}
-            {canMove && hovered === key && <CellOutline color={isOnPreviewPath ? '#fff0b3' : '#d2f3ff'} height={0.085} />}
+            {isOnPreviewPath && <CellOutline color="#fff0b3" height={0.085} />}
+            {canMove && hovered === key && !isOnPreviewPath && <CellOutline color="#d2f3ff" height={0.085} />}
           </group>
         )
       })}

@@ -17,12 +17,19 @@ function FitCamera() {
 }
 
 export default function BattleScene() {
-  const { units, obstacles, selectedUnit, motion, reachable, selectUnit, clearSelection, selectCell, finishMove } = useBattleMovement()
+  const {
+    units, obstacles, selectedUnit, motion, lastMove, reachable, canUndoMove,
+    selectUnit, clearSelection, selectCell, finishMove, cancelMove, undoMove,
+  } = useBattleMovement()
   const [hoveredCell, setHoveredCell] = useState<Cell | null>(null)
   const preview = hoveredCell ? reachable.get(cellKey(hoveredCell)) ?? null : null
   const clearBattleSelection = () => {
     setHoveredCell(null)
     clearSelection()
+  }
+  const handleUndoMove = () => {
+    setHoveredCell(null)
+    undoMove()
   }
 
   return (
@@ -55,8 +62,10 @@ export default function BattleScene() {
               unit={unit}
               selected={unit.id === selectedUnit?.id}
               path={motion?.unitId === unit.id ? motion.path : null}
+              motionId={motion?.unitId === unit.id ? motion.motionId : null}
               onSelect={selectUnit}
               onMoveComplete={finishMove}
+              onMoveCancelled={cancelMove}
             />
           ))}
           <FitCamera />
@@ -87,6 +96,11 @@ export default function BattleScene() {
           <p>{motion ? `移動中，路徑成本 ${motion.cost} MP` : selectedUnit ? '移至藍色格子以預覽路徑' : '點擊我方角色以選取'}</p>
         </div>
         {selectedUnit && !motion && <button className="battle-deselect" type="button" onClick={clearBattleSelection}>取消選取</button>}
+        {lastMove && (
+          <button className="battle-deselect battle-undo" type="button" disabled={!canUndoMove} onClick={handleUndoMove}>
+            撤銷移動
+          </button>
+        )}
       </aside>
       <footer className="battle-hint">地形成本：平地／草地 1 MP · 森林／淺水 2 MP · 岩石／石牆不可通行<br />左鍵平移 · 右鍵旋轉 · 滾輪縮放 | 觸控：單指旋轉、雙指縮放與平移</footer>
     </main>

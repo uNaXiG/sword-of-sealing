@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useReducer } from 'react'
 import { INITIAL_UNITS } from '../../../game/battle/battle.data'
 import { reachableForUnit } from '../../../game/battle/battle.movement'
-import { battleReducer, createBattleState } from '../../../game/battle/battle.state'
+import { battleReducer, canUndoLastMove, createBattleState } from '../../../game/battle/battle.state'
 import { INITIAL_OBSTACLES, obstacleCell } from '../../../game/battle/obstacles'
 import type { Cell } from '../../../game/grid/grid.types'
 import type { ReachableTile } from '../../../game/grid/movement'
@@ -17,7 +17,22 @@ export function useBattleMovement() {
   const selectUnit = useCallback((unitId: string) => dispatch({ type: 'select', unitId }), [])
   const clearSelection = useCallback(() => dispatch({ type: 'clear' }), [])
   const selectCell = useCallback((cell: Cell) => dispatch({ type: 'cell', cell }), [])
-  const finishMove = useCallback((unitId: string) => dispatch({ type: 'finish', unitId }), [])
+  const finishMove = useCallback((unitId: string, motionId: number) => dispatch({ type: 'finish', unitId, motionId }), [])
+  const cancelMove = useCallback((unitId: string, motionId: number) => dispatch({ type: 'cancel', unitId, motionId }), [])
+  const undoMove = useCallback(() => dispatch({ type: 'undo' }), [])
+  const commitMove = useCallback(() => dispatch({ type: 'commit' }), [])
 
-  return { ...state, selectedUnit, reachable, selectUnit, clearSelection, selectCell, finishMove }
+  return {
+    ...state,
+    selectedUnit,
+    reachable,
+    canUndoMove: canUndoLastMove(state),
+    selectUnit,
+    clearSelection,
+    selectCell,
+    finishMove,
+    cancelMove,
+    undoMove,
+    commitMove,
+  }
 }

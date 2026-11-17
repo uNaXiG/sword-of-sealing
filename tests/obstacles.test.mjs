@@ -95,7 +95,7 @@ test('保留選角與移動鎖定，完成時使用相同障礙物驗證', () =>
   assert.equal(state.motion.cost, plannedMove.cost)
   assert.deepEqual(state.motion.path, [{ column: 3, row: 3 }, { column: 4, row: 3 }, { column: 4, row: 2 }])
   assert.equal(battleReducer(state, { type: 'select', unitId: 'mage' }), state)
-  state = battleReducer(state, { type: 'finish', unitId: 'knight' })
+  state = battleReducer(state, { type: 'finish', unitId: 'knight', motionId: state.motion.motionId })
   assert.deepEqual(state.units[0].position, { column: 4, row: 2 })
   assert.equal(state.motion, null)
   assert.equal(state.selectedUnitId, 'knight')

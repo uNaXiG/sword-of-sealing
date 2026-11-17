@@ -13,34 +13,50 @@ const unitColors: Record<BattleUnit['class'], { armor: string; accent: string; h
   goblin: { armor: '#a77b70', accent: '#983f3a', head: '#8ebc73' },
 }
 
+function isCurrentGeneration(generationRef: { current: number }, generation: number): boolean {
+  return generationRef.current === generation
+}
+
 export default function UnitPlaceholder({
   unit,
   selected,
   path,
+  motionId,
   onSelect,
   onMoveComplete,
+  onMoveCancelled,
 }: {
   unit: BattleUnit
   selected: boolean
   path: Cell[] | null
+  motionId: number | null
   onSelect: (unitId: string) => void
-  onMoveComplete: (unitId: string) => void
+  onMoveComplete: (unitId: string, motionId: number) => void
+  onMoveCancelled: (unitId: string, motionId: number) => void
 }) {
   const group = useRef<Group>(null)
   const progress = useRef(0)
   const completed = useRef(false)
+  const effectGeneration = useRef(0)
 
   useEffect(() => {
+    const generation = ++effectGeneration.current
     progress.current = 0
     completed.current = false
-    if (!path) return
+    if (!path || motionId === null) {
+      const position = cellPosition(unit.position)
+      group.current?.position.set(position[0], position[1], position[2])
+      return
+    }
 
     return () => {
-      if (completed.current) return
-      completed.current = true
-      onMoveComplete(unit.id)
+      queueMicrotask(() => {
+        if (!isCurrentGeneration(effectGeneration, generation) || completed.current) return
+        completed.current = true
+        onMoveCancelled(unit.id, motionId)
+      })
     }
-  }, [path, unit.id, onMoveComplete])
+  }, [path, motionId, unit.id, unit.position, onMoveCancelled])
 
   useFrame((_, delta) => {
     if (!path || !group.current || completed.current) return
@@ -56,7 +72,7 @@ export default function UnitPlaceholder({
     )
     if (progress.current >= path.length - 1) {
       completed.current = true
-      onMoveComplete(unit.id)
+      if (motionId !== null) onMoveComplete(unit.id, motionId)
     }
   })
 

@@ -13,7 +13,17 @@ export type BattleUnit = {
 }
 
 export type BattleMotion = {
+  motionId: number
   unitId: string
+  path: Cell[]
+  cost: number
+}
+
+export type BattleMoveRecord = {
+  motionId: number
+  unitId: string
+  from: Cell
+  to: Cell
   path: Cell[]
   cost: number
 }
@@ -23,4 +33,6 @@ export type BattleState = {
   obstacles: BattleObstacle[]
   selectedUnitId: string | null
   motion: BattleMotion | null
+  nextMotionId: number
+  lastMove: BattleMoveRecord | null
 }
