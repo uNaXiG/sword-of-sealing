@@ -1,18 +1,26 @@
+import type { AttackPattern, UnitClass } from '../classes/class.types'
 import type { Cell } from '../grid/grid.types'
 import type { BattleObstacle } from './obstacles'
+
+export type BattleFaction = 'player' | 'enemy'
 
 export type BattleUnit = {
   id: string
   name: string
-  faction: 'player' | 'enemy'
-  class: 'knight' | 'mage' | 'rogue' | 'goblin'
+  faction: BattleFaction
+  class: UnitClass
   position: Cell
   movementPoints: number
+  attackPattern: AttackPattern
   attackRange: number
+  minAttackRange: number
   atk: number
   def: number
+  agi: number
   hp: number
   maxHp: number
+  sp: number
+  maxSp: number
 }
 
 export type InteractionMode = 'COMMAND' | 'MOVE' | 'ATTACK'

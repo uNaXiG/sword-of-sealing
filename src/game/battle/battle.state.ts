@@ -10,6 +10,7 @@ import { TERRAIN_MOVEMENT_COST } from '../grid/terrain.constants.ts'
 import { getTerrainType } from '../grid/terrain.data.ts'
 import { calculatePhysicalDamage } from './battle.damage.ts'
 import { isUnitAlive } from './battle.unit.ts'
+import { isUnitClass, validateAttackProperties } from '../classes/class.data.ts'
 
 type BattleAction =
   | { type: 'select'; unitId: string }
@@ -28,6 +29,8 @@ type BattleAction =
 
 export function createBattleState(units: readonly BattleUnit[], obstacles: readonly BattleObstacle[] = []): BattleState {
   for (const unit of units) {
+    if (!isUnitClass(unit.class)) throw new Error(`Battle unit class is invalid: ${unit.id}`)
+    if (unit.faction !== 'player' && unit.faction !== 'enemy') throw new Error(`Battle unit faction is invalid: ${unit.id}`)
     if (!Number.isSafeInteger(unit.maxHp) || unit.maxHp <= 0) {
       throw new RangeError(`Battle unit max HP must be a positive safe integer: ${unit.id}`)
     }
@@ -40,9 +43,19 @@ export function createBattleState(units: readonly BattleUnit[], obstacles: reado
     if (!Number.isSafeInteger(unit.def) || unit.def < 0) {
       throw new RangeError(`Battle unit defense must be a non-negative safe integer: ${unit.id}`)
     }
-  }
-  if (units.some((unit) => !Number.isInteger(unit.attackRange) || unit.attackRange <= 0)) {
-    throw new RangeError('Battle unit attack range must be a positive integer')
+    if (!Number.isSafeInteger(unit.maxSp) || unit.maxSp < 0) {
+      throw new RangeError(`Battle unit max SP must be a non-negative safe integer: ${unit.id}`)
+    }
+    if (!Number.isSafeInteger(unit.sp) || unit.sp < 0 || unit.sp > unit.maxSp) {
+      throw new RangeError(`Battle unit SP must be a safe integer between 0 and max SP: ${unit.id}`)
+    }
+    if (!Number.isSafeInteger(unit.agi) || unit.agi < 0) {
+      throw new RangeError(`Battle unit agility must be a non-negative safe integer: ${unit.id}`)
+    }
+    if (!Number.isSafeInteger(unit.movementPoints) || unit.movementPoints < 0) {
+      throw new RangeError(`Battle unit movement points must be a non-negative safe integer: ${unit.id}`)
+    }
+    validateAttackProperties(unit)
   }
   validateObstacles(obstacles, units)
   return {

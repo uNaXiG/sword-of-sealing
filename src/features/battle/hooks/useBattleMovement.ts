@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useReducer } from 'react'
 import { INITIAL_UNITS } from '../../../game/battle/battle.data'
-import { canAttackTarget, getAttackableTargets, getAttackableTiles, getManhattanDistance } from '../../../game/battle/battle.attack'
+import { canAttackTarget, getAttackableTargets, getAttackableTiles, getAttackDistance } from '../../../game/battle/battle.attack'
 import { reachableForUnit } from '../../../game/battle/battle.movement'
 import { battleReducer, canUndoLastMove, createBattleState } from '../../../game/battle/battle.state'
 import { INITIAL_OBSTACLES, obstacleCell } from '../../../game/battle/obstacles'
@@ -38,7 +38,7 @@ export function useBattleMovement() {
   )
   const selectedAttackTarget = state.units.find((unit) => unit.id === state.selectedAttackTargetId) ?? null
   const selectedAttackTargetDistance = selectedUnit && selectedAttackTarget
-    ? getManhattanDistance(selectedUnit.position, selectedAttackTarget.position)
+    ? getAttackDistance(selectedUnit.position, selectedAttackTarget.position, selectedUnit.attackPattern)
     : null
 
   const selectUnit = useCallback((unitId: string) => dispatch({ type: 'select', unitId }), [])

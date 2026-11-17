@@ -1,3 +1,5 @@
+import { isAttackPattern, validateAttackProperties } from '../classes/class.data.ts'
+import type { AttackPattern } from '../classes/class.types'
 import { GRID_SIZE } from '../grid/grid.constants.ts'
 import type { Cell } from '../grid/grid.types'
 import { isInsideGrid } from '../grid/grid.utils.ts'
@@ -8,20 +10,34 @@ export function getManhattanDistance(from: Cell, to: Cell): number {
   return Math.abs(from.column - to.column) + Math.abs(from.row - to.row)
 }
 
-export function isWithinAttackRange(attacker: BattleUnit, target: Cell, size = GRID_SIZE): boolean {
-  if (
-    !Number.isInteger(attacker.attackRange) ||
-    attacker.attackRange <= 0 ||
-    !isInsideGrid(attacker.position, size) ||
-    !isInsideGrid(target, size)
-  ) return false
+export function getAttackDistance(from: Cell, to: Cell, pattern: AttackPattern): number {
+  if (!isAttackPattern(pattern)) throw new Error('Invalid attack pattern')
+  const dx = Math.abs(from.column - to.column)
+  const dy = Math.abs(from.row - to.row)
+  return pattern === 'SQUARE' ? Math.max(dx, dy) : dx + dy
+}
 
-  const distance = getManhattanDistance(attacker.position, target)
-  return distance > 0 && distance <= attacker.attackRange
+export function isWithinAttackRange(attacker: BattleUnit, target: Cell, size = GRID_SIZE): boolean {
+  if (!isInsideGrid(attacker.position, size) || !isInsideGrid(target, size)) return false
+  try {
+    validateAttackProperties(attacker)
+  } catch {
+    return false
+  }
+  const dx = Math.abs(attacker.position.column - target.column)
+  const dy = Math.abs(attacker.position.row - target.row)
+  const distance = getAttackDistance(attacker.position, target, attacker.attackPattern)
+  if (distance < attacker.minAttackRange || distance > attacker.attackRange) return false
+  return attacker.attackPattern !== 'CROSS' || dx === 0 || dy === 0
 }
 
 export function getAttackableTiles(attacker: BattleUnit, size = GRID_SIZE): Cell[] {
-  if (!Number.isInteger(size) || size <= 0 || !Number.isInteger(attacker.attackRange) || attacker.attackRange <= 0) {
+  if (!Number.isInteger(size) || size <= 0) {
+    throw new RangeError('Attack range and grid size must be positive integers')
+  }
+  try {
+    validateAttackProperties(attacker)
+  } catch {
     throw new RangeError('Attack range and grid size must be positive integers')
   }
   if (!isInsideGrid(attacker.position, size)) {
@@ -29,18 +45,16 @@ export function getAttackableTiles(attacker: BattleUnit, size = GRID_SIZE): Cell
   }
 
   const tiles: Cell[] = []
-  const minColumn = Math.max(0, attacker.position.column - attacker.attackRange)
-  const maxColumn = Math.min(size - 1, attacker.position.column + attacker.attackRange)
-  const minRow = Math.max(0, attacker.position.row - attacker.attackRange)
-  const maxRow = Math.min(size - 1, attacker.position.row + attacker.attackRange)
-
-  for (let column = minColumn; column <= maxColumn; column += 1) {
-    for (let row = minRow; row <= maxRow; row += 1) {
+  for (let column = Math.max(0, attacker.position.column - attacker.attackRange);
+    column <= Math.min(size - 1, attacker.position.column + attacker.attackRange);
+    column += 1) {
+    for (let row = Math.max(0, attacker.position.row - attacker.attackRange);
+      row <= Math.min(size - 1, attacker.position.row + attacker.attackRange);
+      row += 1) {
       const tile = { column, row }
       if (isWithinAttackRange(attacker, tile, size)) tiles.push(tile)
     }
   }
-
   return tiles
 }
 

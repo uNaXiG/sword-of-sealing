@@ -9,7 +9,8 @@ import {
   isWithinAttackRange,
 } from '../src/game/battle/battle.attack.ts'
 
-const knightAtCenter = { ...INITIAL_UNITS[0], position: { column: 3, row: 3 } }
+const knightAtCenter = { ...INITIAL_UNITS[0], position: { column: 3, row: 3 }, attackPattern: 'DIAMOND', minAttackRange: 1 }
+const initialGoblin = INITIAL_UNITS.find((unit) => unit.id === 'goblin')
 
 test('曼哈頓距離與一格攻擊範圍只包含四個正交鄰格', () => {
   assert.equal(getManhattanDistance(knightAtCenter.position, { column: 4, row: 3 }), 1)
@@ -43,9 +44,9 @@ test('較大的攻擊距離允許曼哈頓距離二格，且範圍不越過棋�
 
 test('合法攻擊目標限於範圍內敵軍，陣營規則不綁定玩家角色', () => {
   const attacker = { ...knightAtCenter, attackRange: 2 }
-  const enemy = { ...INITIAL_UNITS[3], position: { column: 5, row: 3 } }
-  const farEnemy = { ...INITIAL_UNITS[3], id: 'far-enemy', position: { column: 6, row: 3 } }
-  const ally = { ...INITIAL_UNITS[2], position: { column: 3, row: 4 } }
+  const enemy = { ...initialGoblin, position: { column: 5, row: 3 } }
+  const farEnemy = { ...initialGoblin, id: 'far-enemy', position: { column: 6, row: 3 } }
+  const ally = { ...INITIAL_UNITS.find((unit) => unit.id === 'mage'), position: { column: 3, row: 4 } }
   const units = [attacker, enemy, farEnemy, ally]
 
   assert.deepEqual(getAttackableTargets(units, attacker.id).map((unit) => unit.id), [enemy.id])
@@ -62,7 +63,7 @@ test('合法攻擊目標限於範圍內敵軍，陣營規則不綁定玩家角�
 
 test('HP 歸零的攻擊者或目標都不是合法攻擊目標', () => {
   const attacker = { ...knightAtCenter, position: { column: 3, row: 3 } }
-  const target = { ...INITIAL_UNITS[3], position: { column: 4, row: 3 } }
+  const target = { ...initialGoblin, position: { column: 4, row: 3 } }
   assert.equal(canAttackTarget([attacker, { ...target, hp: 0 }], attacker.id, target.id), false)
   assert.equal(canAttackTarget([{ ...attacker, hp: 0 }, target], attacker.id, target.id), false)
   assert.deepEqual(getAttackableTargets([attacker, { ...target, hp: 0 }], attacker.id), [])

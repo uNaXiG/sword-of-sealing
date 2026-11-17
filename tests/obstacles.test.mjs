@@ -75,7 +75,7 @@ test('障礙物不影響其他合法移動路徑', () => {
 
 test('靜態障礙物及角色格都會阻擋路徑', () => {
   const unit = { ...knight, position: { column: 1, row: 1 }, movementPoints: 8 }
-  const other = { ...INITIAL_UNITS[3], position: { column: 2, row: 1 } }
+  const other = { ...INITIAL_UNITS.find((unit) => unit.id === 'goblin'), position: { column: 2, row: 1 } }
   const staticCells = [{ column: 1, row: 2 }]
   assert.equal(reachableForUnit([unit], unit.id, staticCells).has('2,2'), true)
   const result = reachableForUnit([unit, other], unit.id, staticCells)

@@ -8,8 +8,10 @@ import UnitLabel from './UnitLabel'
 
 const unitColors: Record<BattleUnit['class'], { armor: string; accent: string; head: string }> = {
   knight: { armor: '#e2e8ec', accent: '#486e9b', head: '#edf1f3' },
+  assassin: { armor: '#4d5368', accent: '#8f4d68', head: '#d9b79d' },
   mage: { armor: '#e4dbf0', accent: '#8667a4', head: '#f0d7bc' },
-  rogue: { armor: '#abc8b4', accent: '#3e806d', head: '#e4c4a4' },
+  cleric: { armor: '#f1ead0', accent: '#c8a94f', head: '#efd4b6' },
+  ranger: { armor: '#abc8b4', accent: '#3e806d', head: '#e4c4a4' },
   goblin: { armor: '#a77b70', accent: '#983f3a', head: '#8ebc73' },
 }
 
@@ -123,10 +125,30 @@ export default function UnitPlaceholder({
             <meshStandardMaterial color="#45627a" />
           </mesh>
         )}
-        {unit.class === 'mage' && (
-          <mesh castShadow position={[0, 1.34, 0]}>
-            <coneGeometry args={[0.25, 0.42, 12]} />
-            <meshStandardMaterial color={unitColors.mage.accent} />
+        {(unit.class === 'mage' || unit.class === 'cleric') && (
+          <group>
+            <mesh castShadow position={[0, 1.34, 0]}>
+              <coneGeometry args={[0.25, 0.42, 12]} />
+              <meshStandardMaterial color={unitColors[unit.class].accent} />
+            </mesh>
+            {unit.class === 'cleric' && (
+              <mesh position={[0, 1.6, 0]}>
+                <torusGeometry args={[0.13, 0.035, 8, 16]} />
+                <meshStandardMaterial color="#f3d982" emissive="#9d7a25" emissiveIntensity={0.25} />
+              </mesh>
+            )}
+          </group>
+        )}
+        {unit.class === 'ranger' && (
+          <mesh castShadow position={[-0.46, 0.74, 0]} rotation={[0, 0, 0.1]}>
+            <torusGeometry args={[0.34, 0.025, 6, 16, Math.PI * 1.5]} />
+            <meshStandardMaterial color="#79542e" />
+          </mesh>
+        )}
+        {unit.class === 'assassin' && (
+          <mesh castShadow position={[0.54, 0.68, 0]} rotation={[0, 0, 0.25]}>
+            <boxGeometry args={[0.05, 0.5, 0.05]} />
+            <meshStandardMaterial color="#dbe1e5" metalness={0.7} roughness={0.2} />
           </mesh>
         )}
         {unit.class === 'goblin' && ([-1, 1] as const).map((side) => (

@@ -9,6 +9,8 @@ import ObstacleMap from './components/ObstacleMap'
 import { useBattleMovement } from './hooks/useBattleMovement'
 import type { Cell } from '../../game/grid/grid.types'
 import { cellKey } from '../../game/grid/grid.utils'
+import { CLASS_DEFINITIONS } from '../../game/classes/class.data'
+import { ATTACK_PATTERN_NAMES } from '../../game/classes/class.types'
 import './BattleScene.css'
 
 function FitCamera() {
@@ -129,9 +131,14 @@ export default function BattleScene() {
         <div className="battle-info-title">✦ 戰場資訊</div>
         {selectedUnit && (
           <div className="battle-selection">
-            <p>{selectedUnit.name}</p>
-            <p>HP：{selectedUnit.hp} / {selectedUnit.maxHp} · ATK：{selectedUnit.atk} · DEF：{selectedUnit.def}</p>
-            <p>行動力：{selectedUnit.movementPoints} · 攻擊距離：{selectedUnit.attackRange}</p>
+            <p>{selectedUnit.name} · {CLASS_DEFINITIONS[selectedUnit.class].name}</p>
+            <p>HP：{selectedUnit.hp} / {selectedUnit.maxHp} · SP：{selectedUnit.sp} / {selectedUnit.maxSp}</p>
+            <p>ATK：{selectedUnit.atk} · DEF：{selectedUnit.def} · AGI：{selectedUnit.agi} · MOV：{selectedUnit.movementPoints}</p>
+            <p>
+              攻擊距離：{selectedUnit.minAttackRange === selectedUnit.attackRange
+                ? selectedUnit.attackRange
+                : `${selectedUnit.minAttackRange}–${selectedUnit.attackRange}`}（{ATTACK_PATTERN_NAMES[selectedUnit.attackPattern]}）
+            </p>
           </div>
         )}
         {selectedUnit && !motion && interactionMode === 'COMMAND' && (

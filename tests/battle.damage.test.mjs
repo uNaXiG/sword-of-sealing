@@ -9,10 +9,10 @@ const goblin = INITIAL_UNITS.find((unit) => unit.id === 'goblin')
 test('ATK 高於 DEF 時依差值計算傷害', () => {
   const result = calculatePhysicalDamage(knight, goblin)
   assert.deepEqual(result, {
-    damage: 20,
-    appliedDamage: 20,
+    damage: 15,
+    appliedDamage: 15,
     previousHp: 60,
-    remainingHp: 40,
+    remainingHp: 45,
     isDefeated: false,
   })
 })
