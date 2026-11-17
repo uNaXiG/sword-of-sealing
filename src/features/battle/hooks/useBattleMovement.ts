@@ -43,6 +43,7 @@ export function useBattleMovement() {
 
   const selectUnit = useCallback((unitId: string) => dispatch({ type: 'select', unitId }), [])
   const clearSelection = useCallback(() => dispatch({ type: 'clear' }), [])
+  const standby = useCallback(() => dispatch({ type: 'standby' }), [])
   const selectCell = useCallback((cell: Cell) => dispatch({ type: 'cell', cell }), [])
   const finishMove = useCallback((unitId: string, motionId: number) => dispatch({ type: 'finish', unitId, motionId }), [])
   const cancelMove = useCallback((unitId: string, motionId: number) => dispatch({ type: 'cancel', unitId, motionId }), [])
@@ -69,6 +70,7 @@ export function useBattleMovement() {
     canUndoMove: state.interactionMode === 'COMMAND' && canUndoLastMove(state),
     selectUnit,
     clearSelection,
+    standby,
     selectCell,
     finishMove,
     cancelMove,

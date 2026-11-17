@@ -13,6 +13,7 @@ type BattleAction =
   | { type: 'select'; unitId: string }
   | { type: 'cell'; cell: Cell }
   | { type: 'clear' }
+  | { type: 'standby' }
   | { type: 'finish'; unitId: string; motionId: number }
   | { type: 'cancel'; unitId: string; motionId: number }
   | { type: 'undo' }
@@ -168,6 +169,19 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     if (state.motion || state.interactionMode !== 'ATTACK') return state
     return {
       ...state,
+      interactionMode: 'COMMAND',
+      selectedAttackTargetId: null,
+      lastAttackCommand: null,
+    }
+  }
+
+  if (action.type === 'standby') {
+    const selectedUnit = state.units.find((unit) => unit.id === state.selectedUnitId)
+    if (state.motion || state.interactionMode !== 'COMMAND' || selectedUnit?.faction !== 'player') return state
+    return {
+      ...state,
+      selectedUnitId: null,
+      lastMove: null,
       interactionMode: 'COMMAND',
       selectedAttackTargetId: null,
       lastAttackCommand: null,

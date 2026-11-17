@@ -21,7 +21,7 @@ export default function BattleScene() {
     units, obstacles, selectedUnit, selectedAttackTarget, selectedAttackTargetDistance,
     motion, lastMove, reachable, interactionMode, selectedAttackTargetId, lastAttackCommand,
     attackRange, attackableTargets, attackableTargetIds, attackableTargetCells,
-    canUndoMove, canConfirmAttack, selectUnit, clearSelection, selectCell,
+    canUndoMove, canConfirmAttack, selectUnit, clearSelection, standby, selectCell,
     finishMove, cancelMove, undoMove, setInteractionMode, cancelMoveMode, cancelAttack, confirmAttack,
   } = useBattleMovement()
   const [hoveredCell, setHoveredCell] = useState<Cell | null>(null)
@@ -57,6 +57,10 @@ export default function BattleScene() {
   const handleCancelMoveMode = () => {
     setHoveredCell(null)
     cancelMoveMode()
+  }
+  const handleStandby = () => {
+    setHoveredCell(null)
+    standby()
   }
   const handleCancelAttack = () => {
     setHoveredCell(null)
@@ -140,7 +144,7 @@ export default function BattleScene() {
                 取消
               </button>
             )}
-            <button className="battle-deselect" type="button" onClick={clearBattleSelection}>待命</button>
+            <button className="battle-deselect" type="button" onClick={handleStandby}>待命</button>
           </div>
         )}
         {selectedUnit && !motion && interactionMode === 'MOVE' && (

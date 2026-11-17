@@ -88,6 +88,98 @@ test('移動模式取消後回到行動選單並保留角色選取', () => {
   assert.equal(battleReducer(state, { type: 'cancel-move-mode' }), state)
 })
 
+test('未移動角色待命時清除選取並維持命令模式', () => {
+  let state = createBattleState(INITIAL_UNITS)
+  state = battleReducer(state, { type: 'select', unitId: 'knight' })
+  state = battleReducer(state, { type: 'standby' })
+
+  assert.equal(state.selectedUnitId, null)
+  assert.equal(state.interactionMode, 'COMMAND')
+  assert.equal(state.lastMove, null)
+  assert.equal(state.selectedAttackTargetId, null)
+  assert.equal(state.lastAttackCommand, null)
+})
+
+test('移動完成後待命確認移動且保留座標、佔位、HP 與 MP', () => {
+  let state = completeKnightMove()
+  assert.equal(canUndoLastMove(state), true)
+  const knight = state.units.find((unit) => unit.id === 'knight')
+  const position = { ...knight.position }
+  const hp = knight.hp
+  const movementPoints = knight.movementPoints
+
+  state = battleReducer(state, { type: 'standby' })
+
+  assert.equal(state.selectedUnitId, null)
+  assert.equal(state.interactionMode, 'COMMAND')
+  assert.equal(state.lastMove, null)
+  assert.equal(canUndoLastMove(state), false)
+  assert.equal(state.selectedAttackTargetId, null)
+  assert.equal(state.lastAttackCommand, null)
+  assert.deepEqual(state.units.find((unit) => unit.id === 'knight').position, position)
+  assert.equal(unitAt(state.units, position).id, 'knight')
+  assert.equal(state.units.find((unit) => unit.id === 'knight').hp, hp)
+  assert.equal(state.units.find((unit) => unit.id === 'knight').movementPoints, movementPoints)
+
+  const stoodBy = state
+  assert.equal(battleReducer(state, { type: 'standby' }), stoodBy)
+  state = battleReducer(state, { type: 'select', unitId: 'knight' })
+  assert.equal(state.lastMove, null)
+  assert.equal(battleReducer(state, { type: 'undo' }), state)
+  assert.deepEqual(state.units.find((unit) => unit.id === 'knight').position, position)
+
+  state = beginMove(state)
+  state = battleReducer(state, { type: 'cell', cell: { column: 3, row: 3 } })
+  assert.ok(state.motion)
+  state = battleReducer(state, { type: 'finish', unitId: 'knight', motionId: state.motion.motionId })
+  assert.ok(state.lastMove)
+  assert.deepEqual(state.lastMove.from, position)
+})
+
+test('待命只允許已選取玩家角色在 COMMAND 模式且無移動動畫時執行', () => {
+  const initial = createBattleState(INITIAL_UNITS)
+  assert.equal(battleReducer(initial, { type: 'standby' }), initial)
+
+  let movingMode = battleReducer(initial, { type: 'select', unitId: 'knight' })
+  movingMode = beginMove(movingMode)
+  assert.equal(battleReducer(movingMode, { type: 'standby' }), movingMode)
+
+  let attackMode = battleReducer(initial, { type: 'select', unitId: 'knight' })
+  attackMode = battleReducer(attackMode, { type: 'set-mode', mode: 'ATTACK' })
+  assert.equal(battleReducer(attackMode, { type: 'standby' }), attackMode)
+
+  let inMotion = battleReducer(initial, { type: 'select', unitId: 'knight' })
+  inMotion = beginMove(inMotion)
+  inMotion = battleReducer(inMotion, { type: 'cell', cell: { column: 4, row: 3 } })
+  assert.ok(inMotion.motion)
+  assert.equal(battleReducer(inMotion, { type: 'standby' }), inMotion)
+})
+
+test('待命清除已接受的暫時性攻擊指令', () => {
+  let state = completeMoveAdjacentToGoblin()
+  state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
+  state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
+  state = battleReducer(state, { type: 'confirm-attack' })
+  assert.deepEqual(state.lastAttackCommand, { attackerId: 'knight', targetId: 'goblin' })
+
+  state = battleReducer(state, { type: 'standby' })
+  assert.equal(state.selectedUnitId, null)
+  assert.equal(state.lastAttackCommand, null)
+})
+
+test('一般 clear 仍只取消選取，不確認既有移動', () => {
+  let state = completeKnightMove()
+  const moveRecord = state.lastMove
+
+  state = battleReducer(state, { type: 'clear' })
+  assert.equal(state.selectedUnitId, null)
+  assert.equal(state.lastMove, moveRecord)
+
+  state = battleReducer(state, { type: 'select', unitId: 'knight' })
+  assert.equal(state.lastMove, moveRecord)
+  assert.equal(canUndoLastMove(state), true)
+})
+
 test('角色不能移動到任何陣營的佔位格，各角色使用自己的移動力', () => {
   const units = createBattleState(INITIAL_UNITS).units
   const knight = reachableForUnit(units, 'knight')
