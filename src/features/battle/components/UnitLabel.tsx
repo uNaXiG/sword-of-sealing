@@ -27,7 +27,7 @@ export default function UnitLabel({ unit }: { unit: BattleUnit }) {
   useEffect(() => () => texture.dispose(), [texture])
 
   return (
-    <sprite position={[0, 1.65, 0]} scale={[1.3, 0.285, 1]} renderOrder={10}>
+    <sprite position={[0, 1.65, 0]} scale={[1.3, 0.285, 1]} renderOrder={10} raycast={() => {}}>
       <spriteMaterial map={texture} transparent depthTest={false} />
     </sprite>
   )

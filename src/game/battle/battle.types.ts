@@ -7,7 +7,7 @@ export type BattleUnit = {
   faction: 'player' | 'enemy'
   class: 'knight' | 'mage' | 'rogue' | 'goblin'
   position: Cell
-  movement: number
+  movementPoints: number
   hp: number
   maxHp: number
 }
@@ -15,6 +15,7 @@ export type BattleUnit = {
 export type BattleMotion = {
   unitId: string
   path: Cell[]
+  cost: number
 }
 
 export type BattleState = {

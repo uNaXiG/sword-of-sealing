@@ -38,13 +38,40 @@ test('角色不能移動到任何陣營的佔位格，各角色使用自己的�
   assert.equal(reachableForUnit(units, 'rogue').has('4,7'), true)
 })
 
-test('角色不能穿越其他角色，繞路須耗費實際步數', () => {
-  const knight = { ...INITIAL_UNITS[0], position: { column: 1, row: 1 }, movement: 3 }
+test('其他角色佔據的格子會阻擋路徑且不可進入', () => {
+  const knight = { ...INITIAL_UNITS[0], position: { column: 1, row: 1 }, movementPoints: 3 }
   const blocker = { ...INITIAL_UNITS[3], position: { column: 2, row: 1 } }
-  assert.equal(reachableForUnit([knight, blocker], knight.id).has('3,1'), false)
-  const path = reachableForUnit([{ ...knight, movement: 4 }, blocker], knight.id).get('3,1')
-  assert.equal(path.length - 1, 4)
-  assert.equal(path.some((cell) => cell.column === 2 && cell.row === 1), false)
+  const result = reachableForUnit([knight, blocker], knight.id)
+  assert.equal(result.has('2,1'), false)
+  assert.equal(result.has('3,1'), false)
+  assert.throws(() => moveUnit([knight, blocker], knight.id, blocker.position), /Invalid movement/)
+})
+
+test('同陣營角色可穿越彼此，但不能停在佔位格', () => {
+  const knight = { ...INITIAL_UNITS[0], position: { column: 1, row: 1 }, movementPoints: 3 }
+  const rogue = { ...INITIAL_UNITS[2], position: { column: 2, row: 1 } }
+  const goblinA = { ...INITIAL_UNITS[3], id: 'goblin-a', position: { column: 1, row: 5 }, movementPoints: 3 }
+  const goblinB = { ...INITIAL_UNITS[3], id: 'goblin-b', position: { column: 2, row: 5 } }
+
+  const playerPaths = reachableForUnit([knight, rogue], knight.id)
+  assert.equal(playerPaths.has('2,1'), false)
+  assert.deepEqual(playerPaths.get('3,1')?.path, [
+    { column: 1, row: 1 },
+    { column: 2, row: 1 },
+    { column: 3, row: 1 },
+  ])
+  assert.throws(() => moveUnit([knight, rogue], knight.id, rogue.position), /Invalid movement/)
+  const movedKnight = moveUnit([knight, rogue], knight.id, { column: 3, row: 1 })
+  assert.deepEqual(movedKnight[0].position, { column: 3, row: 1 })
+  assert.equal(getOccupancy(movedKnight).size, 2)
+
+  const enemyPaths = reachableForUnit([goblinA, goblinB], goblinA.id)
+  assert.equal(enemyPaths.has('2,5'), false)
+  assert.deepEqual(enemyPaths.get('3,5')?.path, [
+    { column: 1, row: 5 },
+    { column: 2, row: 5 },
+    { column: 3, row: 5 },
+  ])
 })
 
 test('移動動畫期間鎖定所有指令，完成後原格可供其他角色使用', () => {
@@ -60,6 +87,7 @@ test('移動動畫期間鎖定所有指令，完成後原格可供其他角色�
   assert.equal(state.motion, null)
   assert.equal(unitAt(state.units, { column: 3, row: 3 }), undefined)
   assert.equal(unitAt(state.units, { column: 3, row: 2 }).id, 'knight')
+  assert.equal(state.units[0].movementPoints, INITIAL_UNITS[0].movementPoints)
   assert.equal(reachableForUnit(state.units, 'mage').has('3,3'), true)
   state = battleReducer(state, { type: 'select', unitId: 'mage' })
   state = battleReducer(state, { type: 'cell', cell: { column: 3, row: 3 } })

@@ -40,8 +40,8 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     return occupant.faction === 'player' ? { ...state, selectedUnitId: occupant.id } : state
   }
   if (!state.selectedUnitId) return state
-  const path = reachableForUnit(state.units, state.selectedUnitId, state.obstacles.map(obstacleCell)).get(cellKey(action.cell))
-  return path
-    ? { ...state, motion: { unitId: state.selectedUnitId, path } }
+  const destination = reachableForUnit(state.units, state.selectedUnitId, state.obstacles.map(obstacleCell)).get(cellKey(action.cell))
+  return destination
+    ? { ...state, motion: { unitId: state.selectedUnitId, path: destination.path, cost: destination.cost } }
     : { ...state, selectedUnitId: null }
 }

@@ -33,7 +33,14 @@ export default function UnitPlaceholder({
   useEffect(() => {
     progress.current = 0
     completed.current = false
-  }, [path])
+    if (!path) return
+
+    return () => {
+      if (completed.current) return
+      completed.current = true
+      onMoveComplete(unit.id)
+    }
+  }, [path, unit.id, onMoveComplete])
 
   useFrame((_, delta) => {
     if (!path || !group.current || completed.current) return
@@ -54,13 +61,17 @@ export default function UnitPlaceholder({
   })
 
   return (
-    <group ref={group} position={cellPosition(unit.position)} onClick={(event) => { event.stopPropagation(); onSelect(unit.id) }}>
+    <group ref={group} position={cellPosition(unit.position)}>
       <UnitLabel unit={unit} />
       <mesh position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.31, selected ? 0.43 : 0.36, 32]} />
         <meshBasicMaterial color={selected ? '#ffe475' : unit.faction === 'enemy' ? '#e27063' : '#91c9ef'} />
       </mesh>
-      <group position={[0, 0.08, 0]} rotation={[0, Math.PI / 4, 0]}>
+      <group
+        position={[0, 0.08, 0]}
+        rotation={[0, Math.PI / 4, 0]}
+        onClick={(event) => { event.stopPropagation(); onSelect(unit.id) }}
+      >
         <mesh castShadow position={[-0.13, 0.23, 0]}>
           <boxGeometry args={[0.18, 0.4, 0.22]} />
           <meshStandardMaterial color={unitColors[unit.class].armor} metalness={0.35} roughness={0.45} />
