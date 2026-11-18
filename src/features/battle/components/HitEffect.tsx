@@ -2,28 +2,25 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Group, MeshBasicMaterial } from 'three'
 import { ATTACK_ANIMATION_PROFILES } from '../../../game/battle/battle.animation'
-import type { AttackMotion } from '../../../game/battle/battle.types'
-import type { AttackAnimationClockRef } from '../hooks/useAttackAnimation'
+import type { ConfirmedImpactEvent } from '../../../game/battle/battle.types'
 import { cellPosition } from './grid'
 
 export default function HitEffect({
-  attackMotion,
-  clockRef,
+  impact,
 }: {
-  attackMotion: AttackMotion
-  clockRef: AttackAnimationClockRef
+  impact: ConfirmedImpactEvent
 }) {
   const group = useRef<Group>(null)
   const material = useRef<MeshBasicMaterial>(null)
-  const position = cellPosition(attackMotion.to)
-  const profile = ATTACK_ANIMATION_PROFILES[attackMotion.animationType]
-  const impactAt = profile.windupMs + profile.attackMs
+  const elapsed = useRef(0)
+  const position = cellPosition(impact.position)
+  const profile = ATTACK_ANIMATION_PROFILES[impact.animationType]
 
-  useFrame(() => {
-    const clock = clockRef.current
-    if (!group.current || !material.current || !clock || clock.attackId !== attackMotion.attackId) return
-    const sinceImpact = clock.elapsedMs - impactAt
-    if (attackMotion.phase !== 'IMPACTED' || sinceImpact < 0 || sinceImpact > 420) {
+  useFrame((_, delta) => {
+    if (!group.current || !material.current) return
+    elapsed.current += Number.isFinite(delta) && delta >= 0 ? delta * 1000 : 0
+    const sinceImpact = elapsed.current
+    if (sinceImpact > 420) {
       group.current.visible = false
       return
     }
@@ -40,7 +37,7 @@ export default function HitEffect({
         <ringGeometry args={[0.22, 0.34, 32]} />
         <meshBasicMaterial ref={material} color={profile.effectColor} transparent opacity={0} depthWrite={false} />
       </mesh>
-      {attackMotion.animationType === 'MELEE_SLASH' && (
+      {impact.animationType === 'MELEE_SLASH' && (
         <mesh position={[0, 0.35, 0]} rotation={[0, 0, Math.PI / 4]}>
           <boxGeometry args={[0.8, 0.04, 0.04]} />
           <meshBasicMaterial color={profile.effectColor} transparent opacity={0.8} depthWrite={false} />

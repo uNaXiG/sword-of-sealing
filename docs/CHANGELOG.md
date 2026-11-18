@@ -2,7 +2,27 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期為 Commit 的 UTC+8 時間。
 
-## 2026-11-18 — M3-3（ACCEPTED — Git Push Pending）
+## 2026-11-18 — M3-4 Patch 1 Revision 2（IMPLEMENTED — Acceptance Pending）
+
+- **Revision 1 結果**：使用者視覺驗收失敗；未受擊角色的 Fill 位於資訊面板錯誤位置，滿血寬度與背景血槽未對齊。Revision 1 不得標記為 Accepted。
+- **Root Cause**：資訊面板背景由一張 CanvasTexture Sprite 繪製，但血槽與 Fill 是另外兩張 Sprite，以世界座標定位且使用不同尺寸；它們並未共用面板畫布座標，造成視覺對齊依賴獨立 Sprite 的 billboard 與尺寸轉換。
+- **Changed**：改為每個 Unit Label 一張 Canvas、一張 CanvasTexture 與一張 Sprite；同一 Canvas 繪製背景、外框、名稱、血槽、HP Fill 及數值。HP 動畫只更新 Canvas 內容中的 Fill 寬度，左側及垂直座標固定；每次重繪重置 Context Transform，Texture 在元件生命週期內重用並於 Cleanup dispose。
+- **Verification**：保留原 3 項 Unit Label 測試意圖並新增 2 項 Canvas 繪製 regression tests（共 5 項）；`npm test` 137/137 PASS；`npm run lint` PASS；`npm run build` PASS；`git diff --check`（`cr-at-eol`）PASS。Production Build 的既有 Chunk Size warning 保留。
+- **Browser Verification**：尚未執行 BV-01 至 BV-08 實際視覺驗收；等待使用者驗收，不以自動化／啟動成功替代。
+- **Commit Reference / CI**：無；本次未 Commit、Push 或執行新 CI。
+
+## 2026-11-18 — M3-4（IMPLEMENTED — Acceptance Pending）
+
+- **Added**：DeathMotion、DefeatedUnitRecord、死亡 Life State Selector、Death ID、Death Complete／Abort。
+- **Added**：1,200 ms Death Profile、倒地、淡出、24 顆粒子及多 DeathMotion 支援。
+- **Added**：Confirmed Impact Event Queue，修正 TD-015 的視覺回饋時序。
+- **Changed**：致命 Impact 先建立死亡事件，動畫期間保留佔位，完成後原子移除並保存死亡紀錄。
+- **Verification**：`npm test` 132/132 PASS；`npm run lint` PASS；`npm run build` PASS；Chunk Size warning 保留。
+- **Status**：未經使用者 M3-4 瀏覽器驗收、未提交、未納入新 GitHub Actions。
+- **Technical Debt**：新增 TD-014；TD-015 = IMPLEMENTED — Acceptance Pending。
+- **Commit Reference**：無。
+
+## 2026-11-18 — M3-3（COMPLETED）
 
 - **Added**：AttackMotion、唯一 Attack ID、PENDING_IMPACT／IMPACTED、Impact／Complete／Abort 事件及操作鎖定。
 - **Added**：六種 Attack Animation Profile、單一動畫時鐘、近戰突進、魔法／聖光／箭矢投射物。
@@ -13,8 +33,9 @@
 - **Lifecycle Verification**：應用由 React StrictMode 啟動；使用者於 BV-15 攻擊期間返回主選單觸發 Canvas Unmount，再重入戰場，確認無永久鎖定、投射物殘留、舊事件影響或 Console Error。
 - **Goblin Verification**：未開放玩家操作敵方。自動化測試以集中 Registry Fixture 驗證 `MELEE_BASH` Mapping、時間參數與 0.40 突進值；使用者 BV-07 另於不改正式玩家流程的外部驗收 Fixture 驗證演出，該暫時 Fixture 未納入產品入口。
 - **Known Limitation**：沒有長時間大量 Attack ID 的獨立資源壓力測試，emitted Impact／Complete ID 集合仍留待後續生命週期追蹤。
-- **Status**：已使用者驗收；Git Push 尚未完成，未納入新 GitHub Actions Run。
-- **Commit Reference**：無。
+- **Status**：已使用者驗收並完成 Git／CI 同步。
+- **CI/CD**：GitHub Actions Run `44226768648` SUCCESS。
+- **Commit Reference**：`5fba4ed88cf8efad946dfd6de9e6d9730f77bd3d`
 
 ## 2026-11-18 — DOC-01（Completed & Accepted）
 

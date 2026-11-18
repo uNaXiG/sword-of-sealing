@@ -5,6 +5,7 @@ import { useState } from 'react'
 import GridMap from './components/GridMap'
 import UnitPlaceholder from './components/UnitPlaceholder'
 import AttackAnimationController from './components/AttackAnimationController'
+import DeathAnimationController from './components/DeathAnimationController'
 import Environment from './components/Environment'
 import ObstacleMap from './components/ObstacleMap'
 import { useBattleMovement } from './hooks/useBattleMovement'
@@ -14,6 +15,7 @@ import { CLASS_DEFINITIONS } from '../../game/classes/class.data'
 import { ATTACK_PATTERN_NAMES } from '../../game/classes/class.types'
 import './BattleScene.css'
 import { useAttackAnimation } from './hooks/useAttackAnimation'
+import { useDeathAnimation } from './hooks/useDeathAnimation'
 
 function FitCamera() {
   const { size } = useThree()
@@ -27,16 +29,24 @@ export default function BattleScene() {
     attackRange, attackableTargets, attackableTargetIds, attackableTargetCells,
     canUndoMove, canConfirmAttack, battleBusy, selectUnit, clearSelection, standby, selectCell,
     finishMove, cancelMove, undoMove, setInteractionMode, cancelMoveMode, cancelAttack, confirmAttack,
-    impactAttack, completeAttack, abortAttack, attackMotion,
+    impactAttack, completeAttack, abortAttack, attackMotion, confirmedImpacts, deathMotions, defeatedUnits,
+    consumeImpact, completeDeath, abortDeath,
   } = useBattleMovement()
   const { clockRef, onImpact, onComplete, onAbort } = useAttackAnimation(impactAttack, completeAttack, abortAttack)
+  const {
+    deathClockRef,
+    onComplete: onDeathComplete,
+    onAbort: onDeathAbort,
+  } = useDeathAnimation(completeDeath, abortDeath)
   const [hoveredCell, setHoveredCell] = useState<Cell | null>(null)
   const preview = interactionMode === 'MOVE' && hoveredCell ? reachable.get(cellKey(hoveredCell)) ?? null : null
   const attackResultAttacker = lastAttackResult
     ? units.find((unit) => unit.id === lastAttackResult.attackerId) ?? null
     : null
   const attackResultTarget = lastAttackResult
-    ? units.find((unit) => unit.id === lastAttackResult.targetId) ?? null
+    ? units.find((unit) => unit.id === lastAttackResult.targetId)
+      ?? defeatedUnits.find((record) => record.unit.id === lastAttackResult.targetId)?.unit
+      ?? null
     : null
   const clearBattleSelection = () => {
     setHoveredCell(null)
@@ -107,10 +117,18 @@ export default function BattleScene() {
           <ObstacleMap obstacles={obstacles} onObstacleClick={handleObstacleClick} />
           <AttackAnimationController
             attackMotion={attackMotion}
+            confirmedImpacts={confirmedImpacts}
             clockRef={clockRef}
             onImpact={onImpact}
             onComplete={onComplete}
             onAbort={onAbort}
+            onFeedbackComplete={consumeImpact}
+          />
+          <DeathAnimationController
+            motions={deathMotions}
+            deathClockRef={deathClockRef}
+            onComplete={onDeathComplete}
+            onAbort={onDeathAbort}
           />
           {units.map((unit) => (
             <UnitPlaceholder
@@ -123,6 +141,9 @@ export default function BattleScene() {
               motionId={motion?.unitId === unit.id ? motion.motionId : null}
               attackMotion={attackMotion}
               attackClockRef={clockRef}
+              confirmedImpacts={confirmedImpacts}
+              deathMotion={deathMotions.find((death) => death.unitId === unit.id) ?? null}
+              deathClockRef={deathClockRef}
               battleBusy={battleBusy}
               onSelect={selectUnit}
               onMoveComplete={finishMove}
@@ -158,6 +179,11 @@ export default function BattleScene() {
         {attackMotion && (
           <p className="battle-animation-status" role="status">
             {units.find((unit) => unit.id === attackMotion.attackerId)?.name ?? '角色'}正在攻擊……
+          </p>
+        )}
+        {!attackMotion && deathMotions.length > 0 && (
+          <p className="battle-animation-status" role="status">
+            {units.length > 0 ? '正在結算死亡動畫……' : '正在結算戰鬥單位……'}
           </p>
         )}
         {selectedUnit && !motion && !attackMotion && interactionMode === 'COMMAND' && (

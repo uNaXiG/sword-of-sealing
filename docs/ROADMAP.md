@@ -44,10 +44,10 @@
 | M3-1 Patch 2 | 待命與移動確認機制修正 | COMPLETED |
 | M3-2 | 基礎傷害公式與 HP | COMPLETED |
 | M3-2 Patch | 職業抽象化與攻擊模式系統 | COMPLETED |
-| M3-3 | 攻擊動畫與受擊反饋 | ACCEPTED — Git Push Pending |
-| M3-4 | 單位死亡及移除 | UP NEXT |
+| M3-3 | 攻擊動畫與受擊反饋 | COMPLETED |
+| M3-4 | 單位死亡及移除 | IMPLEMENTED — Acceptance Pending |
 
-M3-3 已通過 100/100 自動化測試、40/40 AC 與 15/15 Browser Verification；目前等待 Git Push，尚未標記 COMPLETED。M3 進度為 75%，整體主要里程碑等權重估算為 27.5%。
+M3-3 已納入 `5fba4ed`，通過 100/100 自動化測試、40/40 AC、15/15 Browser Verification 及 CI Run `44226768648`。M3-4 已實作並等待使用者驗收；M3 完成度維持 75%，整體主要里程碑等權重估算為 27.5%。
 
 ## M4：回合制與敵方 AI — PENDING
 

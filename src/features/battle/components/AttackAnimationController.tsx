@@ -1,34 +1,30 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { ATTACK_ANIMATION_PROFILES, getAttackTimelineEvents, getAttackTimelineFrame } from '../../../game/battle/battle.animation'
-import type { AttackMotion } from '../../../game/battle/battle.types'
-import type { Cell } from '../../../game/grid/grid.types'
+import type { AttackMotion, ConfirmedImpactEvent } from '../../../game/battle/battle.types'
 import type { AttackAnimationClockRef } from '../hooks/useAttackAnimation'
 import AttackProjectile from './AttackProjectile'
 import HitEffect from './HitEffect'
 import FloatingDamage from './FloatingDamage'
 
-type Feedback = {
-  attackId: number
-  position: Cell
-  damage: number
-}
-
 export default function AttackAnimationController({
   attackMotion,
+  confirmedImpacts,
   clockRef,
   onImpact,
   onComplete,
   onAbort,
+  onFeedbackComplete,
 }: {
   attackMotion: AttackMotion | null
+  confirmedImpacts: readonly ConfirmedImpactEvent[]
   clockRef: AttackAnimationClockRef
   onImpact: (attackId: number) => void
   onComplete: (attackId: number) => void
   onAbort: (attackId: number) => void
+  onFeedbackComplete: (impactId: number) => void
 }) {
   const generationRef = useRef(0)
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
   const emittedImpacts = useRef(new Set<number>())
   const emittedCompletions = useRef(new Set<number>())
   const latestAttackId = useRef<number | null>(null)
@@ -76,13 +72,6 @@ export default function AttackAnimationController({
 
     if (events.impact && !emittedImpacts.current.has(attackMotion.attackId)) {
       emittedImpacts.current.add(attackMotion.attackId)
-      setFeedbacks((current) => current.some((feedback) => feedback.attackId === attackMotion.attackId)
-        ? current
-        : [...current, {
-          attackId: attackMotion.attackId,
-          position: { ...attackMotion.to },
-          damage: attackMotion.result.appliedDamage,
-        }])
       onImpact(attackMotion.attackId)
     }
     if (events.complete && !emittedCompletions.current.has(attackMotion.attackId)) {
@@ -94,14 +83,15 @@ export default function AttackAnimationController({
   return (
     <>
       {attackMotion && <AttackProjectile attackMotion={attackMotion} clockRef={clockRef} />}
-      {attackMotion && <HitEffect attackMotion={attackMotion} clockRef={clockRef} />}
-      {feedbacks.map((feedback) => (
-        <FloatingDamage
-          key={feedback.attackId}
-          position={feedback.position}
-          damage={feedback.damage}
-          onComplete={() => setFeedbacks((current) => current.filter((item) => item.attackId !== feedback.attackId))}
-        />
+      {confirmedImpacts.map((impact) => (
+        <group key={impact.impactId}>
+          <HitEffect impact={impact} />
+          <FloatingDamage
+            position={impact.position}
+            damage={impact.result.appliedDamage}
+            onComplete={() => onFeedbackComplete(impact.impactId)}
+          />
+        </group>
       ))}
     </>
   )

@@ -2,11 +2,18 @@ import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Color, MeshStandardMaterial, type Group, type Mesh } from 'three'
 import { ATTACK_ANIMATION_PROFILES } from '../../../game/battle/battle.animation'
-import type { AttackMotion, BattleUnit } from '../../../game/battle/battle.types'
+import type {
+  AttackMotion,
+  BattleUnit,
+  ConfirmedImpactEvent,
+  DeathMotion,
+} from '../../../game/battle/battle.types'
+import { getDeathDirection, getDeathTimelineFrame } from '../../../game/battle/battle.death'
 import type { Cell } from '../../../game/grid/grid.types'
 import { cellPosition } from './grid'
 import UnitLabel from './UnitLabel'
 import type { AttackAnimationClockRef } from '../hooks/useAttackAnimation'
+import type { DeathAnimationClockMapRef } from '../hooks/useDeathAnimation'
 
 const unitColors: Record<BattleUnit['class'], { armor: string; accent: string; head: string }> = {
   knight: { armor: '#e2e8ec', accent: '#486e9b', head: '#edf1f3' },
@@ -30,6 +37,9 @@ export default function UnitPlaceholder({
   motionId,
   attackMotion,
   attackClockRef,
+  confirmedImpacts,
+  deathMotion,
+  deathClockRef,
   battleBusy,
   onSelect,
   onMoveComplete,
@@ -43,6 +53,9 @@ export default function UnitPlaceholder({
   motionId: number | null
   attackMotion: AttackMotion | null
   attackClockRef: AttackAnimationClockRef
+  confirmedImpacts: readonly ConfirmedImpactEvent[]
+  deathMotion: DeathMotion | null
+  deathClockRef: DeathAnimationClockMapRef
   battleBusy: boolean
   onSelect: (unitId: string) => void
   onMoveComplete: (unitId: string, motionId: number) => void
@@ -50,6 +63,9 @@ export default function UnitPlaceholder({
 }) {
   const group = useRef<Group>(null)
   const visualRoot = useRef<Group>(null)
+  const deathPivot = useRef<Group>(null)
+  const labelRoot = useRef<Group>(null)
+  const selectionRing = useRef<Mesh>(null)
   const progress = useRef(0)
   const completed = useRef(false)
   const effectGeneration = useRef(0)
@@ -60,6 +76,8 @@ export default function UnitPlaceholder({
   const ringRadius = selectedAttackTarget ? 0.52 : attackableTarget ? 0.48 : selected ? 0.43 : 0.36
   const materialEmissive = useRef(new WeakMap<MeshStandardMaterial, Color>())
   const materialEmissiveIntensity = useRef(new WeakMap<MeshStandardMaterial, number>())
+  const materialOpacity = useRef(new WeakMap<MeshStandardMaterial, number>())
+  const impactElapsed = useRef(new Map<number, number>())
 
   useEffect(() => {
     const generation = ++effectGeneration.current
@@ -106,15 +124,36 @@ export default function UnitPlaceholder({
       materialEmissive.current,
       materialEmissiveIntensity.current,
     )
+    updateConfirmedHitVisual(
+      visualRoot.current,
+      unit.id,
+      confirmedImpacts,
+      impactElapsed.current,
+      delta,
+      materialEmissive.current,
+      materialEmissiveIntensity.current,
+    )
+    updateDeathVisual(
+      deathPivot.current,
+      visualRoot.current,
+      labelRoot.current,
+      selectionRing.current,
+      deathMotion,
+      deathClockRef.current,
+      materialOpacity.current,
+    )
   })
 
   return (
     <group ref={group} position={cellPosition(unit.position)}>
-      <UnitLabel unit={unit} />
-      <mesh position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <group ref={labelRoot}>
+        <UnitLabel unit={unit} />
+      </group>
+      <mesh ref={selectionRing} position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.31, ringRadius, 32]} />
         <meshBasicMaterial color={ringColor} />
       </mesh>
+      <group ref={deathPivot}>
       <group ref={visualRoot}>
       <group
         position={[0, 0.08, 0]}
@@ -204,6 +243,7 @@ export default function UnitPlaceholder({
         </mesh>
       </group>
       </group>
+      </group>
     </group>
   )
 }
@@ -227,7 +267,6 @@ function updateAttackVisual(
   const profile = ATTACK_ANIMATION_PROFILES[motion.animationType]
   const frame = clock.frame
   const isAttacker = motion.attackerId === unitId
-  const isTarget = motion.targetId === unitId
   const start = cellPosition(motion.from)
   const end = cellPosition(motion.to)
   const directionX = end[0] - start[0]
@@ -247,18 +286,77 @@ function updateAttackVisual(
     visualRoot.rotation.z = melee && frame.stage !== 'COMPLETED' ? -Math.sin(frame.elapsedRatio * Math.PI * 2) * 0.08 : 0
   }
 
-  if (isTarget) {
-    const impactAt = profile.windupMs + profile.attackMs
-    const sinceImpact = clock.elapsedMs - impactAt
-    if (motion.phase === 'IMPACTED' && sinceImpact >= 0 && sinceImpact <= 160) {
-      const strength = 1 - sinceImpact / 160
-      visualRoot.position.x = Math.sin(sinceImpact * 0.18) * 0.06 * strength
-      visualRoot.position.z = Math.cos(sinceImpact * 0.14) * 0.035 * strength
-      setHitFlash(visualRoot, Math.min(1, 1 - sinceImpact / 130), emissiveColors, emissiveIntensities)
-    } else {
-      setHitFlash(visualRoot, 0, emissiveColors, emissiveIntensities)
-    }
+}
+
+function updateConfirmedHitVisual(
+  visualRoot: Group | null,
+  unitId: string,
+  impacts: readonly ConfirmedImpactEvent[],
+  elapsedByImpact: Map<number, number>,
+  delta: number,
+  emissiveColors: WeakMap<MeshStandardMaterial, Color>,
+  emissiveIntensities: WeakMap<MeshStandardMaterial, number>,
+) {
+  if (!visualRoot) return
+  const impact = impacts.findLast((candidate) => candidate.targetId === unitId)
+  const activeIds = new Set(impacts.map((candidate) => candidate.impactId))
+  for (const id of elapsedByImpact.keys()) if (!activeIds.has(id)) elapsedByImpact.delete(id)
+  if (!impact) {
+    setHitFlash(visualRoot, 0, emissiveColors, emissiveIntensities)
+    return
   }
+  const elapsed = (elapsedByImpact.get(impact.impactId) ?? 0) + Math.max(0, Number.isFinite(delta) ? delta * 1000 : 0)
+  elapsedByImpact.set(impact.impactId, elapsed)
+  if (elapsed <= 160) {
+    const strength = 1 - elapsed / 160
+    visualRoot.position.x = Math.sin(elapsed * 0.18) * 0.06 * strength
+    visualRoot.position.z = Math.cos(elapsed * 0.14) * 0.035 * strength
+    setHitFlash(visualRoot, Math.min(1, 1 - elapsed / 130), emissiveColors, emissiveIntensities)
+  } else {
+    setHitFlash(visualRoot, 0, emissiveColors, emissiveIntensities)
+  }
+}
+
+function updateDeathVisual(
+  pivot: Group | null,
+  visualRoot: Group | null,
+  labelRoot: Group | null,
+  selectionRing: Mesh | null,
+  motion: DeathMotion | null,
+  clockMap: DeathAnimationClockMapRef['current'],
+  materialOpacity: WeakMap<MeshStandardMaterial, number>,
+) {
+  if (!pivot || !visualRoot) return
+  if (!motion) {
+    pivot.rotation.set(0, 0, 0)
+    pivot.position.set(0, 0, 0)
+    if (labelRoot) labelRoot.visible = true
+    if (selectionRing) selectionRing.visible = true
+    setModelOpacity(visualRoot, 1, materialOpacity)
+    return
+  }
+  const clock = clockMap.get(motion.deathId)
+  const frame = getDeathTimelineFrame(clock?.elapsedMs ?? 0)
+  const direction = getDeathDirection(motion)
+  const length = Math.hypot(direction.column, direction.row)
+  const x = length > 0 ? direction.column / length : 0
+  const z = length > 0 ? direction.row / length : 1
+  const collapseProgress = frame.stage === 'COLLAPSE'
+    ? frame.stageProgress
+    : frame.stage === 'DISSOLVE' || frame.stage === 'COMPLETED'
+      ? 1
+      : 0
+  const angle = collapseProgress * Math.PI / 2
+  pivot.rotation.x = z * angle
+  pivot.rotation.z = -x * angle
+  pivot.position.y = collapseProgress * 0.04
+  if (selectionRing) selectionRing.visible = false
+  if (labelRoot) labelRoot.visible = frame.stage !== 'DISSOLVE' && frame.stage !== 'COMPLETED'
+  setModelOpacity(
+    visualRoot,
+    frame.stage === 'DISSOLVE' ? 1 - frame.stageProgress : frame.stage === 'COMPLETED' ? 0 : 1,
+    materialOpacity,
+  )
 }
 
 function setHitFlash(
@@ -277,10 +375,30 @@ function setHitFlash(
         emissiveColors.set(material, material.emissive.clone())
         emissiveIntensities.set(material, material.emissiveIntensity)
       }
+
       const baseColor = emissiveColors.get(material)!
       const baseIntensity = emissiveIntensities.get(material) ?? 1
       material.emissive.copy(baseColor).lerp(new Color('#ffffff'), amount)
       material.emissiveIntensity = baseIntensity + amount * 2
+    }
+  })
+}
+
+function setModelOpacity(
+  root: Group,
+  amount: number,
+  materialOpacity: WeakMap<MeshStandardMaterial, number>,
+) {
+  root.traverse((object) => {
+    if (!(object as Mesh).isMesh) return
+    const mesh = object as Mesh
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+    for (const material of materials) {
+      if (!(material instanceof MeshStandardMaterial)) continue
+      if (!materialOpacity.has(material)) materialOpacity.set(material, material.opacity)
+      material.opacity = materialOpacity.get(material)! * amount
+      material.transparent = amount < 1 || materialOpacity.get(material)! < 1
+      material.depthWrite = amount >= 0.99
     }
   })
 }

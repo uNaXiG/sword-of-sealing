@@ -66,6 +66,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/battle/battle.attack.ts` | 攻擊距離、範圍、合法目標 |
 | `game/battle/battle.damage.ts` | 純傷害計算 |
 | `game/battle/battle.animation.ts` | Attack Animation Type、職業 Mapping、Profile、純 Timeline |
+| `game/battle/battle.death.ts` | Death Profile、1,200 ms Timeline、Life／Direction Helpers |
 | `game/battle/battle.movement.ts` | 單位移動預算與完成前驗證 |
 | `game/battle/occupancy.ts` | 棋格佔位唯一性 |
 | `game/battle/obstacles.ts` | 障礙配置與驗證 |
@@ -75,6 +76,8 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `features/battle/hooks/useBattleMovement.ts` | State Hook、Derived State 與 Action 介面 |
 | `features/battle/hooks/useAttackAnimation.ts` | 單一動畫時鐘介面 |
 | `features/battle/components/AttackAnimationController.tsx` | Wind-up／Impact／Recovery 的權威計時與事件派送 |
+| `features/battle/components/DeathAnimationController.tsx` | Death ID 獨立時鐘、完成與 System Abort |
+| `features/battle/components/DeathParticleEffect.tsx` | 24 顆低成本死亡粒子與清理 |
 | `features/battle/components/AttackProjectile.tsx` | 魔法球、箭矢與聖光投射物 |
 | `features/battle/components/HitEffect.tsx` / `FloatingDamage.tsx` | 命中特效與 Applied Damage 漂浮數字 |
 | `features/battle/BattleScene.tsx` | Canvas、UI 與 Hook 整合 |
@@ -89,6 +92,10 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 正式 Unit 座標在移動動畫完成後才更新。攻擊確認只建立 `PENDING_IMPACT` AttackMotion 與預計 AttackResult；合法 `attack-impact` 才更新 HP，`attack-complete` 解鎖，`attack-abort` 依階段保留或不套用傷害。
 
 AttackMotion 與 Move Motion 互斥。`BattleState` 保存 Attack ID、雙方座標快照、Animation Type、結算 Phase 及預計結果；逐幀時間只由 Animation Controller 的局部時鐘保存。
+
+Confirmed Impact Event 由 Reducer 於合法 Impact 後建立。Renderer 只消費 `confirmedImpacts` 播放 Floating Damage、Hit Flash／Shake 與 Impact Effect，不再於 Dispatch 前建立傷害回饋。事件包含 Attack ID、位置快照、Animation Type 與 AttackResult，並在回饋播放完成後冪等消費。
+
+Death State 使用 `DeathMotion[]`、`nextDeathId` 與 `defeatedUnits`。致命 Impact 在同一次狀態轉換建立 DeathMotion；死亡完成或 System Abort 後，原子移除 Active Unit、保存 HP 0 的完整 Record 並釋放 Occupancy。`isBattleBusy()` 同時觀察 Move、Attack 及 Death Motion。
 
 ## Interface + Registry + Factory
 
@@ -117,6 +124,8 @@ Rendering 座標由 `column/row` 透過 `cellPosition()` 轉換為 Three.js 世�
 - Reducer 操作、撤銷、待命與失能狀態。
 - Attack Confirm → Impact → Complete／Abort、互斥、鎖定、冪等與過期 ID。
 - 六種 Animation Profile、Timeline 事件及大 Delta。
+- Death Complete／Abort、Dying 佔位、多 DeathMotion 與 Death Record。
+- Confirmed Impact Queue、TD-015、無效 Impact 與事件跨 Attack Complete／Unit Removal。
 - Dijkstra、地形成本、障礙與佔位。
 
 ## 部署架構

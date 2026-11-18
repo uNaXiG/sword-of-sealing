@@ -3,7 +3,7 @@ import type { Cell } from '../grid/grid.types'
 import { cellKey, isInsideGrid } from '../grid/grid.utils.ts'
 import { reachableForUnit, moveUnit } from './battle.movement.ts'
 import { canAttackTarget } from './battle.attack.ts'
-import type { BattleState, BattleUnit, InteractionMode } from './battle.types'
+import type { BattleState, BattleUnit, DeathMotion, InteractionMode } from './battle.types'
 import { unitAt } from './occupancy.ts'
 import { obstacleCell, validateObstacles, type BattleObstacle } from './obstacles.ts'
 import { TERRAIN_MOVEMENT_COST } from '../grid/terrain.constants.ts'
@@ -30,6 +30,9 @@ type BattleAction =
   | { type: 'attack-impact'; attackId: number }
   | { type: 'attack-complete'; attackId: number }
   | { type: 'attack-abort'; attackId: number }
+  | { type: 'consume-impact'; impactId: number }
+  | { type: 'death-complete'; deathId: number; unitId: string }
+  | { type: 'death-abort'; deathId: number; unitId: string }
 
 export function createBattleState(units: readonly BattleUnit[], obstacles: readonly BattleObstacle[] = []): BattleState {
   for (const unit of units) {
@@ -75,11 +78,15 @@ export function createBattleState(units: readonly BattleUnit[], obstacles: reado
     lastAttackResult: null,
     attackMotion: null,
     nextAttackId: 1,
+    deathMotions: [],
+    nextDeathId: 1,
+    defeatedUnits: [],
+    confirmedImpacts: [],
   }
 }
 
 export function isBattleBusy(state: BattleState): boolean {
-  return state.motion !== null || state.attackMotion !== null
+  return state.motion !== null || state.attackMotion !== null || (state.deathMotions?.length ?? 0) > 0
 }
 
 export function canUndoLastMove(state: BattleState): boolean {
@@ -160,6 +167,21 @@ function abortAttack(state: BattleState): BattleState {
 }
 
 export function battleReducer(state: BattleState, action: BattleAction): BattleState {
+  if (action.type === 'consume-impact') {
+    const exists = state.confirmedImpacts.some((impact) => impact.impactId === action.impactId)
+    return exists
+      ? { ...state, confirmedImpacts: state.confirmedImpacts.filter((impact) => impact.impactId !== action.impactId) }
+      : state
+  }
+
+  if (action.type === 'death-complete' || action.type === 'death-abort') {
+    const motion = state.deathMotions.find(
+      (candidate) => candidate.deathId === action.deathId && candidate.unitId === action.unitId,
+    )
+    if (!motion) return state
+    return finalizeDeath(state, motion)
+  }
+
   if (action.type === 'attack-impact') {
     const attack = state.attackMotion
     if (!attack || attack.attackId !== action.attackId || attack.phase !== 'PENDING_IMPACT') return state
@@ -185,11 +207,39 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       expected.isDefeated !== attack.result.isDefeated
     ) return abortAttack(state)
 
+    const becomesDefeated = target.hp > 0 && attack.result.remainingHp === 0
+    const deathMotion: DeathMotion | null = becomesDefeated
+      ? {
+        deathId: state.nextDeathId,
+        unitId: target.id,
+        killerId: attacker.id,
+        attackId: attack.attackId,
+        position: { ...target.position },
+        sourcePosition: { ...attacker.position },
+      }
+      : null
     return {
       ...state,
       units: state.units.map((unit) => unit.id === target.id ? { ...unit, hp: attack.result.remainingHp } : unit),
       attackMotion: { ...attack, phase: 'IMPACTED' },
       lastAttackResult: attack.result,
+      deathMotions: deathMotion ? [...(state.deathMotions ?? []), deathMotion] : state.deathMotions ?? [],
+      nextDeathId: deathMotion ? state.nextDeathId + 1 : state.nextDeathId,
+      confirmedImpacts: [
+        ...(state.confirmedImpacts ?? []),
+        {
+          impactId: attack.attackId,
+          attackId: attack.attackId,
+          attackerId: attack.attackerId,
+          targetId: attack.targetId,
+          position: { ...attack.to },
+          animationType: attack.animationType,
+          result: attack.result,
+        },
+      ],
+      selectedUnitId: deathMotion && state.selectedUnitId === target.id ? null : state.selectedUnitId,
+      selectedAttackTargetId: deathMotion && state.selectedAttackTargetId === target.id ? null : state.selectedAttackTargetId,
+      lastMove: deathMotion && state.lastMove?.unitId === target.id ? null : state.lastMove,
     }
   }
 
@@ -210,6 +260,33 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
   if (action.type === 'attack-abort') {
     if (!state.attackMotion || state.attackMotion.attackId !== action.attackId) return state
     return abortAttack(state)
+  }
+
+  function finalizeDeath(state: BattleState, motion: DeathMotion): BattleState {
+    const unit = state.units.find((candidate) => candidate.id === motion.unitId)
+    if (!unit || unit.hp !== 0) return state
+    if (state.defeatedUnits.some((record) => record.unit.id === motion.unitId)) {
+      return {
+        ...state,
+        deathMotions: state.deathMotions.filter((candidate) => candidate.deathId !== motion.deathId),
+      }
+    }
+    const defeatedUnit = { ...unit, position: { ...unit.position } }
+    return {
+      ...state,
+      units: state.units.filter((candidate) => candidate.id !== motion.unitId),
+      deathMotions: state.deathMotions.filter((candidate) => candidate.deathId !== motion.deathId),
+      defeatedUnits: [...state.defeatedUnits, {
+        deathId: motion.deathId,
+        unit: defeatedUnit,
+        killerId: motion.killerId,
+        attackId: motion.attackId,
+      }],
+      selectedUnitId: state.selectedUnitId === motion.unitId ? null : state.selectedUnitId,
+      selectedAttackTargetId: state.selectedAttackTargetId === motion.unitId ? null : state.selectedAttackTargetId,
+      lastMove: state.lastMove?.unitId === motion.unitId ? null : state.lastMove,
+      interactionMode: 'COMMAND',
+    }
   }
 
   if (action.type === 'finish' || action.type === 'cancel') {

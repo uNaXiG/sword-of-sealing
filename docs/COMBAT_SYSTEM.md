@@ -101,6 +101,54 @@ Animation Type 與 AttackPattern 相互獨立：
 - 應用根節點在 `src/main.tsx` 使用 React StrictMode。使用者 BV-15 在該模式下執行攻擊期間返回主選單、觸發 Canvas Unmount，再重新進入戰場，確認無永久鎖定、投射物殘留、舊事件影響或新增 Console Error。
 - 已知限制：目前沒有獨立長時間資源壓力或記憶體量測；Attack Controller 的 emitted Impact／Complete ID 集合仍應在未來生命週期工作中持續觀察。
 
+## M3-4 死亡生命週期
+
+單位狀態以 HP、DeathMotion 與所在集合推導：
+
+- `ALIVE`：HP > 0 且存在 Active Unit。
+- `DYING`：HP = 0，具有 DeathMotion，仍保留模型與棋格佔位。
+- `DEAD`：已從 Active Unit 移除並保留於 `DefeatedUnitRecord`。
+
+既有測試若直接建立初始 HP 0 Fixture，會保留在 Active Unit 且不可行動／受攻，但不產生虛構 Attack ID、DeathMotion 或死亡紀錄。
+
+合法致命 Impact 會在同一次 Reducer transition：
+
+1. 更新 HP 至 0。
+2. 建立 Confirmed Impact Event。
+3. 建立唯一且遞增的 DeathMotion。
+4. 清理該死亡單位相關選取及 Move Record。
+
+DeathMotion 保存 `deathId`、`unitId`、`killerId`、`attackId`、位置快照及攻擊來源座標。`DefeatedUnitRecord` 保存完整 HP 0 Unit snapshot。
+
+Death Complete／Death Abort 均使用安全最終結算：原子移除 Active Unit、加入單筆紀錄、清除 DeathMotion、釋放 Occupancy；死亡後不會復活。過期、重複、錯誤 Unit ID 為 no-op。
+
+## 死亡動畫與 TD-015
+
+Death Profile 固定 1,200 ms：
+
+| Stage | Duration |
+| --- | ---: |
+| HIT_REACTION | 200 ms |
+| COLLAPSE | 350 ms |
+| DISSOLVE | 650 ms |
+
+- Hit Reaction 沿用已確認命中回饋。
+- Collapse 以來源位置計算方向，最多傾倒 90°，不修改棋格座標。
+- Dissolve 讓單位材質透明度由 1 降至 0。
+- 24 顆穩定粒子由原位置向上／向外飄散。
+- Death Label、Selection Ring 與模型於完成前依階段隱藏／移除。
+- Attack Recovery 與 Death Animation 同時進行；只有所有阻擋 Motion 清除後才解鎖。
+
+TD-015 的新流程為：
+
+```text
+Animation Timeline → attack-impact → Reducer 驗證
+→ 套用 HP → 建立 Confirmed Impact Event / DeathMotion
+→ Renderer 消費已確認事件 → 清除事件
+```
+
+Renderer 不再於 Dispatch 前建立 Floating Damage 或依預計結果播放受擊。Confirmed Event 使用獨立 Queue 跨越 Attack Complete、React 批次及死亡單位移除，並以冪等 `consume-impact` 清理。
+
 ## Hit Feedback 與 HP 顯示
 
 - 合法 Impact 時播放目標 Hit Flash、約 160 ms 震動及職業色 Impact Effect。
@@ -207,7 +255,7 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 - SP 目前只儲存、驗證與顯示；普通攻擊不消耗。
 - AGI 目前只儲存、驗證與顯示，不影響行動順序。
 - HP 歸零表示失去戰鬥能力：不可選取、移動、攻擊、成為目標、待命或撤銷。
-- 失能角色保留資料、模型與佔位；死亡動畫、移除與釋放屬 M3-4。
+- 一般致命 Impact 進入 M3-4 Death Lifecycle，動畫完成後從 Active Unit 移除；僅初始 HP 0 Fixture 仍保留資料、模型與佔位且不生成虛構死亡事件。
 
 ## 初始測試戰場
 

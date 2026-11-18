@@ -57,6 +57,15 @@ export function useBattleMovement() {
   const impactAttack = useCallback((attackId: number) => dispatch({ type: 'attack-impact', attackId }), [])
   const completeAttack = useCallback((attackId: number) => dispatch({ type: 'attack-complete', attackId }), [])
   const abortAttack = useCallback((attackId: number) => dispatch({ type: 'attack-abort', attackId }), [])
+  const consumeImpact = useCallback((impactId: number) => dispatch({ type: 'consume-impact', impactId }), [])
+  const completeDeath = useCallback(
+    (deathId: number, unitId: string) => dispatch({ type: 'death-complete', deathId, unitId }),
+    [],
+  )
+  const abortDeath = useCallback(
+    (deathId: number, unitId: string) => dispatch({ type: 'death-abort', deathId, unitId }),
+    [],
+  )
   const battleBusy = isBattleBusy(state)
 
   return {
@@ -70,6 +79,9 @@ export function useBattleMovement() {
     attackableTargetIds,
     attackableTargetCells,
     battleBusy,
+    deathMotions: state.deathMotions ?? [],
+    defeatedUnits: state.defeatedUnits ?? [],
+    confirmedImpacts: state.confirmedImpacts ?? [],
     canConfirmAttack: !battleBusy && state.interactionMode === 'ATTACK' &&
       Boolean(state.selectedAttackTargetId && canAttackTarget(state.units, state.selectedUnitId ?? '', state.selectedAttackTargetId)),
     canUndoMove: state.interactionMode === 'COMMAND' && canUndoLastMove(state),
@@ -89,5 +101,8 @@ export function useBattleMovement() {
     impactAttack,
     completeAttack,
     abortAttack,
+    consumeImpact,
+    completeDeath,
+    abortDeath,
   }
 }

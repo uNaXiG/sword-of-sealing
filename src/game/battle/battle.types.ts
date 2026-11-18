@@ -41,6 +41,8 @@ export type AttackResult = {
   isDefeated: boolean
 }
 
+export type UnitLifeState = 'ALIVE' | 'DYING' | 'DEAD'
+
 export type AttackMotionPhase = 'PENDING_IMPACT' | 'IMPACTED'
 
 export type AttackMotion = {
@@ -52,6 +54,32 @@ export type AttackMotion = {
   animationType: AttackAnimationType
   phase: AttackMotionPhase
   result: AttackResult
+}
+
+export type ConfirmedImpactEvent = {
+  impactId: number
+  attackId: number
+  attackerId: string
+  targetId: string
+  position: Cell
+  animationType: AttackAnimationType
+  result: AttackResult
+}
+
+export type DeathMotion = {
+  deathId: number
+  unitId: string
+  killerId: string
+  attackId: number
+  position: Cell
+  sourcePosition: Cell
+}
+
+export type DefeatedUnitRecord = {
+  deathId: number
+  unit: BattleUnit
+  killerId: string
+  attackId: number
 }
 
 export type BattleMotion = {
@@ -83,4 +111,8 @@ export type BattleState = {
   lastAttackResult: AttackResult | null
   attackMotion: AttackMotion | null
   nextAttackId: number
+  deathMotions: DeathMotion[]
+  nextDeathId: number
+  defeatedUnits: DefeatedUnitRecord[]
+  confirmedImpacts: ConfirmedImpactEvent[]
 }
