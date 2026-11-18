@@ -2,13 +2,14 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期為 Commit 的 UTC+8 時間。
 
-## 2026-11-18 — DOC-01（Uncommitted / Acceptance Pending）
+## 2026-11-18 — DOC-01（Completed & Accepted）
 
 - **Milestone**：獨立專案文件管理任務，不影響 M1–M10。
 - **Added**：Copilot Instructions、Development Status、Roadmap、Architecture、Game Design、Combat System、Art Guidelines、UX Backlog、Technical Debt 與本 Changelog。
 - **Changed**：README 新增 Project Documentation 索引；修正過時攻擊範圍敘述。
-- **Verification**：`npm test` 79/79 PASS；`npm run lint` PASS；`npm run build` PASS；相對連結及 Markdown-only Diff 檢查 PASS。Build 保留既知 Chunk Size warning。
-- **Commit Reference**：尚無；未經授權不得 Commit。
+- **Verification**：`npm test` 79/79 PASS；`npm run lint` PASS；`npm run build` PASS；使用者驗收及 ChatGPT GitHub 文件審查 PASS；相對連結及 Markdown-only Diff 檢查 PASS。Build 保留既知 Chunk Size warning。
+- **CI/CD**：GitHub Actions Run `44220401050` SUCCESS。
+- **Commit Reference**：`1626daf07fd81a47c365614c1d65d7c335d1d3da`
 
 ## 2026-11-18 — M3-2 Patch
 

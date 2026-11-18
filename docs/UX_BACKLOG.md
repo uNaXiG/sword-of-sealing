@@ -37,7 +37,7 @@
 - **ID**：UX-004
 - **Background**：提供不離開戰場的快捷取消。
 - **Current Behavior**：透過「取消攻擊」按鈕返回 COMMAND。
-- **Expected Behavior**：ATTACK 中、未完成攻擊時右鍵單擊取消，返回 COMMAND 並保留尚未確認移動紀錄。
+- **Expected Behavior**：進入 ATTACK Mode 後，若尚未選取合法攻擊目標並發動攻擊，可透過右鍵單擊取消攻擊模式，返回 COMMAND 並保留尚未確認移動紀錄。此需求不包含攻擊已發動後的動畫中途取消。
 - **Target Milestone**：M5-2
 - **Dependencies**：UX-005、現有 `cancel-attack` 狀態轉換。
 - **Status**：PENDING

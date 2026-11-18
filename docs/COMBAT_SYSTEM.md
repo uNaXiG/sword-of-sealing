@@ -103,11 +103,11 @@ X X X
 - 距離 1–2 共 8 格。
 
 ```text
-  X
-  X
-X O X X
-  X
-  X
+. . X . .
+. . X . .
+X X O X X
+. . X . .
+. . X . .
 ```
 
 ### DIAMOND
