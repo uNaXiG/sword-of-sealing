@@ -2,6 +2,17 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-19 — M4-1 & Patch 1 Milestone Closure — Conditional
+
+- **Closure**：M4-1 標記為 **COMPLETED — Conditional Closure**；M4-1 Patch 1 標記為 **COMPLETED**。
+- **Acceptance**：M4-1 原始 BV 24/24 PASS；Patch 1 BV 10/10 PASS；兩項 User Acceptance 均 PASS。M4-1 原始 Agent Verification 的 PARTIAL／NOT VERIFIED 歷史保留，使用者後續驗收作為追加證據。
+- **Verification**：最終 Automated Baseline 154/154、ESLint、TypeScript／Production Build 及 Git Diff Check PASS。Reference Scenarios 5/5 PASS。本 Closure 文件任務未重跑上述命令。
+- **Git / CI**：Gameplay Commit `db30869e528f2aed95787d4cfdd1db3aca988c09`；GitHub Actions Run `44385223281` SUCCESS。
+- **Code Review**：使用者核准延後 CR-01 至 CR-05，登錄為 OPEN 的 TD-016 至 TD-020；條件式結案不表示所有風險已修復。
+- **Handover**：M4-2 `Individual Action Economy & Turn State Reset` 為 UP NEXT；TD-017 是 Entry Requirement。
+- **Progress**：M4 完成度 25%；完整結案主要里程碑 3/10；等權重進度 32.5%，不代表工時比例。
+- **Documentation Git / CI**：本 Closure 文件異動未 Commit、未 Push，無新 Closure Commit 或 CI；不得預填。
+
 ## 2026-11-19 — M4-1 Patch 1 — IMPLEMENTED — Acceptance Pending
 
 - **Fixed**：移除玩家「確認移動」按鈕與獨立 Commit 入口；移動完成後 COMMAND 選單只提供攻擊、取消、待命。
@@ -29,7 +40,7 @@
 - **Changed**：在 [Copilot Instructions](../.github/copilot-instructions.md) 補充戰鬥事件、渲染與資源生命週期，以及分層驗證與版本基準管理規範。
 - **Baseline**：M3 結案文件已納入 `main` 的 `9c8e623` 並通過 Repository CI Run `44279206269`；遊戲基準仍為 `d201b06`。完整基準見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)；既有 Roadmap 不變。
 - **Verification**：Markdown 相對連結及文件一致性檢查 PASS；137/137 為既有測試基準，本次未重跑遊戲測試、Lint 或 Build。
-- **Commit Reference / CI**：已提交為 `69fc9be39351ea2531163a95f9d1561827b42190`；本環境未確認該 Commit 的獨立遠端 CI。
+- **Commit Reference / CI**：已提交為 `69fc9be39351ea2531163a95f9d1561827b42190`；GitHub Actions Run `44280854293` 已確認 SUCCESS。
 
 ## 2026-11-18 — M3 正式結案（Closure Documentation — Git Push Pending）
 

@@ -12,27 +12,30 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `69fc9be39351ea2531163a95f9d1561827b42190` — `docs: update changelog and development status for DOC-01 Patch 1` |
-| Latest Verified Repository CI Run | [44279206269](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44279206269) — SUCCESS（`main` / `9c8e623`） |
-| Latest Verified Gameplay Commit | `main` @ `d201b06e838a6b33dbfbf1fc329c4f7ac97a91d9`（M3-4 與 Patch 1 Revision 2） |
-| Gameplay CI Run | [44277295361](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44277295361) — SUCCESS（`main` / `d201b06`） |
-| 最近完成里程碑 | M3：基礎戰鬥系統 — COMPLETED |
-| 主要里程碑狀態 | M1–M3 均為 **COMPLETED**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
+| Current Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `db30869e528f2aed95787d4cfdd1db3aca988c09` — `feat(battle): implement turn management and UI components` |
+| Latest Verified Repository CI Run | [44385223281](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44385223281) — SUCCESS（`main` / `db30869`） |
+| Latest Verified Gameplay Commit | `main` @ `db30869e528f2aed95787d4cfdd1db3aca988c09`（M4-1 與 Patch 1） |
+| Gameplay CI Run | [44385223281](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44385223281) — SUCCESS（`main` / `db30869`） |
+| 最近完成項目 | M4-1：物理競速式行動與個體回合系統 — COMPLETED — Conditional Closure |
+| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（25%）**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
-| 整體里程碑等權重進度 | 30.0%（不是實際工時比例） |
-| 下一階段 | M4：動態回合制與敵方 AI；M4-1：物理競速式行動與個體回合系統，**IMPLEMENTED — Acceptance Pending** |
-| M4-1 | PAS、DES、Individual Turn、HUD／Timeline 及 M1–M3 整合已實作；原始 BV 24/24 已由使用者確認。Patch 1 未提交、未建立 CI、未完成使用者驗收 |
+| M4 進度 | 25%（1/4） |
+| 完整結案主要里程碑 | 3/10 |
+| 整體里程碑等權重進度 | 32.5%（Roadmap Completion Percentage，不代表實際工時比例） |
+| M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED** |
+| 下一階段 | M4-2：Individual Action Economy & Turn State Reset，**UP NEXT** |
+| Code Review Findings | CR-01 至 CR-05 已登錄為 TD-016 至 TD-020；全部 OPEN，使用者已核准延後處理 |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
 ## 驗證結果
 
 | 驗證 | 結果 | 來源與範圍 |
 | --- | --- | --- |
-| 自動化測試、ESLint、Production Build | 154/154 PASS；ESLint PASS；Build PASS | M4-1 Patch 1 本機實際執行；Build 保留 Battle Chunk > 500 kB 已知警告 |
+| 自動化測試、ESLint、Production Build | 154/154 PASS；ESLint PASS；Build PASS | 原 M4-1 Patch 1 Agent 實作驗證；本次 Closure 文件任務未重跑，保留已驗證基準（NOT RERUN — Verified Previous Baseline Retained）。Build 保留 Battle Chunk > 500 kB 已知警告 |
 | Markdown 相對連結與文件一致性 | PASS | DOC-01 Patch 1 本次檢查 |
-| 使用者瀏覽器驗收 | M3-3 15/15 PASS；M3-4 BV-01 至 BV-20 PASS；M3-4 Patch 1 Revision 2 8/8 PASS；M4-1 原始 BV 24/24 PASS；M4-1 Patch 1 待驗收 | 使用者正式驗收／目前任務狀態 |
-| Acceptance Criteria | M3-3 40/40 PASS；M3-4 52/52 PASS；Patch 1 Revision 2 12/12 PASS | 已確認驗收結果 |
+| 使用者瀏覽器驗收 | M4-1 24/24 PASS；M4-1 Patch 1 10/10 PASS | 使用者後續正式驗收；不回溯改寫 Agent 原始 PARTIAL Browser Report |
+| Acceptance Criteria | M3-3 40/40 PASS；M3-4 52/52 PASS；M3-4 Patch 1 Revision 2 12/12 PASS；M4-1 Patch 1 24/24 PASS | Agent Implementation Report 與既有驗收證據。M4-1 原始 AC 不因此無條件標記為 70/70 PASS |
 
 ## DOC-01 狀態
 
@@ -45,7 +48,7 @@
 - README 過時攻擊範圍敘述已由本任務修正。
 - 本任務未修改遊戲程式、核心資料、套件或部署設定。
 - 原 DOC-01 驗證基準為 79/79 tests、Lint 與 Build PASS；Build 保留既知 Chunk Size warning。
-- DOC-01 Patch 1：已納入 `69fc9be39351ea2531163a95f9d1561827b42190`；本環境未確認該 SHA 的獨立 CI Run，不影響里程碑進度。
+- DOC-01 Patch 1：已納入 `69fc9be39351ea2531163a95f9d1561827b42190`；GitHub Actions Run `44280854293` 已確認 SUCCESS，不影響 M1–M10 進度。
 
 ## M3-3 狀態
 
@@ -87,22 +90,31 @@
 
 ## 已知阻擋問題
 
-目前無已知 M3 功能或驗收阻擋。M3 結案文件與遊戲功能基準均已同步。
+目前無已知 M3 或 M4-1 驗收阻擋。M4-1 採條件式結案，未修復風險由 TD-016 至 TD-020 追蹤。
 
 ## M4-1 狀態
 
-- **IMPLEMENTED — Acceptance Pending**。
+- **COMPLETED — Conditional Closure**。
 - 已加入 Remaining Distance Model、DES、確定性排序、Battle Time／Round／Turn ID、個體行動權、未來 10 次 Preview、HUD／Timeline 及 Active Highlight。
 - AGI 已更新為劍士 10、刺客 15、法師 10、牧師 12、遊俠 12、哥布林 10。
 - 玩家指令僅允許 Active Unit；待命及攻擊合法完成後自動排程下一位。致死攻擊等待所有阻擋性 Motion 結束。
 - 正式敵方 AI、個體 Action Economy、勝敗及 M7 效果尚未實作。
 - Development Build 提供「模擬敵方待命」；Production Build 不顯示該控制。
-- 原始 M4-1 Browser Verification：24/24 PASS（使用者已確認）。
-- M4-1 Patch 1 移除「確認移動」，加入最小 Turn-scoped Movement Commitment；攻擊與待命維持隱式確認，Undo 是唯一解除未確認移動限制的操作。
-- Patch 1 Browser Verification：PARTIAL。已實際確認初始／移動後選單、Undo、Attack Cancel、Standby 及同角色下一個 Turn；Move & Attack、Selection Bypass 與 Pre-impact Abort Browser Fixture 尚待完整驗證。
-- User Acceptance：原 M4-1 核心 PAS 已確認；Patch 1 尚未驗收。
-- Git／CI：M4-1 原始異動與 Patch 1 均仍只在本機工作樹，無新 SHA 或 CI 證據。
+- Patch 1 移除「確認移動」，加入最小 Turn-scoped Movement Commitment；攻擊與待命維持隱式確認，Undo 是唯一解除未確認移動限制的操作。
+- Agent 原始 Browser Verification 保留其 PARTIAL 歷史；使用者後續已確認 M4-1 24/24、Patch 1 10/10 PASS。
+- User Acceptance：M4-1 與 Patch 1 均為 PASS。
+- Git／CI：兩項均已納入 `db30869e528f2aed95787d4cfdd1db3aca988c09`；Run `44385223281` SUCCESS。
+- Code Review：CR-01 至 CR-05 均已由使用者核准延後，分別登錄為 TD-016 至 TD-020；條件式結案不表示風險已修復。
+- 原始 M4-1 AC 不無條件標為 70/70 PASS：TD-017 保留待機事件重複完成防護缺口。
+
+## M4-2 Handover
+
+- 下一項：**Individual Action Economy & Turn State Reset**，`UP NEXT`。
+- TD-017 是 M4-2 Entry Requirement，必須優先處理。
+- TD-016 與 TD-020 納入 M4-2 範圍。
+- TD-018 留待 M7；TD-019 留待 M4-3。
+- 技術債統計：20 項；CLOSED 8、OPEN 11、PARTIALLY RESOLVED 1。
 
 ## 下一步
 
-完成 M4-1 Browser Verification 與使用者驗收後等待 Git／CI 確認。下一個開發項目為 M4-2 個體行動限制與狀態重置；本次不啟動。
+等待本 Closure Documentation 的使用者確認、Commit 與 Push。本次不開始 M4-2。

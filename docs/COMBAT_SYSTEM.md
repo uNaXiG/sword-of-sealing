@@ -277,6 +277,8 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 M4-1 尚未實作完整個體行動資源、正式敵方 AI、勝敗或 M7 效果。每個個體 Turn 最多合法移動一次；Undo 只在未確認時恢復該次移動權。Development Build 可使用「模擬敵方待命」；Production Build 不顯示此控制。
 
+條件式結案風險見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)：TD-016 追蹤 PAS 浮點 Near-tie Arrival；TD-017 追蹤玩家待命事件的 Turn／Unit Context 防重複缺口，為 M4-2 Entry Requirement；TD-019 追蹤敵方開發控制的核心授權邊界，留待 M4-3。上述項目為核准延後風險，不表示正常 Browser 操作已發生 Bug。
+
 ## 初始測試戰場
 
 | ID | 陣營 | 職業 | Column | Row |

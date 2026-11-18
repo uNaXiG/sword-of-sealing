@@ -118,6 +118,8 @@ Attack Complete 或 Post-impact Abort 在存在 DeathMotion 時保留 `PendingTu
 
 Development Build 的「模擬敵方待命」只經明確 Development Control Action 驅動；Production UI 不呈現玩家敵方操作，未來 M4-3 將以 AI Lifecycle 替換。
 
+M4-1 已依 `db30869` 條件式結案。已核准延後的架構風險見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)：TD-016 需分離 PAS 最小事件時間與 Active Unit 選擇；TD-017 需讓玩家待命 Action 攜帶 Turn Context。這些是 M4-2 前置風險或驗證工作，不表示已存在實作模組。TD-019 的核心敵方指令授權留待 M4-3。
+
 ## Battle State 與 Reducer
 
 `BattleState` 集中保存選取、操作模式、移動動畫、單次 Undo 紀錄及攻擊結算。`battleReducer` 驗證 Action，處理過期 `motionId`、生命狀態、佔位、範圍、撤銷條件及狀態轉換，並以不可變方式更新。

@@ -2,7 +2,7 @@
 
 狀態只反映已確認事實。Proposed 解法不代表已核准實作；未確認目標標為 TBD。
 
-**技術債統計（TD-001 至 TD-015）**：共 15 項；CLOSED 8、OPEN 6、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
+**技術債統計（TD-001 至 TD-020）**：共 20 項；CLOSED 8、OPEN 11、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
 
 | ID | Description | Impact | Priority | Status | Suggested Resolution | Target |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -21,6 +21,11 @@
 | TD-013 | README 舊攻擊範圍敘述殘留 | 文件仍稱曼哈頓範圍，與四種模式不符 | Low | CLOSED | README 已改為依職業攻擊模式描述，並完成使用者驗收 | DOC-01 |
 | TD-014 | Attack Animation Controller 的 emitted Attack ID 集合持續增長 | 長時間重複攻擊可能累積記憶體與 ID Set Entries | Low | OPEN | Proposed：在不破壞 StrictMode 防護下設計受限生命週期或清理窗口 | M10-3 Candidate |
 | TD-015 | 命中視覺回饋可能早於 Reducer 確認 | 浮動傷害、受擊與死亡可能依預計結果誤顯示 | Medium | CLOSED | 改用 Confirmed Impact Event Queue；依據為無效／重複 Impact、Complete、Abort 等[回歸測試](../tests/battle.impact-feedback.test.mjs)及使用者 M3-4 瀏覽器驗收（BV-01 至 BV-20 全部 PASS） | M3-4 |
+| TD-016 | PAS Floating-point Arrival Tolerance | Scheduler 使用容差選中角色後，若以該角色 AV 而非全域最小 AV 推進，近似同時抵達可能過度推進或產生非法負距離 | Medium | OPEN | 分離最小事件時間與 Active Unit 選擇；定義時間／距離容差正規化；新增 Near-tie Arrival 測試並保留 Reference Scenarios | M4-2 |
+| TD-017 | Player Standby Turn Context Integrity | 玩家 `standby` 缺少 Turn／Unit Context，重複事件在下一個玩家 Turn 可能完成非預期的第二次 Turn | High | OPEN | 待命 Action 攜帶 `turnId`／`unitId`，Reducer 驗證目前 Active Unit；拒絕重複、過期及同角色新 Turn 的舊事件。**M4-2 Entry Requirement** | M4-2 — Blocking |
+| TD-018 | AGI Validation Consistency | Class Registry 接受 finite positive number，Battle State 要求 non-negative safe integer，PAS 又要求正速度；資料契約不一致 | Low | OPEN | 統一 Base AGI 合法值；未來明確分離 Base AGI 與 Effective Velocity；不為 M7 Buff 提前放寬所有基礎屬性 | M7 |
+| TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | OPEN | M4-3 建立 AI 指令來源與核心授權，移除 Development Enemy Standby，驗證過期與異常 AI Action | M4-3 |
+| TD-020 | Extended Scheduling Verification Coverage | 10,000 次測試未完整驗證長期理論行動頻率、Round 邊界精確性、數值漂移及 Preview 一致性 | Medium | OPEN | 增加理論／實際行動次數、Battle Time 誤差、Round Boundary、Near-tie 與 Preview／實際一致性測試；保留原長跑測試 | M4-2 |
 
 ## 已結案 Bug
 
@@ -30,6 +35,15 @@
 
 - **TD-010 · Unit Label Draw Cache**：[UnitLabel](../src/features/battle/components/UnitLabel.tsx) 的 Effect 建立新 CanvasTexture 時未明確重置 `lastDrawn`；若特殊 Effect 重建情境保留上一張 Texture 的快取，且內容與比例未變，可能跳過首次繪製。尚無使用者回報，未確認為實際缺陷。
 - **Confirmed Impact Queue**：正常流程已通過使用者驗收（TD-015 CLOSED）。異常卸載／重新掛載時的事件清理、重播以及長時間資源累積，留待後續生命週期壓力測試；未確認為實際缺陷。
+
+## M4-1 Code Review Findings
+
+TD-016 至 TD-020 分別對應 ChatGPT Code Review CR-01 至 CR-05。使用者已核准 M4-1 條件式結案並延後修正；這些項目是確認的風險或防護缺口，不代表正常 Browser 操作已發生 Bug。
+
+- TD-017 是 M4-2 必要前置修正，不得延至 M4-3。
+- TD-016 與 TD-020 納入 M4-2 開發與驗證範圍。
+- TD-018 留待 M7。
+- TD-019 留待 M4-3。
 
 ## 已知非阻擋性警告
 

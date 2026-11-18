@@ -2,6 +2,8 @@
 
 使用 React、TypeScript、Vite 和 React Three Fiber 製作的奇幻 RPG 原型。
 
+目前 M1–M3 已完成；M4-1 與 Patch 1 已條件式結案並通過使用者驗收。Gameplay 基準為 `db30869`，GitHub Actions Run `44385223281` SUCCESS。下一個開發階段為 M4-2：Individual Action Economy & Turn State Reset；正式敵方 AI、完整勝敗與完整 Action Economy 尚未完成。
+
 ## Project Documentation
 
 - [AI Agent Instructions](.github/copilot-instructions.md)
@@ -56,7 +58,7 @@ npm run dev
 
 ## PAS 個體回合
 
-PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Development Build 提供明確標示的「模擬敵方待命」以驗證排程；正式建置不顯示此控制，正式敵方 AI 屬 M4-3。
+PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。M4-1 已完成最小 Turn-scoped 移動限制，但完整 Action Economy 屬 M4-2。Development Build 提供明確標示的「模擬敵方待命」以驗證排程；正式建置不顯示此控制，正式敵方 AI 屬 M4-3。
 
 若要調整職業平衡，請修改 `CLASS_DEFINITIONS`；若要新增測試角色，使用 `createBattleUnit()` 並指定 ID、職業、陣營與座標，可選擇覆寫顯示名稱。初始戰場包含五名我方職業與三隻各自擁有獨立 HP／SP 的哥布林。死亡佔位與移除規則見 [Combat System](docs/COMBAT_SYSTEM.md)。
 

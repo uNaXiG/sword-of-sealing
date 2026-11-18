@@ -28,8 +28,10 @@
 - 戰鬥採個體回合；一名角色抵達終點時取得唯一行動權。
 - Battle Time 以 BTU 累積；每 200 BTU 為一個 Round。
 - 同時抵達依 AGI 較高、Initial Order 較小排序。
-- 攻擊完成及待命會完成目前個體回合；未來正式規則為每回合一次移動加一次戰鬥行動。
+- 攻擊完成及待命會完成目前個體回合；移動完成後只提供攻擊、取消移動及待命。
+- 最終設計為每回合一次移動加一次戰鬥行動；M4-1 僅具最小 Turn-scoped Movement Commitment，不代表完整 Action Economy 已完成。
 - M4-1 已實作最小 Turn-scoped 移動限制：每個個體 Turn 最多移動一次；合法 Undo 可解除限制。完整 Action Economy 仍由 M4-2 處理。
+- 拉條、推條、加速及緩速留待 M7 規劃；PAS 不引入物理加速度。
 - 正式敵方 AI 尚未實作；本機 Development Build 僅有暫時敵方待命控制。
 - Action Advance、Action Delay、Speed Up／Down 屬 M7 規劃，M4-1 不提供這些效果 API。
 

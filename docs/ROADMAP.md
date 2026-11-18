@@ -12,6 +12,7 @@
 | IMPLEMENTED | 已實作，尚待使用者驗收 |
 | ACCEPTED | 使用者已驗收，但可能尚未提交或結案 |
 | COMPLETED | 已實作、已驗收且已納入確認基準 |
+| COMPLETED — Conditional Closure | 功能、驗收、Git／CI 已確認；核准延後的風險已登錄且尚未修復 |
 
 ## M1：基礎 3D 戰場 — COMPLETED
 
@@ -50,16 +51,17 @@
 
 M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
-## M4：動態回合制與敵方 AI — IN PROGRESS
+## M4：動態回合制與敵方 AI — IN PROGRESS（25%）
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
-| M4-1 | 物理競速式行動與個體回合系統 | IMPLEMENTED |
-| M4-2 | 個體行動限制與狀態重置 | PENDING |
+| M4-1 | 物理競速式行動與個體回合系統 | COMPLETED — Conditional Closure |
+| M4-1 Patch 1 | 移動確認與指令流程修正 | COMPLETED |
+| M4-2 | Individual Action Economy & Turn State Reset | UP NEXT |
 | M4-3 | 敵方移動與攻擊決策 | PENDING |
 | M4-4 | 勝利、失敗與戰鬥結束 | PENDING |
 
-M4-1 已完成 PAS Core、DES Scheduler、個體回合生命週期、HUD／Timeline 與 M1–M3 整合，尚待使用者瀏覽器驗收、Git 基準與 CI 確認。
+M4-1 已完成 PAS Core、DES Scheduler、個體回合生命週期、HUD／Timeline 與 Patch 1；使用者 BV、Git 基準及 CI 已確認。TD-016 至 TD-020 已核准延後，因此採條件式結案。TD-017 是 M4-2 Entry Requirement。
 
 ## M5：戰鬥 UI／UX — PENDING
 
@@ -117,4 +119,4 @@ M5-2 包含 [UX-001 至 UX-005](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV
 | M10-3 | 效能、手機及桌面適配 | PENDING |
 | M10-4 | GitHub Pages 正式發布 | PENDING |
 
-M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑等權重進度為 30.0%，不是實際工時比例。
+M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑完成度為 M1 100%、M2 100%、M3 100%、M4 25%、M5–M10 0%；完整結案主要里程碑為 3/10，等權重進度為 32.5%。此為 Roadmap Completion Percentage，不是實際工時比例。
