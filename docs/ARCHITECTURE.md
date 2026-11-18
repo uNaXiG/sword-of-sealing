@@ -1,0 +1,131 @@
+# Software Architecture
+
+## 技術選型
+
+| 類別 | 技術 |
+| --- | --- |
+| UI | React 19、TypeScript |
+| Build | Vite 8 |
+| 3D Rendering | Three.js、React Three Fiber、React Three Drei |
+| UI Motion / Icons | Motion、Lucide React |
+| 狀態管理 | React Hooks、`useReducer` |
+| 測試 | Node.js Native Test Runner |
+| 品質 | ESLint、TypeScript Build |
+| CI/CD | GitHub Actions |
+| Hosting | GitHub Pages |
+| Package Version Source of Truth | `package.json`、`package-lock.json` |
+
+目前不使用 Redux、Zustand、大型遊戲引擎、後端或外部資料庫；新增技術需事先確認。
+
+## Repository 結構
+
+```text
+sword-of-sealing/
+├── .github/
+│   ├── copilot-instructions.md
+│   └── workflows/deploy-pages.yml
+├── docs/
+├── public/assets/
+├── src/
+│   ├── components/MainMenu/
+│   ├── features/battle/
+│   │   ├── components/
+│   │   └── hooks/
+│   └── game/
+│       ├── battle/
+│       ├── classes/
+│       └── grid/
+└── tests/
+```
+
+## 分層與資料流
+
+```mermaid
+flowchart LR
+    UI[BattleScene / UI Controls] --> Hook[useBattleMovement]
+    Hook -->|dispatch action| Reducer[battleReducer]
+    Hook --> Rules[Movement / Attack / Damage]
+    Reducer --> State[BattleState]
+    State --> Hook
+    Hook -->|derived state| Render[GridMap / UnitPlaceholder / UnitLabel]
+    Registry[Class Registry] --> Factory[createBattleUnit]
+    Factory --> Initial[Initial Battle Units]
+    Initial --> State
+```
+
+Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Action 並顯示 Derived State，但不得另行實作戰鬥規則。
+
+## 核心模組
+
+| 模組 | 職責 |
+| --- | --- |
+| `game/battle/battle.types.ts` | BattleUnit、BattleState、Motion、Attack Result 型別 |
+| `game/battle/battle.state.ts` | Reducer、建立與驗證狀態、操作轉換、Undo |
+| `game/battle/battle.attack.ts` | 攻擊距離、範圍、合法目標 |
+| `game/battle/battle.damage.ts` | 純傷害計算 |
+| `game/battle/battle.movement.ts` | 單位移動預算與完成前驗證 |
+| `game/battle/occupancy.ts` | 棋格佔位唯一性 |
+| `game/battle/obstacles.ts` | 障礙配置與驗證 |
+| `game/grid/movement.ts` | Dijkstra、路徑與成本 |
+| `game/grid/terrain.*.ts` | 地形資料、型別、成本與顏色 |
+| `game/classes/` | 職業型別、Registry、驗證與 Factory |
+| `features/battle/hooks/useBattleMovement.ts` | State Hook、Derived State 與 Action 介面 |
+| `features/battle/BattleScene.tsx` | Canvas、UI 與 Hook 整合 |
+| `features/battle/components/` | 棋盤、模型、標籤與障礙 Rendering |
+
+`useBattleMovement` 已承擔超出移動的整體戰鬥職責；其重新命名屬於未授權技術債，不應自行重構。
+
+## Battle State 與 Reducer
+
+`BattleState` 集中保存選取、操作模式、移動動畫、單次 Undo 紀錄及攻擊結算。`battleReducer` 驗證 Action，處理過期 `motionId`、生命狀態、佔位、範圍、撤銷條件及狀態轉換，並以不可變方式更新。
+
+正式 Unit 座標在移動動畫完成後才更新。攻擊目前在確認攻擊時立即扣除 HP。
+
+## Interface + Registry + Factory
+
+```mermaid
+flowchart LR
+    Definition[ClassDefinition] --> Registry[CLASS_DEFINITIONS]
+    Registry --> Factory[createBattleUnit]
+    Options[ID / faction / position] --> Factory
+    Factory --> Unit[Independent BattleUnit]
+```
+
+`ClassDefinition` 統一屬性型別，Registry 集中數值與驗證，Factory 建立獨立 HP、SP、座標與戰鬥資料。平衡數值只應透過正式規格變更。
+
+## React Hooks 與 UI
+
+Hook 計算選中單位、可移動格、攻擊範圍、合法目標、距離、Undo／Confirm 可用性，並把 Action 封裝為 callback。`BattleScene` 負責 Canvas、Orthographic Camera、OrbitControls 與行動選單。
+
+Rendering 座標由 `column/row` 透過 `cellPosition()` 轉換為 Three.js 世界座標。
+
+## 自動化測試
+
+`tests/*.test.mjs` 直接載入 TypeScript 模組，由 Node.js Test Runner 執行。現有測試覆蓋：
+
+- 職業 Registry／Factory／驗證。
+- 四種攻擊模式、目標與傷害。
+- Reducer 操作、撤銷、待命與失能狀態。
+- Dijkstra、地形成本、障礙與佔位。
+
+## 部署架構
+
+```mermaid
+flowchart LR
+    Push[Push to main] --> Install[npm ci]
+    Install --> Lint[ESLint]
+    Lint --> Test[Node Test]
+    Test --> Build[TypeScript + Vite Build]
+    Build --> Artifact[Pages Artifact]
+    Artifact --> Deploy[GitHub Pages]
+```
+
+`vite.config.ts` 使用 Base Path `/sword-of-sealing/`。戰場入口使用 `#battle`。非授權任務不得修改 Workflow 或 Base Path。
+
+## 架構原則
+
+- Rendering 不修改正式戰鬥規則。
+- 動畫事件須能識別過期或重複事件。
+- State transition、成本、範圍與傷害應保持可測試的純邏輯。
+- UI 與正式狀態共用規則，避免雙重實作。
+- 不引入尚無需求的持久化、後端、狀態庫或引擎。
