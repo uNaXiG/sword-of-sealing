@@ -1,6 +1,7 @@
 import type { AttackPattern, UnitClass } from '../classes/class.types'
 import type { Cell } from '../grid/grid.types'
 import type { BattleObstacle } from './obstacles'
+import type { AttackAnimationType } from './battle.animation'
 
 export type BattleFaction = 'player' | 'enemy'
 
@@ -40,6 +41,19 @@ export type AttackResult = {
   isDefeated: boolean
 }
 
+export type AttackMotionPhase = 'PENDING_IMPACT' | 'IMPACTED'
+
+export type AttackMotion = {
+  attackId: number
+  attackerId: string
+  targetId: string
+  from: Cell
+  to: Cell
+  animationType: AttackAnimationType
+  phase: AttackMotionPhase
+  result: AttackResult
+}
+
 export type BattleMotion = {
   motionId: number
   unitId: string
@@ -67,4 +81,6 @@ export type BattleState = {
   selectedAttackTargetId: string | null
   lastAttackCommand: AttackCommand | null
   lastAttackResult: AttackResult | null
+  attackMotion: AttackMotion | null
+  nextAttackId: number
 }

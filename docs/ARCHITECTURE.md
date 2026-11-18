@@ -45,9 +45,11 @@ flowchart LR
     UI[BattleScene / UI Controls] --> Hook[useBattleMovement]
     Hook -->|dispatch action| Reducer[battleReducer]
     Hook --> Rules[Movement / Attack / Damage]
+    Hook --> Animation[Attack Controller / Profiles]
     Reducer --> State[BattleState]
     State --> Hook
-    Hook -->|derived state| Render[GridMap / UnitPlaceholder / UnitLabel]
+    Hook -->|derived state| Render[GridMap / Unit / Feedback]
+    Animation -->|Impact / Complete / Abort| Reducer
     Registry[Class Registry] --> Factory[createBattleUnit]
     Factory --> Initial[Initial Battle Units]
     Initial --> State
@@ -63,6 +65,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/battle/battle.state.ts` | Reducer、建立與驗證狀態、操作轉換、Undo |
 | `game/battle/battle.attack.ts` | 攻擊距離、範圍、合法目標 |
 | `game/battle/battle.damage.ts` | 純傷害計算 |
+| `game/battle/battle.animation.ts` | Attack Animation Type、職業 Mapping、Profile、純 Timeline |
 | `game/battle/battle.movement.ts` | 單位移動預算與完成前驗證 |
 | `game/battle/occupancy.ts` | 棋格佔位唯一性 |
 | `game/battle/obstacles.ts` | 障礙配置與驗證 |
@@ -70,6 +73,10 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/grid/terrain.*.ts` | 地形資料、型別、成本與顏色 |
 | `game/classes/` | 職業型別、Registry、驗證與 Factory |
 | `features/battle/hooks/useBattleMovement.ts` | State Hook、Derived State 與 Action 介面 |
+| `features/battle/hooks/useAttackAnimation.ts` | 單一動畫時鐘介面 |
+| `features/battle/components/AttackAnimationController.tsx` | Wind-up／Impact／Recovery 的權威計時與事件派送 |
+| `features/battle/components/AttackProjectile.tsx` | 魔法球、箭矢與聖光投射物 |
+| `features/battle/components/HitEffect.tsx` / `FloatingDamage.tsx` | 命中特效與 Applied Damage 漂浮數字 |
 | `features/battle/BattleScene.tsx` | Canvas、UI 與 Hook 整合 |
 | `features/battle/components/` | 棋盤、模型、標籤與障礙 Rendering |
 
@@ -79,7 +86,9 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 
 `BattleState` 集中保存選取、操作模式、移動動畫、單次 Undo 紀錄及攻擊結算。`battleReducer` 驗證 Action，處理過期 `motionId`、生命狀態、佔位、範圍、撤銷條件及狀態轉換，並以不可變方式更新。
 
-正式 Unit 座標在移動動畫完成後才更新。攻擊目前在確認攻擊時立即扣除 HP。
+正式 Unit 座標在移動動畫完成後才更新。攻擊確認只建立 `PENDING_IMPACT` AttackMotion 與預計 AttackResult；合法 `attack-impact` 才更新 HP，`attack-complete` 解鎖，`attack-abort` 依階段保留或不套用傷害。
+
+AttackMotion 與 Move Motion 互斥。`BattleState` 保存 Attack ID、雙方座標快照、Animation Type、結算 Phase 及預計結果；逐幀時間只由 Animation Controller 的局部時鐘保存。
 
 ## Interface + Registry + Factory
 
@@ -106,6 +115,8 @@ Rendering 座標由 `column/row` 透過 `cellPosition()` 轉換為 Three.js 世�
 - 職業 Registry／Factory／驗證。
 - 四種攻擊模式、目標與傷害。
 - Reducer 操作、撤銷、待命與失能狀態。
+- Attack Confirm → Impact → Complete／Abort、互斥、鎖定、冪等與過期 ID。
+- 六種 Animation Profile、Timeline 事件及大 Delta。
 - Dijkstra、地形成本、障礙與佔位。
 
 ## 部署架構

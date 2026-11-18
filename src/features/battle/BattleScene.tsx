@@ -4,6 +4,7 @@ import { MOUSE } from 'three'
 import { useState } from 'react'
 import GridMap from './components/GridMap'
 import UnitPlaceholder from './components/UnitPlaceholder'
+import AttackAnimationController from './components/AttackAnimationController'
 import Environment from './components/Environment'
 import ObstacleMap from './components/ObstacleMap'
 import { useBattleMovement } from './hooks/useBattleMovement'
@@ -12,6 +13,7 @@ import { cellKey } from '../../game/grid/grid.utils'
 import { CLASS_DEFINITIONS } from '../../game/classes/class.data'
 import { ATTACK_PATTERN_NAMES } from '../../game/classes/class.types'
 import './BattleScene.css'
+import { useAttackAnimation } from './hooks/useAttackAnimation'
 
 function FitCamera() {
   const { size } = useThree()
@@ -23,9 +25,11 @@ export default function BattleScene() {
     units, obstacles, selectedUnit, selectedAttackTarget, selectedAttackTargetDistance, lastAttackResult,
     motion, lastMove, reachable, interactionMode, selectedAttackTargetId,
     attackRange, attackableTargets, attackableTargetIds, attackableTargetCells,
-    canUndoMove, canConfirmAttack, selectUnit, clearSelection, standby, selectCell,
+    canUndoMove, canConfirmAttack, battleBusy, selectUnit, clearSelection, standby, selectCell,
     finishMove, cancelMove, undoMove, setInteractionMode, cancelMoveMode, cancelAttack, confirmAttack,
+    impactAttack, completeAttack, abortAttack, attackMotion,
   } = useBattleMovement()
+  const { clockRef, onImpact, onComplete, onAbort } = useAttackAnimation(impactAttack, completeAttack, abortAttack)
   const [hoveredCell, setHoveredCell] = useState<Cell | null>(null)
   const preview = interactionMode === 'MOVE' && hoveredCell ? reachable.get(cellKey(hoveredCell)) ?? null : null
   const attackResultAttacker = lastAttackResult
@@ -101,6 +105,13 @@ export default function BattleScene() {
             onHover={setHoveredCell}
           />
           <ObstacleMap obstacles={obstacles} onObstacleClick={handleObstacleClick} />
+          <AttackAnimationController
+            attackMotion={attackMotion}
+            clockRef={clockRef}
+            onImpact={onImpact}
+            onComplete={onComplete}
+            onAbort={onAbort}
+          />
           {units.map((unit) => (
             <UnitPlaceholder
               key={unit.id}
@@ -110,6 +121,9 @@ export default function BattleScene() {
               selectedAttackTarget={unit.id === selectedAttackTargetId}
               path={motion?.unitId === unit.id ? motion.path : null}
               motionId={motion?.unitId === unit.id ? motion.motionId : null}
+              attackMotion={attackMotion}
+              attackClockRef={clockRef}
+              battleBusy={battleBusy}
               onSelect={selectUnit}
               onMoveComplete={finishMove}
               onMoveCancelled={cancelMove}
@@ -141,7 +155,12 @@ export default function BattleScene() {
             </p>
           </div>
         )}
-        {selectedUnit && !motion && interactionMode === 'COMMAND' && (
+        {attackMotion && (
+          <p className="battle-animation-status" role="status">
+            {units.find((unit) => unit.id === attackMotion.attackerId)?.name ?? '角色'}正在攻擊……
+          </p>
+        )}
+        {selectedUnit && !motion && !attackMotion && interactionMode === 'COMMAND' && (
           <div className="battle-actions">
             {lastMove?.unitId !== selectedUnit.id && (
               <button className="battle-deselect" type="button" onClick={handleMoveMode}>移動</button>

@@ -32,6 +32,14 @@ function completeMoveAdjacentToGoblin() {
   return battleReducer(state, { type: 'finish', unitId: 'knight', motionId: state.motion.motionId })
 }
 
+function resolveAttack(state) {
+  const attackId = state.attackMotion?.attackId
+  assert.ok(attackId)
+  state = battleReducer(state, { type: 'attack-impact', attackId })
+  assert.equal(state.attackMotion.phase, 'IMPACTED')
+  return battleReducer(state, { type: 'attack-complete', attackId })
+}
+
 test('八個角色資料包含互不重疊的初始位置', () => {
   const state = createBattleState(INITIAL_UNITS)
   assert.equal(state.units.length, 8)
@@ -172,6 +180,7 @@ test('待命清除已接受的暫時性攻擊指令', () => {
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
   state = battleReducer(state, { type: 'confirm-attack' })
+  state = resolveAttack(state)
   assert.deepEqual(state.lastAttackCommand, { attackerId: 'knight', targetId: 'goblin' })
 
   state = battleReducer(state, { type: 'standby' })
@@ -466,7 +475,7 @@ test('取消攻擊返回行動選單並保留移動撤銷能力', () => {
   assert.equal(state.lastMove, null)
 })
 
-test('確認攻擊重新驗證目標、造成傷害並建立攻擊結果', () => {
+test('確認攻擊建立延遲結算，合法命中造成傷害並建立攻擊結果', () => {
   let state = completeMoveAdjacentToGoblin()
   const attackerBefore = state.units.find((unit) => unit.id === 'knight')
   const otherUnitBefore = state.units.find((unit) => unit.id === 'mage')
@@ -478,6 +487,10 @@ test('確認攻擊重新驗證目標、造成傷害並建立攻擊結果', () =>
   assert.equal(state.interactionMode, 'COMMAND')
   assert.equal(state.selectedAttackTargetId, null)
   assert.deepEqual(state.lastAttackCommand, { attackerId: 'knight', targetId: 'goblin' })
+  assert.equal(state.lastAttackResult, null)
+  assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, originalHp)
+  assert.equal(state.attackMotion.phase, 'PENDING_IMPACT')
+  state = resolveAttack(state)
   assert.deepEqual(state.lastAttackResult, {
     attackerId: 'knight',
     targetId: 'goblin',
@@ -505,6 +518,7 @@ test('Overkill 只扣除目標剩餘 HP，歸零角色仍保留模型資料與�
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
   state = battleReducer(state, { type: 'confirm-attack' })
+  state = resolveAttack(state)
 
   assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, 0)
   assert.deepEqual(state.lastAttackResult, {
@@ -666,11 +680,13 @@ test('成功攻擊後可在新操作中再次攻擊並累計傷害', () => {
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
   state = battleReducer(state, { type: 'confirm-attack' })
+  state = resolveAttack(state)
   assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, 45)
 
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
   state = battleReducer(state, { type: 'confirm-attack' })
+  state = resolveAttack(state)
   assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, 30)
   assert.equal(state.lastAttackResult?.previousHp, 45)
   assert.equal(state.lastAttackResult?.remainingHp, 30)

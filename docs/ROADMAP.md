@@ -44,10 +44,10 @@
 | M3-1 Patch 2 | 待命與移動確認機制修正 | COMPLETED |
 | M3-2 | 基礎傷害公式與 HP | COMPLETED |
 | M3-2 Patch | 職業抽象化與攻擊模式系統 | COMPLETED |
-| M3-3 | 攻擊動畫與受擊反饋 | UP NEXT |
-| M3-4 | 單位死亡及移除 | PENDING |
+| M3-3 | 攻擊動畫與受擊反饋 | ACCEPTED — Git Push Pending |
+| M3-4 | 單位死亡及移除 | UP NEXT |
 
-M3-3 為下一個階段，但動畫資料、命中／取消事件及 HP 結算時序仍需正式規格。
+M3-3 已通過 100/100 自動化測試、40/40 AC 與 15/15 Browser Verification；目前等待 Git Push，尚未標記 COMPLETED。M3 進度為 75%，整體主要里程碑等權重估算為 27.5%。
 
 ## M4：回合制與敵方 AI — PENDING
 
@@ -114,4 +114,4 @@ M5-2 包含 [UX-001 至 UX-005](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV
 | M10-3 | 效能、手機及桌面適配 | PENDING |
 | M10-4 | GitHub Pages 正式發布 | PENDING |
 
-M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑等權重進度約 25%，不是實際工時比例。
+M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑等權重進度約 27.5%，不是實際工時比例。

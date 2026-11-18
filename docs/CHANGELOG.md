@@ -2,6 +2,20 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期為 Commit 的 UTC+8 時間。
 
+## 2026-11-18 — M3-3（ACCEPTED — Git Push Pending）
+
+- **Added**：AttackMotion、唯一 Attack ID、PENDING_IMPACT／IMPACTED、Impact／Complete／Abort 事件及操作鎖定。
+- **Added**：六種 Attack Animation Profile、單一動畫時鐘、近戰突進、魔法／聖光／箭矢投射物。
+- **Added**：Hit Flash、Hit Shake、Impact Effect、Floating Applied Damage 與平滑 HP Transition。
+- **Changed**：HP 由確認攻擊時結算改為合法 Impact Event 結算。
+- **Verification**：`npm test` 100/100 PASS；`npm run lint` PASS；`npm run build` PASS；AC 40/40 PASS；BV 01–15 全部 PASS。Chunk Size warning 保留。
+- **Profiles**：劍士 150/300/550 ms、突進 0.45；刺客 100/200/400 ms、0.60；法師 450/500/450 ms、0；牧師 450/300/550 ms、0；遊俠 300/400/400 ms、0；哥布林 150/250/500 ms、0.40（依序為 Wind-up/Attack/Recovery 與棋格突進上限）。
+- **Lifecycle Verification**：應用由 React StrictMode 啟動；使用者於 BV-15 攻擊期間返回主選單觸發 Canvas Unmount，再重入戰場，確認無永久鎖定、投射物殘留、舊事件影響或 Console Error。
+- **Goblin Verification**：未開放玩家操作敵方。自動化測試以集中 Registry Fixture 驗證 `MELEE_BASH` Mapping、時間參數與 0.40 突進值；使用者 BV-07 另於不改正式玩家流程的外部驗收 Fixture 驗證演出，該暫時 Fixture 未納入產品入口。
+- **Known Limitation**：沒有長時間大量 Attack ID 的獨立資源壓力測試，emitted Impact／Complete ID 集合仍留待後續生命週期追蹤。
+- **Status**：已使用者驗收；Git Push 尚未完成，未納入新 GitHub Actions Run。
+- **Commit Reference**：無。
+
 ## 2026-11-18 — DOC-01（Completed & Accepted）
 
 - **Milestone**：獨立專案文件管理任務，不影響 M1–M10。

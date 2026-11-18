@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import type { Group } from 'three'
-import type { BattleUnit } from '../../../game/battle/battle.types'
+import { Color, MeshStandardMaterial, type Group, type Mesh } from 'three'
+import { ATTACK_ANIMATION_PROFILES } from '../../../game/battle/battle.animation'
+import type { AttackMotion, BattleUnit } from '../../../game/battle/battle.types'
 import type { Cell } from '../../../game/grid/grid.types'
 import { cellPosition } from './grid'
 import UnitLabel from './UnitLabel'
+import type { AttackAnimationClockRef } from '../hooks/useAttackAnimation'
 
 const unitColors: Record<BattleUnit['class'], { armor: string; accent: string; head: string }> = {
   knight: { armor: '#e2e8ec', accent: '#486e9b', head: '#edf1f3' },
@@ -26,6 +28,9 @@ export default function UnitPlaceholder({
   selectedAttackTarget,
   path,
   motionId,
+  attackMotion,
+  attackClockRef,
+  battleBusy,
   onSelect,
   onMoveComplete,
   onMoveCancelled,
@@ -36,11 +41,15 @@ export default function UnitPlaceholder({
   selectedAttackTarget: boolean
   path: Cell[] | null
   motionId: number | null
+  attackMotion: AttackMotion | null
+  attackClockRef: AttackAnimationClockRef
+  battleBusy: boolean
   onSelect: (unitId: string) => void
   onMoveComplete: (unitId: string, motionId: number) => void
   onMoveCancelled: (unitId: string, motionId: number) => void
 }) {
   const group = useRef<Group>(null)
+  const visualRoot = useRef<Group>(null)
   const progress = useRef(0)
   const completed = useRef(false)
   const effectGeneration = useRef(0)
@@ -49,6 +58,8 @@ export default function UnitPlaceholder({
       : selected ? '#ffe475'
         : unit.faction === 'enemy' ? '#e27063' : '#91c9ef'
   const ringRadius = selectedAttackTarget ? 0.52 : attackableTarget ? 0.48 : selected ? 0.43 : 0.36
+  const materialEmissive = useRef(new WeakMap<MeshStandardMaterial, Color>())
+  const materialEmissiveIntensity = useRef(new WeakMap<MeshStandardMaterial, number>())
 
   useEffect(() => {
     const generation = ++effectGeneration.current
@@ -70,21 +81,31 @@ export default function UnitPlaceholder({
   }, [path, motionId, unit.id, unit.position, onMoveCancelled])
 
   useFrame((_, delta) => {
-    if (!path || !group.current || completed.current) return
-    progress.current = Math.min(progress.current + delta * 3, path.length - 1)
-    const segment = Math.min(Math.floor(progress.current), path.length - 2)
-    const fraction = progress.current - segment
-    const start = cellPosition(path[segment])
-    const end = cellPosition(path[segment + 1])
-    group.current.position.set(
-      start[0] + (end[0] - start[0]) * fraction,
-      0,
-      start[2] + (end[2] - start[2]) * fraction,
-    )
-    if (progress.current >= path.length - 1) {
-      completed.current = true
-      if (motionId !== null) onMoveComplete(unit.id, motionId)
+    if (path && group.current && !completed.current) {
+      progress.current = Math.min(progress.current + delta * 3, path.length - 1)
+      const segment = Math.min(Math.floor(progress.current), path.length - 2)
+      const fraction = progress.current - segment
+      const start = cellPosition(path[segment])
+      const end = cellPosition(path[segment + 1])
+      group.current.position.set(
+        start[0] + (end[0] - start[0]) * fraction,
+        0,
+        start[2] + (end[2] - start[2]) * fraction,
+      )
+      if (progress.current >= path.length - 1) {
+        completed.current = true
+        if (motionId !== null) onMoveComplete(unit.id, motionId)
+      }
     }
+
+    updateAttackVisual(
+      visualRoot.current,
+      unit.id,
+      attackMotion,
+      attackClockRef.current,
+      materialEmissive.current,
+      materialEmissiveIntensity.current,
+    )
   })
 
   return (
@@ -94,10 +115,14 @@ export default function UnitPlaceholder({
         <ringGeometry args={[0.31, ringRadius, 32]} />
         <meshBasicMaterial color={ringColor} />
       </mesh>
+      <group ref={visualRoot}>
       <group
         position={[0, 0.08, 0]}
         rotation={[0, Math.PI / 4, 0]}
-        onClick={(event) => { event.stopPropagation(); onSelect(unit.id) }}
+        onClick={(event) => {
+          event.stopPropagation()
+          if (!battleBusy) onSelect(unit.id)
+        }}
       >
         <mesh castShadow position={[-0.13, 0.23, 0]}>
           <boxGeometry args={[0.18, 0.4, 0.22]} />
@@ -178,6 +203,84 @@ export default function UnitPlaceholder({
           <meshStandardMaterial color="#d4b775" metalness={0.5} />
         </mesh>
       </group>
+      </group>
     </group>
   )
+}
+
+function updateAttackVisual(
+  visualRoot: Group | null,
+  unitId: string,
+  motion: AttackMotion | null,
+  clock: AttackAnimationClockRef['current'],
+  emissiveColors: WeakMap<MeshStandardMaterial, Color>,
+  emissiveIntensities: WeakMap<MeshStandardMaterial, number>,
+) {
+  if (!visualRoot) return
+  if (!motion || !clock || motion.attackId !== clock.attackId) {
+    visualRoot.position.set(0, 0, 0)
+    visualRoot.rotation.set(0, 0, 0)
+    setHitFlash(visualRoot, 0, emissiveColors, emissiveIntensities)
+    return
+  }
+
+  const profile = ATTACK_ANIMATION_PROFILES[motion.animationType]
+  const frame = clock.frame
+  const isAttacker = motion.attackerId === unitId
+  const isTarget = motion.targetId === unitId
+  const start = cellPosition(motion.from)
+  const end = cellPosition(motion.to)
+  const directionX = end[0] - start[0]
+  const directionZ = end[2] - start[2]
+  const directionLength = Math.hypot(directionX, directionZ)
+  const normalizedX = directionLength > 0 ? directionX / directionLength : 0
+  const normalizedZ = directionLength > 0 ? directionZ / directionLength : 0
+
+  visualRoot.position.set(0, 0, 0)
+  visualRoot.rotation.set(0, 0, 0)
+  if (isAttacker) {
+    visualRoot.rotation.y = Math.atan2(normalizedX, normalizedZ) - Math.PI / 4
+    const melee = profile.lungeDistance > 0
+    const attackProgress = frame.stage === 'ATTACK' ? frame.stageProgress : frame.stage === 'RECOVERY' ? 1 - frame.stageProgress : 0
+    const offset = melee ? Math.sin(Math.max(0, Math.min(1, attackProgress)) * Math.PI / 2) * profile.lungeDistance : 0
+    visualRoot.position.set(normalizedX * offset, 0, normalizedZ * offset)
+    visualRoot.rotation.z = melee && frame.stage !== 'COMPLETED' ? -Math.sin(frame.elapsedRatio * Math.PI * 2) * 0.08 : 0
+  }
+
+  if (isTarget) {
+    const impactAt = profile.windupMs + profile.attackMs
+    const sinceImpact = clock.elapsedMs - impactAt
+    if (motion.phase === 'IMPACTED' && sinceImpact >= 0 && sinceImpact <= 160) {
+      const strength = 1 - sinceImpact / 160
+      visualRoot.position.x = Math.sin(sinceImpact * 0.18) * 0.06 * strength
+      visualRoot.position.z = Math.cos(sinceImpact * 0.14) * 0.035 * strength
+      setHitFlash(visualRoot, Math.min(1, 1 - sinceImpact / 130), emissiveColors, emissiveIntensities)
+    } else {
+      setHitFlash(visualRoot, 0, emissiveColors, emissiveIntensities)
+    }
+  }
+}
+
+function setHitFlash(
+  root: Group,
+  amount: number,
+  emissiveColors: WeakMap<MeshStandardMaterial, Color>,
+  emissiveIntensities: WeakMap<MeshStandardMaterial, number>,
+) {
+  root.traverse((object) => {
+    if (!(object as Mesh).isMesh) return
+    const mesh = object as Mesh
+    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+    for (const material of materials) {
+      if (!(material instanceof MeshStandardMaterial)) continue
+      if (!emissiveColors.has(material)) {
+        emissiveColors.set(material, material.emissive.clone())
+        emissiveIntensities.set(material, material.emissiveIntensity)
+      }
+      const baseColor = emissiveColors.get(material)!
+      const baseIntensity = emissiveIntensities.get(material) ?? 1
+      material.emissive.copy(baseColor).lerp(new Color('#ffffff'), amount)
+      material.emissiveIntensity = baseIntensity + amount * 2
+    }
+  })
 }

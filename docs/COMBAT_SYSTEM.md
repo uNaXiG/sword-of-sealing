@@ -41,7 +41,7 @@
 - 正式 Unit 座標只在 `finish` 且 ID 吻合時更新。
 - 過期或重複 `finish` / `cancel` 不改變狀態。
 - 取消時保留原座標與佔位，不建立 `lastMove`。
-- React StrictMode Cleanup 使用 generation guarding，仍列為動畫生命週期技術債。
+- React StrictMode Cleanup 使用 generation guarding；M3-3 的 Canvas Unmount／重新進入流程已通過使用者驗收。
 
 ## 撤銷與確認
 
@@ -60,6 +60,54 @@
 | ATTACK | 顯示攻擊範圍、合法目標、選目標與確認攻擊；可取消 |
 
 目前攻擊保留獨立確認步驟。
+
+## Attack Motion 與生命週期
+
+`AttackMotion` 與移動 `motion` 互斥，包含唯一 Attack ID、攻擊者／目標座標快照、Animation Type、Phase 及預計 `AttackResult`。
+
+```text
+Confirm → PENDING_IMPACT → Impact → IMPACTED → Complete
+              └─ Abort：不扣 HP
+                                      └─ Abort：保留已扣 HP
+```
+
+- Confirm 驗證攻擊、計算預計結果、清除已確認的 `lastMove`，但不更新 HP。
+- Impact 只接受相符 Attack ID 與 `PENDING_IMPACT`；重複、過期或資料不一致事件不會二次扣血。
+- Impact 更新 HP 與 `lastAttackResult`，並保留 AttackMotion 至 Recovery 完成。
+- Complete 只接受 `IMPACTED`，保留攻擊者選取並返回 COMMAND。
+- Abort 在命中前清除未完成指令且不扣血；命中後保留已正式結算的 HP。
+- 攻擊期間 Reducer、Hook 與 UI 均鎖定一般戰鬥操作；鏡頭操作不受影響。
+- 逐幀時間不寫入 Battle State；唯一時鐘由 Attack Animation Controller 管理。
+
+## 攻擊動畫 Profile
+
+Animation Type 與 AttackPattern 相互獨立：
+
+| 職業 | Animation Type | Wind-up | Attack | Recovery | 突進上限 | 特效色 |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| 劍士 | MELEE_SLASH | 150 ms | 300 ms | 550 ms | 0.45 格 | 淡藍白 |
+| 刺客 | MELEE_STAB | 100 ms | 200 ms | 400 ms | 0.60 格 | 淡紫 |
+| 法師 | MAGIC_PROJECTILE | 450 ms | 500 ms | 450 ms | 0 | 紫藍 |
+| 牧師 | HOLY_STRIKE | 450 ms | 300 ms | 550 ms | 0 | 金白 |
+| 遊俠 | RANGED_ARROW | 300 ms | 400 ms | 400 ms | 0 | 淡綠白 |
+| 哥布林 | MELEE_BASH | 150 ms | 250 ms | 500 ms | 0.40 格 | 橘紅 |
+
+視覺突進僅修改 Visual Root，不呼叫移動規則，也不改變座標、Occupancy 或建立 `BattleMoveRecord`。
+
+## M3-3 驗收與生命週期補充
+
+- 哥布林使用 `MELEE_BASH`，Profile 測試 Fixture 驗證 Registry Mapping、150/250/500 ms 時間及 0.40 格突進上限；正式遊戲未開放玩家控制敵方。
+- 使用者 BV-07 以不改玩家操作流程的外部 Fixture 驗證哥布林渲染、命中與完成；暫時驗收方式未成為永久產品入口。
+- 應用根節點在 `src/main.tsx` 使用 React StrictMode。使用者 BV-15 在該模式下執行攻擊期間返回主選單、觸發 Canvas Unmount，再重新進入戰場，確認無永久鎖定、投射物殘留、舊事件影響或新增 Console Error。
+- 已知限制：目前沒有獨立長時間資源壓力或記憶體量測；Attack Controller 的 emitted Impact／Complete ID 集合仍應在未來生命週期工作中持續觀察。
+
+## Hit Feedback 與 HP 顯示
+
+- 合法 Impact 時播放目標 Hit Flash、約 160 ms 震動及職業色 Impact Effect。
+- Floating Damage 顯示 `-${appliedDamage}`；Overkill 時只顯示實際扣除值。
+- 魔法球、箭矢與聖光由共用投射物時間軸驅動。
+- HP 數字在 Impact 後立即顯示權威值；血條使用純視覺平滑過渡。
+- 受擊演出不變更 BattleUnit 位置；HP 歸零仍保留模型與佔位。
 
 ## 待命
 
@@ -152,7 +200,7 @@ appliedDamage = target.hp - remainingHp
 
 AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Overkill 時 HP 不低於 0，實際扣除不超過目標剩餘 HP。
 
-目前 HP 在確認攻擊時立即扣除；M3-3 的動畫／命中時序尚未核准。
+目前 HP 只在合法 Attack Impact Event 正式扣除。
 
 ## SP、AGI 與 HP 歸零
 
@@ -180,6 +228,6 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 - 無回合、行動次數、敵方 AI、勝敗。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
-- 無攻擊動畫與受擊演出。
+- 尚未導入攻擊音效、正式骨架動畫、死亡演出或 Physics。
 - 無死亡移除。
 - UI 目前要求選取目標後再確認攻擊。

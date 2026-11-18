@@ -2,7 +2,7 @@ import { useCallback, useMemo, useReducer } from 'react'
 import { INITIAL_UNITS } from '../../../game/battle/battle.data'
 import { canAttackTarget, getAttackableTargets, getAttackableTiles, getAttackDistance } from '../../../game/battle/battle.attack'
 import { reachableForUnit } from '../../../game/battle/battle.movement'
-import { battleReducer, canUndoLastMove, createBattleState } from '../../../game/battle/battle.state'
+import { battleReducer, canUndoLastMove, createBattleState, isBattleBusy } from '../../../game/battle/battle.state'
 import { INITIAL_OBSTACLES, obstacleCell } from '../../../game/battle/obstacles'
 import type { InteractionMode } from '../../../game/battle/battle.types'
 import { cellKey } from '../../../game/grid/grid.utils'
@@ -54,6 +54,10 @@ export function useBattleMovement() {
   const selectAttackTarget = useCallback((targetId: string) => dispatch({ type: 'select-attack-target', targetId }), [])
   const cancelAttack = useCallback(() => dispatch({ type: 'cancel-attack' }), [])
   const confirmAttack = useCallback(() => dispatch({ type: 'confirm-attack' }), [])
+  const impactAttack = useCallback((attackId: number) => dispatch({ type: 'attack-impact', attackId }), [])
+  const completeAttack = useCallback((attackId: number) => dispatch({ type: 'attack-complete', attackId }), [])
+  const abortAttack = useCallback((attackId: number) => dispatch({ type: 'attack-abort', attackId }), [])
+  const battleBusy = isBattleBusy(state)
 
   return {
     ...state,
@@ -65,7 +69,8 @@ export function useBattleMovement() {
     attackableTargets,
     attackableTargetIds,
     attackableTargetCells,
-    canConfirmAttack: state.interactionMode === 'ATTACK' &&
+    battleBusy,
+    canConfirmAttack: !battleBusy && state.interactionMode === 'ATTACK' &&
       Boolean(state.selectedAttackTargetId && canAttackTarget(state.units, state.selectedUnitId ?? '', state.selectedAttackTargetId)),
     canUndoMove: state.interactionMode === 'COMMAND' && canUndoLastMove(state),
     selectUnit,
@@ -81,5 +86,8 @@ export function useBattleMovement() {
     selectAttackTarget,
     cancelAttack,
     confirmAttack,
+    impactAttack,
+    completeAttack,
+    abortAttack,
   }
 }

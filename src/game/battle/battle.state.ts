@@ -11,6 +11,7 @@ import { getTerrainType } from '../grid/terrain.data.ts'
 import { calculatePhysicalDamage } from './battle.damage.ts'
 import { isUnitAlive } from './battle.unit.ts'
 import { isUnitClass, validateAttackProperties } from '../classes/class.data.ts'
+import { getAttackProfile } from './battle.animation.ts'
 
 type BattleAction =
   | { type: 'select'; unitId: string }
@@ -26,6 +27,9 @@ type BattleAction =
   | { type: 'select-attack-target'; targetId: string }
   | { type: 'cancel-attack' }
   | { type: 'confirm-attack' }
+  | { type: 'attack-impact'; attackId: number }
+  | { type: 'attack-complete'; attackId: number }
+  | { type: 'attack-abort'; attackId: number }
 
 export function createBattleState(units: readonly BattleUnit[], obstacles: readonly BattleObstacle[] = []): BattleState {
   for (const unit of units) {
@@ -69,12 +73,18 @@ export function createBattleState(units: readonly BattleUnit[], obstacles: reado
     selectedAttackTargetId: null,
     lastAttackCommand: null,
     lastAttackResult: null,
+    attackMotion: null,
+    nextAttackId: 1,
   }
+}
+
+export function isBattleBusy(state: BattleState): boolean {
+  return state.motion !== null || state.attackMotion !== null
 }
 
 export function canUndoLastMove(state: BattleState): boolean {
   const record = state.lastMove
-  if (!record || state.motion || state.interactionMode !== 'COMMAND' || state.selectedUnitId !== record.unitId) return false
+  if (!record || isBattleBusy(state) || state.interactionMode !== 'COMMAND' || state.selectedUnitId !== record.unitId) return false
 
   const unit = state.units.find((candidate) => candidate.id === record.unitId)
   if (
@@ -116,7 +126,7 @@ function selectPlayerUnit(state: BattleState, unitId: string): BattleState {
 }
 
 function selectAttackTarget(state: BattleState, targetId: string): BattleState {
-  if (state.interactionMode !== 'ATTACK' || state.motion) return state
+  if (state.interactionMode !== 'ATTACK' || isBattleBusy(state)) return state
   return {
     ...state,
     selectedAttackTargetId: canAttackTarget(state.units, state.selectedUnitId ?? '', targetId) ? targetId : null,
@@ -132,7 +142,76 @@ function selectUnitOrAttackTarget(state: BattleState, unitId: string): BattleSta
   return selectAttackTarget(state, unitId)
 }
 
+function abortAttack(state: BattleState): BattleState {
+  const attack = state.attackMotion
+  if (!attack) return state
+  const attackerStillSelectable = state.units.some(
+    (unit) => unit.id === attack.attackerId && unit.faction === 'player' && isUnitAlive(unit),
+  )
+  return {
+    ...state,
+    attackMotion: null,
+    interactionMode: 'COMMAND',
+    selectedUnitId: attackerStillSelectable ? attack.attackerId : null,
+    selectedAttackTargetId: null,
+    lastAttackCommand: attack.phase === 'PENDING_IMPACT' ? null : state.lastAttackCommand,
+    lastAttackResult: attack.phase === 'PENDING_IMPACT' ? null : state.lastAttackResult,
+  }
+}
+
 export function battleReducer(state: BattleState, action: BattleAction): BattleState {
+  if (action.type === 'attack-impact') {
+    const attack = state.attackMotion
+    if (!attack || attack.attackId !== action.attackId || attack.phase !== 'PENDING_IMPACT') return state
+    const attacker = state.units.find((unit) => unit.id === attack.attackerId)
+    const target = state.units.find((unit) => unit.id === attack.targetId)
+    if (
+      !attacker ||
+      !target ||
+      !isUnitAlive(attacker) ||
+      !isUnitAlive(target) ||
+      cellKey(attacker.position) !== cellKey(attack.from) ||
+      cellKey(target.position) !== cellKey(attack.to) ||
+      target.hp !== attack.result.previousHp ||
+      !canAttackTarget(state.units, attack.attackerId, attack.targetId)
+    ) return abortAttack(state)
+
+    const expected = calculatePhysicalDamage(attacker, target)
+    if (
+      expected.damage !== attack.result.damage ||
+      expected.appliedDamage !== attack.result.appliedDamage ||
+      expected.previousHp !== attack.result.previousHp ||
+      expected.remainingHp !== attack.result.remainingHp ||
+      expected.isDefeated !== attack.result.isDefeated
+    ) return abortAttack(state)
+
+    return {
+      ...state,
+      units: state.units.map((unit) => unit.id === target.id ? { ...unit, hp: attack.result.remainingHp } : unit),
+      attackMotion: { ...attack, phase: 'IMPACTED' },
+      lastAttackResult: attack.result,
+    }
+  }
+
+  if (action.type === 'attack-complete') {
+    const attack = state.attackMotion
+    if (!attack || attack.attackId !== action.attackId || attack.phase !== 'IMPACTED') return state
+    return {
+      ...state,
+      attackMotion: null,
+      interactionMode: 'COMMAND',
+      selectedAttackTargetId: null,
+      selectedUnitId: state.units.some(
+        (unit) => unit.id === attack.attackerId && unit.faction === 'player' && isUnitAlive(unit),
+      ) ? attack.attackerId : null,
+    }
+  }
+
+  if (action.type === 'attack-abort') {
+    if (!state.attackMotion || state.attackMotion.attackId !== action.attackId) return state
+    return abortAttack(state)
+  }
+
   if (action.type === 'finish' || action.type === 'cancel') {
     const motion = state.motion
     if (!motion || action.unitId !== motion.unitId || action.motionId !== motion.motionId) return state
@@ -171,11 +250,11 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
   }
 
   if (action.type === 'commit') {
-    return state.motion || !state.lastMove ? state : { ...state, lastMove: null }
+    return isBattleBusy(state) || !state.lastMove ? state : { ...state, lastMove: null }
   }
 
   if (action.type === 'set-mode') {
-    if (state.motion) return state
+    if (isBattleBusy(state)) return state
     if (state.interactionMode !== 'COMMAND') return state
     const selectedUnit = state.units.find((unit) => unit.id === state.selectedUnitId)
     if (action.mode === 'MOVE' && (
@@ -194,7 +273,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
   }
 
   if (action.type === 'cancel-move-mode') {
-    if (state.motion || state.interactionMode !== 'MOVE') return state
+    if (isBattleBusy(state) || state.interactionMode !== 'MOVE') return state
     return {
       ...state,
       interactionMode: 'COMMAND',
@@ -205,7 +284,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
   }
 
   if (action.type === 'cancel-attack') {
-    if (state.motion || state.interactionMode !== 'ATTACK') return state
+    if (isBattleBusy(state) || state.interactionMode !== 'ATTACK') return state
     return {
       ...state,
       interactionMode: 'COMMAND',
@@ -218,7 +297,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
   if (action.type === 'standby') {
     const selectedUnit = state.units.find((unit) => unit.id === state.selectedUnitId)
     if (
-      state.motion ||
+      isBattleBusy(state) ||
       state.interactionMode !== 'COMMAND' ||
       selectedUnit?.faction !== 'player' ||
       !isUnitAlive(selectedUnit)
@@ -235,7 +314,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
   }
 
   if (action.type === 'confirm-attack') {
-    if (state.motion || state.interactionMode !== 'ATTACK' || !state.selectedAttackTargetId) return state
+    if (isBattleBusy(state) || state.interactionMode !== 'ATTACK' || !state.selectedAttackTargetId) return state
     const attackerId = state.selectedUnitId
     const targetId = state.selectedAttackTargetId
     if (!attackerId || !targetId) return state
@@ -258,16 +337,26 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     }
     return {
       ...state,
-      units: state.units.map((unit) => unit.id === targetId ? { ...unit, hp: result.remainingHp } : unit),
       interactionMode: 'COMMAND',
       selectedAttackTargetId: null,
       lastAttackCommand: { attackerId, targetId },
-      lastAttackResult: result,
+      lastAttackResult: null,
+      attackMotion: {
+        attackId: state.nextAttackId,
+        attackerId,
+        targetId,
+        from: { ...attacker.position },
+        to: { ...target.position },
+        animationType: getAttackProfile(attacker.class).type,
+        phase: 'PENDING_IMPACT',
+        result,
+      },
+      nextAttackId: state.nextAttackId + 1,
       lastMove: null,
     }
   }
 
-  if (state.motion) {
+  if (isBattleBusy(state)) {
     return state
   }
 

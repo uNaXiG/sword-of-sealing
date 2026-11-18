@@ -89,6 +89,10 @@ test('Reducer 依模式重新驗證且普通攻擊不消耗 SP 或傷害其他�
 
   state = battleReducer(state, { type: 'select-attack-target', targetId: far.id })
   state = battleReducer(state, { type: 'confirm-attack' })
+  assert.equal(state.units.find((unit) => unit.id === far.id).hp, far.hp)
+  const attackId = state.attackMotion.attackId
+  state = battleReducer(state, { type: 'attack-impact', attackId })
+  state = battleReducer(state, { type: 'attack-complete', attackId })
   assert.equal(state.units.find((unit) => unit.id === far.id).hp, far.hp - 15)
   assert.equal(state.units.find((unit) => unit.id === other.id).hp, other.hp)
   assert.equal(state.units.find((unit) => unit.id === rogueAttacker.id).sp, rogueAttacker.sp)
