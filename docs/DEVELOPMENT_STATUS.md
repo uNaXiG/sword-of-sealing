@@ -12,30 +12,30 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| 最新已驗證 Repository Commit | `uNaXiG/sword-of-sealing` · `main` @ `d201b06e838a6b33dbfbf1fc329c4f7ac97a91d9` |
-| Commit 資訊 | `feat(battle): implement death animation mechanics and unit life state management`；2026-11-18 17:34:58（UTC+8） |
-| 最新已驗證遊戲功能異動 | `d201b06`（M3-4 與 Patch 1 Revision 2） |
-| 最新遊戲 CI Run | [44277295361](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44277295361) — SUCCESS |
+| Latest Verified Repository Commit | `uNaXiG/sword-of-sealing` · `main` @ `9c8e623724e0f6b86f4a9b5ce5099f98d485a105` — `docs: finalize M3 combat system acceptance and milestone closure` |
+| Latest Repository CI Run | [44279206269](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44279206269) — SUCCESS（`main` / `9c8e623`） |
+| Latest Verified Gameplay Commit | `main` @ `d201b06e838a6b33dbfbf1fc329c4f7ac97a91d9`（M3-4 與 Patch 1 Revision 2） |
+| Gameplay CI Run | [44277295361](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44277295361) — SUCCESS（`main` / `d201b06`） |
 | 最近完成里程碑 | M3：基礎戰鬥系統 — COMPLETED |
+| 主要里程碑狀態 | M1–M3 均為 **COMPLETED**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | 整體里程碑等權重進度 | 30.0%（不是實際工時比例） |
 | 下一階段 | M4：回合制與敵方 AI；M4-1：玩家／敵方回合切換，皆為 **UP NEXT**、尚未開始 |
-| 本次結案文件 | **Closure Documentation — Git Push Pending**；尚未提交，不屬於上列遊戲 CI Run |
+| M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
 ## 驗證結果
 
 | 驗證 | 結果 | 來源與範圍 |
 | --- | --- | --- |
-| 自動化測試、ESLint、Production Build | 137/137 PASS；ESLint PASS；Build PASS | 沿用 Revision 2 實作報告，結案任務未重跑；Build 保留 Battle Chunk > 500 kB 已知警告 |
-| CI/CD | SUCCESS | Run `44277295361` 對應 `main` / `d201b06` |
-| Markdown 相對連結 | PASS | 本次結案文件檢查 |
+| 自動化測試、ESLint、Production Build | 137/137 PASS；ESLint PASS；Build PASS | 沿用 Revision 2 實作報告；DOC-01 Patch 1 未在本機重跑。Build 保留 Battle Chunk > 500 kB 已知警告 |
+| Markdown 相對連結與文件一致性 | PASS | DOC-01 Patch 1 本次檢查 |
 | 使用者瀏覽器驗收 | M3-3 15/15 PASS；M3-4 BV-01 至 BV-20 全部 PASS；Patch 1 Revision 2 8/8 PASS | 使用者正式驗收 |
 | Acceptance Criteria | M3-3 40/40 PASS；M3-4 52/52 PASS；Patch 1 Revision 2 12/12 PASS | 已確認驗收結果 |
 
 ## DOC-01 狀態
 
-- 文件任務：**COMPLETED**。
+- 原 DOC-01 文件任務：**COMPLETED**。
 - 已實作、已通過使用者驗收、已通過 ChatGPT GitHub 文件審查、已提交。
 - Commit：`1626daf07fd81a47c365614c1d65d7c335d1d3da`。
 - GitHub Actions Run `44220401050`：**CI/CD SUCCESS**。
@@ -43,7 +43,8 @@
 - [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) 中 TD-008 及 TD-013 已處理並關閉。
 - README 過時攻擊範圍敘述已由本任務修正。
 - 本任務未修改遊戲程式、核心資料、套件或部署設定。
-- 本機已重新執行 79/79 tests、Lint 與 Build。Build 只出現既知 Chunk Size warning。
+- 原 DOC-01 驗證基準為 79/79 tests、Lint 與 Build PASS；Build 保留既知 Chunk Size warning。
+- DOC-01 Patch 1：已在工作樹增補長期指引並同步基準，待使用者確認。尚未提交，無對應遠端 CI，不影響里程碑進度。
 
 ## M3-3 狀態
 
@@ -85,8 +86,8 @@
 
 ## 已知阻擋問題
 
-目前無已知 M3 功能或驗收阻擋。僅本次結案文件待使用者確認與 Git 同步；遊戲功能基準已同步。
+目前無已知 M3 功能或驗收阻擋。M3 結案文件與遊戲功能基準均已同步。
 
 ## 下一步
 
-等待使用者確認本次結案文件並執行 Git 操作。下一個開發項目為 M4-1 玩家／敵方回合切換；本次不啟動 M4。
+等待使用者確認 DOC-01 Patch 1 並執行 Git 操作。下一個開發項目為 M4-1 玩家／敵方回合切換；本次不啟動。
