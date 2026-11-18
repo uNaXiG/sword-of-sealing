@@ -39,3 +39,14 @@
 M3-3 已依使用者 BV-15 關閉 TD-004。TD-010 的直接相關 Texture Cleanup 已實作及通過場景重入驗收，但缺少長時間資源壓力與記憶體測量，因此保持 PARTIALLY RESOLVED。其餘技術債維持既有狀態。
 
 TD-014 維持 OPEN，本次結案不進行重構。
+
+## M4-1 階段性限制
+
+以下項目是 Roadmap 明確排定的後續範圍，不視為新增技術債：
+
+- M4-2：完整個體行動限制、Action Economy 與狀態重置。
+- M4-3：正式敵方移動／攻擊 AI，並移除 Development-only Enemy Standby。
+- M4-4：勝利、失敗與戰鬥結束。
+- M7：Action Advance、Action Delay、Speed Up／Down 等未來效果。
+
+Production Build 遇到 Enemy Turn 時會等待 M4-3，不提供玩家可用的敵方控制後門。

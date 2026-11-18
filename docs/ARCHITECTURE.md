@@ -33,6 +33,9 @@ sword-of-sealing/
 │   │   └── hooks/
 │   └── game/
 │       ├── battle/
+│       │   ├── battle.turn.ts
+│       │   ├── battle.turn.types.ts
+│       │   └── battle.turn.constants.ts
 │       ├── classes/
 │       └── grid/
 └── tests/
@@ -68,6 +71,9 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/battle/battle.animation.ts` | Attack Animation Type、職業 Mapping、Profile、純 Timeline |
 | `game/battle/battle.death.ts` | Death Profile、1,200 ms Timeline、倒地方向 |
 | `game/battle/battle.unit.ts` | Unit Life State 與存活判定 |
+| `game/battle/battle.turn.ts` | PAS DES 排程、確定性排序、Turn Completion 與唯讀 Preview |
+| `game/battle/battle.turn.types.ts` | Turn Timeline、Pending Completion 與 Preview 型別 |
+| `game/battle/battle.turn.constants.ts` | 1000 BU、200 BTU／Round、預覽數量與容差 |
 | `game/battle/battle.movement.ts` | 單位移動預算與完成前驗證 |
 | `game/battle/occupancy.ts` | 棋格佔位唯一性 |
 | `game/battle/obstacles.ts` | 障礙配置與驗證 |
@@ -75,6 +81,8 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/grid/terrain.*.ts` | 地形資料、型別、成本與顏色 |
 | `game/classes/` | 職業型別、Registry、驗證與 Factory |
 | `features/battle/hooks/useBattleMovement.ts` | State Hook、Derived State 與 Action 介面 |
+| `features/battle/components/BattleTurnHUD.tsx` | Round、Battle Time、Turn ID 與 Active Unit HUD |
+| `features/battle/components/TurnOrderTimeline.tsx` | Active Unit 與未來 10 次唯讀行動預覽 |
 | `features/battle/hooks/useAttackAnimation.ts` | 單一動畫時鐘介面 |
 | `features/battle/components/AttackAnimationController.tsx` | Wind-up／Impact／Recovery 的權威計時與事件派送 |
 | `features/battle/components/DeathAnimationController.tsx` | Death ID 獨立時鐘、完成與 System Abort |
@@ -86,6 +94,29 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `features/battle/components/` | 棋盤、模型、標籤與障礙 Rendering |
 
 `useBattleMovement` 已承擔超出移動的整體戰鬥職責；其重新命名屬於未授權技術債，不應自行重構。
+
+## PAS 與 Individual Turn
+
+`BattleTurnState` 集中保存 `battleTime`、`round`、`turnId`、`activeUnitId` 與每個合格單位的 Remaining Distance／Velocity。PAS 使用均速 Remaining Distance Model 與 DES：只在取得或完成個體回合時推進虛擬 Battle Time，不由現實時間、Renderer 或 `useFrame` 驅動。
+
+純 Domain Functions 負責 AV、Round、最小抵達時間、確定性 Tie-break、同步 Distance 更新與 Preview；`battleReducer` 驗證 Active Unit 與 Turn ID，並獨占 Turn 生命週期。Renderer 只顯示 Derived HUD／Timeline，點擊預覽不授予操作權。
+
+```mermaid
+flowchart LR
+    Command[Active Unit Command] --> Reducer
+    Motion[Move / Attack / Death Complete] --> Reducer
+    Reducer --> Pending[Pending Turn Completion]
+    Reducer --> PAS[PAS Domain Scheduler]
+    PAS --> Turn[BattleTurnState]
+    Turn --> Preview[Pure 10-turn Prediction]
+    Turn --> UI[HUD / Timeline / Active Highlight]
+```
+
+Attack Complete 或 Post-impact Abort 在存在 DeathMotion 時保留 `PendingTurnCompletion`。最後一個阻擋 Motion 結束後才原子重置 Active Unit Distance、清理舊 Turn 操作上下文並排程下一位。
+
+`movementUsedTurnId` 是 M4-1 的最小 Turn-scoped Movement Commitment。合法 Move Finish 建立限制；合法 Undo 清除限制；攻擊確認可清除 `lastMove`，但保留 Commitment 以防 Pre-impact Abort 後重複移動。下一個 Individual Turn 及 Scene Re-entry 會重置此狀態。UI Move Availability 與 Reducer 共用 `canEnterMoveMode` 判斷。
+
+Development Build 的「模擬敵方待命」只經明確 Development Control Action 驅動；Production UI 不呈現玩家敵方操作，未來 M4-3 將以 AI Lifecycle 替換。
 
 ## Battle State 與 Reducer
 

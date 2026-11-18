@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { createBattleUnit } from '../src/game/classes/class.factory.ts'
 import { battleReducer, createBattleState } from '../src/game/battle/battle.state.ts'
 import { getOccupancy } from '../src/game/battle/occupancy.ts'
+import { activateUnitFixture } from './turn.fixture.mjs'
 
 const knight = createBattleUnit({
   id: 'knight',
@@ -61,7 +62,7 @@ test('合法確認建立獨立座標快照與預計 AttackResult，但不扣 HP'
   assert.deepEqual(state.lastAttackCommand, { attackerId: knight.id, targetId: goblin.id })
 })
 
-test('合法 Impact 只結算一次並在 Complete 後保留選取', () => {
+test('合法 Impact 只結算一次並在 Complete 後自動排程下一位', () => {
   let state = beginAttack()
   const attackId = state.attackMotion.attackId
   state = battleReducer(state, { type: 'attack-impact', attackId })
@@ -70,7 +71,8 @@ test('合法 Impact 只結算一次並在 Complete 後保留選取', () => {
   assert.equal(battleReducer(state, { type: 'attack-impact', attackId }), state)
   state = battleReducer(state, { type: 'attack-complete', attackId })
   assert.equal(state.attackMotion, null)
-  assert.equal(state.selectedUnitId, knight.id)
+  assert.equal(state.selectedUnitId, null)
+  assert.equal(state.turn.activeUnitId, goblin.id)
   assert.equal(state.interactionMode, 'COMMAND')
   assert.equal(battleReducer(state, { type: 'attack-complete', attackId }), state)
 })
@@ -88,6 +90,7 @@ test('未命中 Complete、無 Motion 及過期 Attack ID 不造成變更', () =
 
 test('Attack ID 遞增且舊 ID 不能影響新攻擊', () => {
   let state = resolveAttack(beginAttack())
+  state = activateUnitFixture(state, knight.id)
   state = selectAttack(state)
   state = battleReducer(state, { type: 'confirm-attack' })
   assert.equal(state.attackMotion.attackId, 2)
@@ -142,15 +145,16 @@ test('命中前 Abort 不扣血並清除未完成結果', () => {
   assert.equal(battleReducer(state, { type: 'attack-impact', attackId: 1 }), state)
 })
 
-test('命中後 Abort 保留傷害、結果與操作解鎖', () => {
+test('命中後 Abort 保留傷害、結果並自動完成 Turn', () => {
   let state = beginAttack()
   state = battleReducer(state, { type: 'attack-impact', attackId: 1 })
   state = battleReducer(state, { type: 'attack-abort', attackId: 1 })
   assert.equal(state.attackMotion, null)
   assert.equal(state.units.find((unit) => unit.id === goblin.id).hp, 45)
   assert.equal(state.lastAttackResult.remainingHp, 45)
-  assert.deepEqual(state.lastAttackCommand, { attackerId: knight.id, targetId: goblin.id })
-  assert.equal(state.selectedUnitId, knight.id)
+  assert.equal(state.lastAttackCommand, null)
+  assert.equal(state.selectedUnitId, null)
+  assert.equal(state.turn.activeUnitId, goblin.id)
 })
 
 test('重複與過期 Abort 為 no-op，不影響新攻擊', () => {
@@ -182,6 +186,7 @@ test('合法攻擊清除並不復原已確認移動紀錄，Abort 不重建它',
     selectedUnitId: knight.id,
     lastMove: {
       motionId: 9,
+      turnId: 1,
       unitId: knight.id,
       from: { column: 2, row: 3 },
       to: { ...knight.position },
@@ -200,6 +205,7 @@ test('合法攻擊清除並不復原已確認移動紀錄，Abort 不重建它',
 test('無效攻擊保留有效 lastMove 並不建立 AttackMotion', () => {
   const moveRecord = {
     motionId: 1,
+    turnId: 1,
     unitId: knight.id,
     from: { column: 2, row: 3 },
     to: { ...knight.position },

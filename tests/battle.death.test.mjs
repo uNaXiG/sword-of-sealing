@@ -4,6 +4,7 @@ import { createBattleUnit } from '../src/game/classes/class.factory.ts'
 import { battleReducer, createBattleState, isBattleBusy } from '../src/game/battle/battle.state.ts'
 import { getOccupancy, unitAt } from '../src/game/battle/occupancy.ts'
 import { getUnitLifeState } from '../src/game/battle/battle.unit.ts'
+import { activateUnitFixture } from './turn.fixture.mjs'
 
 const knight = createBattleUnit({
   id: 'knight',
@@ -25,7 +26,7 @@ const ranger = createBattleUnit({
 })
 
 function beginAttack(units = [knight, goblin, ranger], attackerId = knight.id, targetId = goblin.id) {
-  let state = createBattleState(units)
+  let state = activateUnitFixture(createBattleState(units), attackerId)
   state = battleReducer(state, { type: 'select', unitId: attackerId })
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId })
@@ -189,6 +190,7 @@ test('Death Start 清理死亡單位相關選取與 lastMove，不清除攻擊�
     selectedUnitId: dyingPlayer.id,
     lastMove: {
       motionId: 2,
+      turnId: 1,
       unitId: dyingPlayer.id,
       from: { column: 1, row: 2 },
       to: { ...dyingPlayer.position },

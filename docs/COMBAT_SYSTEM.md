@@ -49,7 +49,7 @@
 
 可撤銷條件包含：角色仍選中且存活、無動畫、仍位於目的格、原始格合法未佔用、紀錄未確認。撤銷會還原座標與佔位、清除紀錄且不倒播動畫或消耗 MOV。
 
-確認移動的事件：確認攻擊、待命、切換其他我方角色。未確認移動時不能直接再次 MOVE。
+移動完成後以 `lastMove` 保存可撤銷資訊，並以 Turn-scoped Movement Commitment 禁止同一 Turn 再次移動。攻擊確認與待命會隱式確認移動；沒有獨立「確認移動」事件或按鈕。
 
 ## 操作模式
 
@@ -72,6 +72,7 @@ Confirm → PENDING_IMPACT → Impact → IMPACTED → Complete
 ```
 
 - Confirm 驗證攻擊、計算預計結果、清除已確認的 `lastMove`，但不更新 HP。
+- 合法攻擊確認會清除可撤銷的 `lastMove`，但保留目前 Turn 的 Movement Commitment。即使發生 Pre-impact Abort，也不會重新取得移動權。
 - Impact 只接受相符 Attack ID 與 `PENDING_IMPACT`；重複、過期或資料不一致事件不會二次扣血。
 - Impact 更新 HP 與 `lastAttackResult`，並保留 AttackMotion 至 Recovery 完成。
 - Complete 只接受 `IMPACTED`，保留攻擊者選取並返回 COMMAND。
@@ -159,7 +160,9 @@ Renderer 不再於 Dispatch 前建立 Floating Damage 或依預計結果播放�
 
 ## 待命
 
-Standby 只允許已選取、存活的玩家單位在 COMMAND 且無動畫時執行。它會確認既有移動、清除 Undo 與暫時攻擊資料、清除選取並回到 COMMAND。尚未導入回合制，因此待命後仍可重新選取。
+Standby 只允許已選取、存活的玩家 Active Unit 在 COMMAND 且無動畫時執行。它會確認既有移動、清除 Undo 與暫時攻擊資料，並自動完成目前個體回合。
+
+移動完成後的 COMMAND 選單只提供攻擊、取消及待命。「取消」執行現有 Undo，清除 Movement Commitment 並恢復移動權，但不改變 Battle Time、Round 或 Turn ID。取消 ATTACK Mode 不確認移動，也不解除本 Turn 的移動限制。
 
 ## 職業資料結構
 
@@ -167,12 +170,12 @@ Standby 只允許已選取、存活的玩家單位在 COMMAND 且無動畫時執
 
 | 職業 | HP | SP | ATK | DEF | AGI | MOV | Mode | Range |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |
-| 劍士 `knight` | 100 | 30 | 20 | 10 | 5 | 4 | SQUARE | 1 |
-| 刺客 `assassin` | 75 | 35 | 28 | 5 | 10 | 6 | SQUARE | 1 |
-| 法師 `mage` | 65 | 60 | 12 | 6 | 4 | 3 | CROSS | 1–2 |
-| 牧師 `cleric` | 80 | 70 | 24 | 6 | 4 | 3 | CROSS | 1–2 |
-| 遊俠 `ranger` | 80 | 40 | 18 | 5 | 8 | 5 | DIAMOND_RING | 3 |
-| 哥布林 `goblin` | 60 | 15 | 15 | 5 | 4 | 3 | DIAMOND | 1 |
+| 劍士 `knight` | 100 | 30 | 20 | 10 | 10 | 4 | SQUARE | 1 |
+| 刺客 `assassin` | 75 | 35 | 28 | 5 | 15 | 6 | SQUARE | 1 |
+| 法師 `mage` | 65 | 60 | 12 | 6 | 10 | 3 | CROSS | 1–2 |
+| 牧師 `cleric` | 80 | 70 | 24 | 6 | 12 | 3 | CROSS | 1–2 |
+| 遊俠 `ranger` | 80 | 40 | 18 | 5 | 12 | 5 | DIAMOND_RING | 3 |
+| 哥布林 `goblin` | 60 | 15 | 15 | 5 | 10 | 3 | DIAMOND | 1 |
 
 SP（Skill Points）與 MOV（Movement Points）是不同概念。
 
@@ -253,9 +256,26 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 ## SP、AGI 與 HP 歸零
 
 - SP 目前只儲存、驗證與顯示；普通攻擊不消耗。
-- AGI 目前只儲存、驗證與顯示，不影響行動順序。
+- AGI 是 M4-1 PAS 的基礎速度，決定行動頻率與抵達時間。
 - HP 歸零表示失去戰鬥能力：不可選取、移動、攻擊、成為目標、待命或撤銷。
 - 一般致命 Impact 進入 M3-4 Death Lifecycle，動畫完成後從 Active Unit 移除；僅初始 HP 0 Fixture 仍保留資料、模型與佔位且不生成虛構死亡事件。
+
+## M4-1 Physics-inspired Action System
+
+- `ACTION_DISTANCE = 1000` BU；`ROUND_DURATION = 200` BTU；預覽 10 次。
+- 每名存活單位保存固定 `initialOrder`、`remainingDistance` 與 `velocity`；M4-1 的 `velocity = unit.agi`。
+- `AV = remainingDistance / velocity`。最小 AV 作為 DES 的時間推進量，所有合資格單位同步扣除 `velocity × deltaTime`。
+- 只有接近零的合法浮點殘值會正規化；重大負值直接視為錯誤，不以絕對值修正。
+- 同時抵達依 AGI 高者、Initial Order 小者排序；後續同時抵達 Turn 的 `deltaTime` 可為零。
+- `round = floor(battleTime / 200) + 1`；Round 改變不重置角色屬性或距離。
+- 一次只有一名 Active Unit。玩家只能操作自己的 Active Unit；敵方 Turn 鎖定玩家戰鬥指令。
+- Attack Complete／Post-impact Abort 只在所有 Movement、Attack、Death Motion 結束後完成 Turn。
+- 致命 Impact 立即將目標移出 Timeline 與 Preview，但棋格佔位維持至 Death 結算。
+- Turn Preview 使用相同核心演算法的唯讀副本，包含目前 Active Unit 後未來 10 次。
+
+正式初始戰場前 17 次順序與 Round 邊界由 [battle.turn.test.mjs](../tests/battle.turn.test.mjs) 驗證。
+
+M4-1 尚未實作完整個體行動資源、正式敵方 AI、勝敗或 M7 效果。每個個體 Turn 最多合法移動一次；Undo 只在未確認時恢復該次移動權。Development Build 可使用「模擬敵方待命」；Production Build 不顯示此控制。
 
 ## 初始測試戰場
 
@@ -274,7 +294,7 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 ## 已知限制
 
-- 無回合、行動次數、敵方 AI、勝敗。
+- 無完整個體行動次數／資源管理、正式敵方 AI、勝敗。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
 - 尚未導入攻擊音效、正式骨架動畫或 Physics；目前的死亡演出使用 Placeholder 模型。
 - UI 目前要求選取目標後再確認攻擊。

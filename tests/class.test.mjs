@@ -9,12 +9,12 @@ import { getTerrainType } from '../src/game/grid/terrain.data.ts'
 import { TerrainType } from '../src/game/grid/terrain.types.ts'
 
 const expectedStats = {
-  knight: ['劍士', 100, 30, 20, 10, 5, 4, 'SQUARE', 1, 1],
-  assassin: ['刺客', 75, 35, 28, 5, 10, 6, 'SQUARE', 1, 1],
-  mage: ['法師', 65, 60, 12, 6, 4, 3, 'CROSS', 2, 1],
-  cleric: ['牧師', 80, 70, 24, 6, 4, 3, 'CROSS', 2, 1],
-  ranger: ['遊俠', 80, 40, 18, 5, 8, 5, 'DIAMOND_RING', 3, 3],
-  goblin: ['哥布林', 60, 15, 15, 5, 4, 3, 'DIAMOND', 1, 1],
+  knight: ['劍士', 100, 30, 20, 10, 10, 4, 'SQUARE', 1, 1],
+  assassin: ['刺客', 75, 35, 28, 5, 15, 6, 'SQUARE', 1, 1],
+  mage: ['法師', 65, 60, 12, 6, 10, 3, 'CROSS', 2, 1],
+  cleric: ['牧師', 80, 70, 24, 6, 12, 3, 'CROSS', 2, 1],
+  ranger: ['遊俠', 80, 40, 18, 5, 12, 5, 'DIAMOND_RING', 3, 3],
+  goblin: ['哥布林', 60, 15, 15, 5, 10, 3, 'DIAMOND', 1, 1],
 }
 
 function definitionValues(definition) {

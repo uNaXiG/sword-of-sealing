@@ -2,6 +2,7 @@ import type { AttackPattern, UnitClass } from '../classes/class.types'
 import type { Cell } from '../grid/grid.types'
 import type { BattleObstacle } from './obstacles'
 import type { AttackAnimationType } from './battle.animation'
+import type { BattleTurnState, PendingTurnCompletion } from './battle.turn.types'
 
 export type BattleFaction = 'player' | 'enemy'
 
@@ -47,6 +48,7 @@ export type AttackMotionPhase = 'PENDING_IMPACT' | 'IMPACTED'
 
 export type AttackMotion = {
   attackId: number
+  turnId: number
   attackerId: string
   targetId: string
   from: Cell
@@ -84,6 +86,7 @@ export type DefeatedUnitRecord = {
 
 export type BattleMotion = {
   motionId: number
+  turnId: number
   unitId: string
   path: Cell[]
   cost: number
@@ -91,6 +94,7 @@ export type BattleMotion = {
 
 export type BattleMoveRecord = {
   motionId: number
+  turnId: number
   unitId: string
   from: Cell
   to: Cell
@@ -105,6 +109,7 @@ export type BattleState = {
   motion: BattleMotion | null
   nextMotionId: number
   lastMove: BattleMoveRecord | null
+  movementUsedTurnId: number | null
   interactionMode: InteractionMode
   selectedAttackTargetId: string | null
   lastAttackCommand: AttackCommand | null
@@ -115,4 +120,6 @@ export type BattleState = {
   nextDeathId: number
   defeatedUnits: DefeatedUnitRecord[]
   confirmedImpacts: ConfirmedImpactEvent[]
+  turn: BattleTurnState
+  pendingTurnCompletion: PendingTurnCompletion | null
 }

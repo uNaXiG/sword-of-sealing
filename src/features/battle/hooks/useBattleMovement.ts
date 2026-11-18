@@ -2,12 +2,13 @@ import { useCallback, useMemo, useReducer } from 'react'
 import { INITIAL_UNITS } from '../../../game/battle/battle.data'
 import { canAttackTarget, getAttackableTargets, getAttackableTiles, getAttackDistance } from '../../../game/battle/battle.attack'
 import { reachableForUnit } from '../../../game/battle/battle.movement'
-import { battleReducer, canUndoLastMove, createBattleState, isBattleBusy } from '../../../game/battle/battle.state'
+import { battleReducer, canEnterMoveMode, canUndoLastMove, createBattleState, isBattleBusy } from '../../../game/battle/battle.state'
 import { INITIAL_OBSTACLES, obstacleCell } from '../../../game/battle/obstacles'
 import type { InteractionMode } from '../../../game/battle/battle.types'
 import { cellKey } from '../../../game/grid/grid.utils'
 import type { Cell } from '../../../game/grid/grid.types'
 import type { ReachableTile } from '../../../game/grid/movement'
+import { predictUpcomingTurns } from '../../../game/battle/battle.turn'
 
 export function useBattleMovement() {
   const [state, dispatch] = useReducer(battleReducer, undefined, () => createBattleState(INITIAL_UNITS, INITIAL_OBSTACLES))
@@ -48,7 +49,6 @@ export function useBattleMovement() {
   const finishMove = useCallback((unitId: string, motionId: number) => dispatch({ type: 'finish', unitId, motionId }), [])
   const cancelMove = useCallback((unitId: string, motionId: number) => dispatch({ type: 'cancel', unitId, motionId }), [])
   const undoMove = useCallback(() => dispatch({ type: 'undo' }), [])
-  const commitMove = useCallback(() => dispatch({ type: 'commit' }), [])
   const setInteractionMode = useCallback((mode: Exclude<InteractionMode, 'COMMAND'>) => dispatch({ type: 'set-mode', mode }), [])
   const cancelMoveMode = useCallback(() => dispatch({ type: 'cancel-move-mode' }), [])
   const selectAttackTarget = useCallback((targetId: string) => dispatch({ type: 'select-attack-target', targetId }), [])
@@ -67,6 +67,11 @@ export function useBattleMovement() {
     [],
   )
   const battleBusy = isBattleBusy(state)
+  const activeUnit = state.units.find((unit) => unit.id === state.turn.activeUnitId) ?? null
+  const upcomingTurns = useMemo(
+    () => predictUpcomingTurns(state.turn, state.units),
+    [state.turn, state.units],
+  )
 
   return {
     ...state,
@@ -79,9 +84,12 @@ export function useBattleMovement() {
     attackableTargetIds,
     attackableTargetCells,
     battleBusy,
+    activeUnit,
+    upcomingTurns,
     deathMotions: state.deathMotions ?? [],
     defeatedUnits: state.defeatedUnits ?? [],
     confirmedImpacts: state.confirmedImpacts ?? [],
+    canEnterMoveMode: canEnterMoveMode(state),
     canConfirmAttack: !battleBusy && state.interactionMode === 'ATTACK' &&
       Boolean(state.selectedAttackTargetId && canAttackTarget(state.units, state.selectedUnitId ?? '', state.selectedAttackTargetId)),
     canUndoMove: state.interactionMode === 'COMMAND' && canUndoLastMove(state),
@@ -92,7 +100,6 @@ export function useBattleMovement() {
     finishMove,
     cancelMove,
     undoMove,
-    commitMove,
     setInteractionMode,
     cancelMoveMode,
     selectAttackTarget,
@@ -104,5 +111,10 @@ export function useBattleMovement() {
     consumeImpact,
     completeDeath,
     abortDeath,
+    simulateEnemyStandby: () => dispatch({
+      type: 'simulate-enemy-standby',
+      turnId: state.turn.turnId,
+      unitId: state.turn.activeUnitId ?? '',
+    }),
   }
 }

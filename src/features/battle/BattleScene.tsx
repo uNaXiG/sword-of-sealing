@@ -16,6 +16,8 @@ import { ATTACK_PATTERN_NAMES } from '../../game/classes/class.types'
 import './BattleScene.css'
 import { useAttackAnimation } from './hooks/useAttackAnimation'
 import { useDeathAnimation } from './hooks/useDeathAnimation'
+import BattleTurnHUD from './components/BattleTurnHUD'
+import TurnOrderTimeline from './components/TurnOrderTimeline'
 
 function FitCamera() {
   const { size } = useThree()
@@ -27,10 +29,11 @@ export default function BattleScene() {
     units, obstacles, selectedUnit, selectedAttackTarget, selectedAttackTargetDistance, lastAttackResult,
     motion, lastMove, reachable, interactionMode, selectedAttackTargetId,
     attackRange, attackableTargets, attackableTargetIds, attackableTargetCells,
-    canUndoMove, canConfirmAttack, battleBusy, selectUnit, clearSelection, standby, selectCell,
+    canUndoMove, canEnterMoveMode, canConfirmAttack, battleBusy, selectUnit, clearSelection, standby, selectCell,
     finishMove, cancelMove, undoMove, setInteractionMode, cancelMoveMode, cancelAttack, confirmAttack,
     impactAttack, completeAttack, abortAttack, attackMotion, confirmedImpacts, deathMotions, defeatedUnits,
     consumeImpact, completeDeath, abortDeath,
+    turn, activeUnit, upcomingTurns, simulateEnemyStandby,
   } = useBattleMovement()
   const { clockRef, onImpact, onComplete, onAbort } = useAttackAnimation(impactAttack, completeAttack, abortAttack)
   const {
@@ -135,6 +138,7 @@ export default function BattleScene() {
               key={unit.id}
               unit={unit}
               selected={unit.id === selectedUnit?.id}
+              active={unit.id === activeUnit?.id}
               attackableTarget={attackableTargetIds.has(unit.id)}
               selectedAttackTarget={unit.id === selectedAttackTargetId}
               path={motion?.unitId === unit.id ? motion.path : null}
@@ -162,8 +166,18 @@ export default function BattleScene() {
         </div>
         <a href="#">返回主選單</a>
       </header>
+      <BattleTurnHUD turn={turn} activeUnit={activeUnit} />
+      <TurnOrderTimeline turn={turn} units={units} upcomingTurns={upcomingTurns} />
       <aside className="battle-info" aria-live="polite">
         <div className="battle-info-title">✦ 戰場資訊</div>
+        {activeUnit?.faction === 'enemy' && !battleBusy && import.meta.env.DEV && (
+          <div className="battle-development-control">
+            <p>開發控制：正式敵方 AI 尚未實作。</p>
+            <button className="battle-deselect" type="button" onClick={simulateEnemyStandby}>
+              模擬敵方待命
+            </button>
+          </div>
+        )}
         {selectedUnit && (
           <div className="battle-selection">
             <p>{selectedUnit.name} · {CLASS_DEFINITIONS[selectedUnit.class].name}</p>
@@ -188,7 +202,7 @@ export default function BattleScene() {
         )}
         {selectedUnit && !motion && !attackMotion && interactionMode === 'COMMAND' && (
           <div className="battle-actions">
-            {lastMove?.unitId !== selectedUnit.id && (
+            {canEnterMoveMode && (
               <button className="battle-deselect" type="button" onClick={handleMoveMode}>移動</button>
             )}
             <button className="battle-deselect" type="button" onClick={handleAttackMode}>攻擊</button>

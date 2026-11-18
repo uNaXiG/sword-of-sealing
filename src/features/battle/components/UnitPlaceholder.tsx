@@ -31,6 +31,7 @@ function isCurrentGeneration(generationRef: { current: number }, generation: num
 export default function UnitPlaceholder({
   unit,
   selected,
+  active,
   attackableTarget,
   selectedAttackTarget,
   path,
@@ -47,6 +48,7 @@ export default function UnitPlaceholder({
 }: {
   unit: BattleUnit
   selected: boolean
+  active: boolean
   attackableTarget: boolean
   selectedAttackTarget: boolean
   path: Cell[] | null
@@ -65,7 +67,7 @@ export default function UnitPlaceholder({
   const visualRoot = useRef<Group>(null)
   const deathPivot = useRef<Group>(null)
   const labelRoot = useRef<Group>(null)
-  const selectionRing = useRef<Mesh>(null)
+  const selectionRing = useRef<Group>(null)
   const progress = useRef(0)
   const completed = useRef(false)
   const effectGeneration = useRef(0)
@@ -149,10 +151,18 @@ export default function UnitPlaceholder({
       <group ref={labelRoot}>
         <UnitLabel unit={unit} />
       </group>
-      <mesh ref={selectionRing} position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.31, ringRadius, 32]} />
-        <meshBasicMaterial color={ringColor} />
-      </mesh>
+      <group ref={selectionRing}>
+        {active && (
+          <mesh position={[0, 0.085, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.53, 0.58, 32]} />
+            <meshBasicMaterial color="#82f0c3" />
+          </mesh>
+        )}
+        <mesh position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.31, ringRadius, 32]} />
+          <meshBasicMaterial color={ringColor} />
+        </mesh>
+      </group>
       <group ref={deathPivot}>
       <group ref={visualRoot}>
       <group
@@ -321,7 +331,7 @@ function updateDeathVisual(
   pivot: Group | null,
   visualRoot: Group | null,
   labelRoot: Group | null,
-  selectionRing: Mesh | null,
+  selectionRing: Group | null,
   motion: DeathMotion | null,
   clockMap: DeathAnimationClockMapRef['current'],
   materialOpacity: WeakMap<MeshStandardMaterial, number>,

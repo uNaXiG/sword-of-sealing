@@ -18,6 +18,20 @@
 - COMMAND / MOVE / ATTACK 與待命。
 - 四種攻擊模式、單目標普通攻擊、HP／傷害。
 - 六種基礎職業資料。
+- 物理競速式個體行動排序（PAS）。
+
+## M4-1：Physics-inspired Action System
+
+- PAS 使用等速競速與 Discrete Event Simulation，不使用現實時間或加速度。
+- Action Distance 為 1000 BU，角色速度等於 AGI。
+- Remaining Distance 是 PAS 的主要資料來源；Action Value 為 `remainingDistance / velocity`。
+- 戰鬥採個體回合；一名角色抵達終點時取得唯一行動權。
+- Battle Time 以 BTU 累積；每 200 BTU 為一個 Round。
+- 同時抵達依 AGI 較高、Initial Order 較小排序。
+- 攻擊完成及待命會完成目前個體回合；未來正式規則為每回合一次移動加一次戰鬥行動。
+- M4-1 已實作最小 Turn-scoped 移動限制：每個個體 Turn 最多移動一次；合法 Undo 可解除限制。完整 Action Economy 仍由 M4-2 處理。
+- 正式敵方 AI 尚未實作；本機 Development Build 僅有暫時敵方待命控制。
+- Action Advance、Action Delay、Speed Up／Down 屬 M7 規劃，M4-1 不提供這些效果 API。
 
 ## 規劃中：未來系統
 
@@ -66,6 +80,6 @@
 - 裝備欄位、資源消耗與屬性系統。
 - 戰役章節、關卡條件與最終結局細節。
 - SP 的未來取得與消耗方式。
-- AGI 在回合制中的用途。
+- 完整個體行動資源與重置規則。
 
 不得依本文件自行推論或補完上述內容。

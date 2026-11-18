@@ -4,6 +4,7 @@ import { INITIAL_UNITS } from '../src/game/battle/battle.data.ts'
 import { reachableForUnit, moveUnit } from '../src/game/battle/battle.movement.ts'
 import { battleReducer, createBattleState } from '../src/game/battle/battle.state.ts'
 import { INITIAL_OBSTACLES, obstacleCell } from '../src/game/battle/obstacles.ts'
+import { activateUnitFixture } from './turn.fixture.mjs'
 
 const knight = INITIAL_UNITS[0]
 const cells = INITIAL_OBSTACLES.map(obstacleCell)
@@ -12,7 +13,7 @@ test('障礙物格不可進入，包含直接命令與狀態操作', () => {
   const result = reachableForUnit(INITIAL_UNITS, knight.id, cells)
   assert.equal(result.has('3,2'), false)
   assert.throws(() => moveUnit(INITIAL_UNITS, knight.id, { column: 3, row: 2 }, cells), /Invalid movement/)
-  let state = createBattleState(INITIAL_UNITS, INITIAL_OBSTACLES)
+  let state = activateUnitFixture(createBattleState(INITIAL_UNITS, INITIAL_OBSTACLES), knight.id)
   state = battleReducer(state, { type: 'select', unitId: knight.id })
   state = battleReducer(state, { type: 'set-mode', mode: 'MOVE' })
   state = battleReducer(state, { type: 'cell', cell: { column: 3, row: 2 } })
@@ -86,7 +87,7 @@ test('靜態障礙物及角色格都會阻擋路徑', () => {
 })
 
 test('保留選角與移動鎖定，完成時使用相同障礙物驗證', () => {
-  let state = createBattleState(INITIAL_UNITS, INITIAL_OBSTACLES)
+  let state = activateUnitFixture(createBattleState(INITIAL_UNITS, INITIAL_OBSTACLES), knight.id)
   const plannedMove = reachableForUnit(state.units, 'knight', cells).get('4,2')
   assert.ok(plannedMove)
   state = battleReducer(state, { type: 'select', unitId: 'knight' })

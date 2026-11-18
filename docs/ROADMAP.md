@@ -50,14 +50,16 @@
 
 M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
-## M4：回合制與敵方 AI — UP NEXT
+## M4：動態回合制與敵方 AI — IN PROGRESS
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
-| M4-1 | 玩家／敵方回合切換 | UP NEXT |
-| M4-2 | 行動狀態與回合重置 | PENDING |
+| M4-1 | 物理競速式行動與個體回合系統 | IMPLEMENTED |
+| M4-2 | 個體行動限制與狀態重置 | PENDING |
 | M4-3 | 敵方移動與攻擊決策 | PENDING |
 | M4-4 | 勝利、失敗與戰鬥結束 | PENDING |
+
+M4-1 已完成 PAS Core、DES Scheduler、個體回合生命週期、HUD／Timeline 與 M1–M3 整合，尚待使用者瀏覽器驗收、Git 基準與 CI 確認。
 
 ## M5：戰鬥 UI／UX — PENDING
 

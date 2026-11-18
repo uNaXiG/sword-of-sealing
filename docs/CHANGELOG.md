@@ -2,13 +2,34 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-19 — M4-1 Patch 1 — IMPLEMENTED — Acceptance Pending
+
+- **Fixed**：移除玩家「確認移動」按鈕與獨立 Commit 入口；移動完成後 COMMAND 選單只提供攻擊、取消、待命。
+- **Changed**：加入 `movementUsedTurnId`，由 Reducer 及共用 `canEnterMoveMode` 同步限制同一 Turn 再次移動。
+- **Preserved**：合法 Undo 恢復移動權；取消 ATTACK Mode 保留 Move Record；攻擊確認與待命隱式確認移動；下一個 Individual Turn 重置限制。
+- **Fixed**：合法攻擊確認後即使發生 Pre-impact Abort，已使用移動仍不可於同一 Turn 再次執行。
+- **Verification**：`npm test` 154/154 PASS；`npm run lint` PASS；`npm run build` PASS；Git Diff Check PASS。既有 500 kB Chunk warning 保留。
+- **Browser Verification**：PARTIAL；實際確認初始／移動後選單、Undo 後重新移動、Attack Cancel、Standby 及同角色下一 Turn。合法 Move & Attack、Selection Bypass 與 Abort Browser Fixture 尚未完整實測。
+- **Acceptance / Git**：Patch 1 尚待使用者驗收；原 M4-1 原始 BV 24/24 已由使用者確認。M4-1 與 Patch 1 均仍在工作樹，無新 Commit 或 CI。
+
+## 2026-11-19 — M4-1 — IMPLEMENTED — Acceptance Pending
+
+- **Added**：PAS Remaining Distance Model、AGI Velocity、DES 排程、確定性排序、Battle Time、Round、Turn ID 與 Individual Turn Lifecycle。
+- **Added**：Active Unit Authorization、Pending Turn Completion、唯讀未來 10 次 Preview、Turn HUD、Timeline、Active Highlight 與 Development-only Enemy Standby。
+- **Changed**：六種職業 AGI 調整為劍士 10、刺客 15、法師 10、牧師 12、遊俠 12、哥布林 10；其他屬性維持不變。
+- **Changed**：Attack Complete／Post-impact Abort 在所有阻擋 Motion 結束後完成 Turn；致命 Impact 立即移除排程資格，但死亡動畫期間保留佔位。
+- **Verification**：原 M4-1 實作基準為 `npm test` 150/150 PASS（含 10,000 次排程穩定性與 RS-01／RS-02）；`npm run lint` PASS；`npm run build` PASS。Build 保留既有 Chunk Size warning。
+- **Browser Verification / Acceptance**：原 M4-1 BV 24/24 已由使用者確認，PAS 核心功能已通過使用者驗收。
+- **Status / Git**：**IMPLEMENTED**；目前只存在工作樹，無新 Commit、Remote CI 或 GitHub Actions 證據。
+- **Known Limitation**：尚未實作 M4-2 Action Economy、正式敵方 AI、勝敗或 M7 效果；Production Build 的敵方回合等待 M4-3。
+
 ## 2026-11-18 — DOC-01 Patch 1 — Persistent Instructions & Context Synchronization
 
 - **Added**：新 Session 的唯讀初始化流程，依文件索引回復上下文、核對 Git 與測試基準，並區分初始化與實作授權。
 - **Changed**：在 [Copilot Instructions](../.github/copilot-instructions.md) 補充戰鬥事件、渲染與資源生命週期，以及分層驗證與版本基準管理規範。
 - **Baseline**：M3 結案文件已納入 `main` 的 `9c8e623` 並通過 Repository CI Run `44279206269`；遊戲基準仍為 `d201b06`。完整基準見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)；既有 Roadmap 不變。
 - **Verification**：Markdown 相對連結及文件一致性檢查 PASS；137/137 為既有測試基準，本次未重跑遊戲測試、Lint 或 Build。
-- **Commit Reference / CI**：本 Patch 僅在工作樹，尚未提交，無對應遠端 CI。
+- **Commit Reference / CI**：已提交為 `69fc9be39351ea2531163a95f9d1561827b42190`；本環境未確認該 Commit 的獨立遠端 CI。
 
 ## 2026-11-18 — M3 正式結案（Closure Documentation — Git Push Pending）
 

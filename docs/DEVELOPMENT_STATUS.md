@@ -1,6 +1,6 @@
 # Development Status
 
-最後確認日期：2026-11-18。
+最後確認日期：2026-11-19。
 
 ## 狀態語彙
 
@@ -12,8 +12,8 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Latest Verified Repository Commit | `uNaXiG/sword-of-sealing` · `main` @ `9c8e623724e0f6b86f4a9b5ce5099f98d485a105` — `docs: finalize M3 combat system acceptance and milestone closure` |
-| Latest Repository CI Run | [44279206269](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44279206269) — SUCCESS（`main` / `9c8e623`） |
+| Current Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `69fc9be39351ea2531163a95f9d1561827b42190` — `docs: update changelog and development status for DOC-01 Patch 1` |
+| Latest Verified Repository CI Run | [44279206269](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44279206269) — SUCCESS（`main` / `9c8e623`） |
 | Latest Verified Gameplay Commit | `main` @ `d201b06e838a6b33dbfbf1fc329c4f7ac97a91d9`（M3-4 與 Patch 1 Revision 2） |
 | Gameplay CI Run | [44277295361](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44277295361) — SUCCESS（`main` / `d201b06`） |
 | 最近完成里程碑 | M3：基礎戰鬥系統 — COMPLETED |
@@ -21,16 +21,17 @@
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | 整體里程碑等權重進度 | 30.0%（不是實際工時比例） |
-| 下一階段 | M4：回合制與敵方 AI；M4-1：玩家／敵方回合切換，皆為 **UP NEXT**、尚未開始 |
+| 下一階段 | M4：動態回合制與敵方 AI；M4-1：物理競速式行動與個體回合系統，**IMPLEMENTED — Acceptance Pending** |
+| M4-1 | PAS、DES、Individual Turn、HUD／Timeline 及 M1–M3 整合已實作；原始 BV 24/24 已由使用者確認。Patch 1 未提交、未建立 CI、未完成使用者驗收 |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
 ## 驗證結果
 
 | 驗證 | 結果 | 來源與範圍 |
 | --- | --- | --- |
-| 自動化測試、ESLint、Production Build | 137/137 PASS；ESLint PASS；Build PASS | 沿用 Revision 2 實作報告；DOC-01 Patch 1 未在本機重跑。Build 保留 Battle Chunk > 500 kB 已知警告 |
+| 自動化測試、ESLint、Production Build | 154/154 PASS；ESLint PASS；Build PASS | M4-1 Patch 1 本機實際執行；Build 保留 Battle Chunk > 500 kB 已知警告 |
 | Markdown 相對連結與文件一致性 | PASS | DOC-01 Patch 1 本次檢查 |
-| 使用者瀏覽器驗收 | M3-3 15/15 PASS；M3-4 BV-01 至 BV-20 全部 PASS；Patch 1 Revision 2 8/8 PASS | 使用者正式驗收 |
+| 使用者瀏覽器驗收 | M3-3 15/15 PASS；M3-4 BV-01 至 BV-20 PASS；M3-4 Patch 1 Revision 2 8/8 PASS；M4-1 原始 BV 24/24 PASS；M4-1 Patch 1 待驗收 | 使用者正式驗收／目前任務狀態 |
 | Acceptance Criteria | M3-3 40/40 PASS；M3-4 52/52 PASS；Patch 1 Revision 2 12/12 PASS | 已確認驗收結果 |
 
 ## DOC-01 狀態
@@ -44,7 +45,7 @@
 - README 過時攻擊範圍敘述已由本任務修正。
 - 本任務未修改遊戲程式、核心資料、套件或部署設定。
 - 原 DOC-01 驗證基準為 79/79 tests、Lint 與 Build PASS；Build 保留既知 Chunk Size warning。
-- DOC-01 Patch 1：已在工作樹增補長期指引並同步基準，待使用者確認。尚未提交，無對應遠端 CI，不影響里程碑進度。
+- DOC-01 Patch 1：已納入 `69fc9be39351ea2531163a95f9d1561827b42190`；本環境未確認該 SHA 的獨立 CI Run，不影響里程碑進度。
 
 ## M3-3 狀態
 
@@ -81,13 +82,27 @@
 
 ## 尚未完成／已知限制
 
-- 回合制、敵方 AI、技能、成長、劇情、存檔與 PWA。
+- 正式敵方 AI、完整個體 Action Economy、技能、成長、劇情、存檔與 PWA。
 - 技術債及 UX 項目詳見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) 與 [UX_BACKLOG.md](./UX_BACKLOG.md)。
 
 ## 已知阻擋問題
 
 目前無已知 M3 功能或驗收阻擋。M3 結案文件與遊戲功能基準均已同步。
 
+## M4-1 狀態
+
+- **IMPLEMENTED — Acceptance Pending**。
+- 已加入 Remaining Distance Model、DES、確定性排序、Battle Time／Round／Turn ID、個體行動權、未來 10 次 Preview、HUD／Timeline 及 Active Highlight。
+- AGI 已更新為劍士 10、刺客 15、法師 10、牧師 12、遊俠 12、哥布林 10。
+- 玩家指令僅允許 Active Unit；待命及攻擊合法完成後自動排程下一位。致死攻擊等待所有阻擋性 Motion 結束。
+- 正式敵方 AI、個體 Action Economy、勝敗及 M7 效果尚未實作。
+- Development Build 提供「模擬敵方待命」；Production Build 不顯示該控制。
+- 原始 M4-1 Browser Verification：24/24 PASS（使用者已確認）。
+- M4-1 Patch 1 移除「確認移動」，加入最小 Turn-scoped Movement Commitment；攻擊與待命維持隱式確認，Undo 是唯一解除未確認移動限制的操作。
+- Patch 1 Browser Verification：PARTIAL。已實際確認初始／移動後選單、Undo、Attack Cancel、Standby 及同角色下一個 Turn；Move & Attack、Selection Bypass 與 Pre-impact Abort Browser Fixture 尚待完整驗證。
+- User Acceptance：原 M4-1 核心 PAS 已確認；Patch 1 尚未驗收。
+- Git／CI：M4-1 原始異動與 Patch 1 均仍只在本機工作樹，無新 SHA 或 CI 證據。
+
 ## 下一步
 
-等待使用者確認 DOC-01 Patch 1 並執行 Git 操作。下一個開發項目為 M4-1 玩家／敵方回合切換；本次不啟動。
+完成 M4-1 Browser Verification 與使用者驗收後等待 Git／CI 確認。下一個開發項目為 M4-2 個體行動限制與狀態重置；本次不啟動。

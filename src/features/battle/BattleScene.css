@@ -59,6 +59,51 @@
 .battle-animation-status { color: #fff1b5; font-weight: 600; letter-spacing: .05em; }
 .battle-undo { margin-left: 8px; }
 .battle-error { display: grid; height: 100%; place-items: center; padding: 24px; color: #263e4d; text-align: center; }
+.battle-turn-hud {
+  position: absolute;
+  top: 126px;
+  left: 28px;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid rgba(228, 205, 157, .8);
+  background: rgba(228, 205, 157, .45);
+  box-shadow: 0 8px 26px rgba(27, 47, 52, .2);
+  pointer-events: none;
+}
+.battle-turn-hud > div { min-width: 76px; padding: 9px 12px; background: rgba(25, 47, 62, .9); }
+.battle-turn-hud span, .battle-turn-hud strong { display: block; }
+.battle-turn-hud span { color: #e2ca95; font-size: 9px; letter-spacing: .1em; }
+.battle-turn-hud strong { margin-top: 4px; color: #fff9e9; font-size: 15px; }
+.battle-turn-hud .battle-turn-hud-active { grid-column: 1 / -1; }
+.turn-timeline {
+  position: absolute;
+  left: 28px;
+  bottom: 28px;
+  width: min(620px, calc(100vw - 370px));
+  padding: 10px 12px 12px;
+  border: 1px solid rgba(228, 205, 157, .8);
+  background: rgba(25, 47, 62, .88);
+  box-shadow: 0 8px 26px rgba(27, 47, 52, .2);
+}
+.turn-timeline-title { margin-bottom: 8px; color: #ecd39e; font-size: 12px; letter-spacing: .1em; }
+.turn-timeline-scroll { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 3px; }
+.turn-card {
+  flex: 0 0 80px;
+  padding: 8px;
+  border: 1px solid #91c9ef;
+  color: #f9f5e8;
+  background: rgba(42, 79, 99, .9);
+  text-align: center;
+}
+.turn-card.enemy { border-color: #e27063; background: rgba(104, 51, 52, .9); }
+.turn-card.current { border-color: #82f0c3; box-shadow: inset 0 0 0 2px rgba(130, 240, 195, .4); }
+.turn-card span, .turn-card strong, .turn-card small { display: block; }
+.turn-card span, .turn-card small { color: #d7e2db; font-size: 9px; }
+.turn-card strong { overflow: hidden; margin: 5px 0; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.battle-development-control { margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(234, 215, 171, .45); pointer-events: auto; }
+.battle-development-control p { margin: 0 0 8px; color: #f3d89e; }
 @media (max-width: 700px) {
   .battle-header { top: 14px; left: 14px; right: 14px; }
   .battle-header > div { padding: 12px 14px; }
@@ -68,4 +113,7 @@
   .battle-info p { margin-top: 8px; }
   .battle-actions { gap: 6px; }
   .battle-actions .battle-deselect { padding: 7px 9px; font-size: 11px; }
+  .battle-turn-hud { top: 105px; left: 14px; }
+  .battle-turn-hud > div { min-width: 62px; padding: 7px 8px; }
+  .turn-timeline { left: 14px; right: 14px; bottom: 14px; width: auto; }
 }
