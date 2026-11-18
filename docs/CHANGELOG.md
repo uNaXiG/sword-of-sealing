@@ -1,6 +1,14 @@
 # Changelog
 
-僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期為 Commit 的 UTC+8 時間。
+僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
+
+## 2026-11-18 — M3 正式結案（Closure Documentation — Git Push Pending）
+
+- **Status**：M3、M3-4、M3-4 Patch 1（Revision 2）均為 **COMPLETED**。以下兩筆 M3-4 實作紀錄保留當時的待驗收狀態。
+- **Acceptance**：M3-4 的 BV-01 至 BV-20 全部 PASS，AC 52/52 PASS；Patch 1 Revision 2 的 BV 8/8 PASS，AC 12/12 PASS。Revision 1 未通過使用者視覺驗收，已由 Revision 2 取代。
+- **Fixed**：TD-015 以 Confirmed Impact Event Queue 結案；M3-4-BUG-001 以 Single CanvasTexture／Single Sprite 結案。
+- **Verification**：沿用 Revision 2 實作報告的 137/137 測試、ESLint、Production Build PASS；本次未重跑。本次結案文件 Markdown 相對連結檢查 PASS。
+- **遊戲功能 Commit / CI**：`d201b06e838a6b33dbfbf1fc329c4f7ac97a91d9`（`main`）；[GitHub Actions Run 44277295361](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44277295361) — SUCCESS。本次文件異動尚未提交，不在該 Run 內。
 
 ## 2026-11-18 — M3-4 Patch 1 Revision 2（IMPLEMENTED — Acceptance Pending）
 

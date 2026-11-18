@@ -31,7 +31,7 @@
 
 ## 佔位
 
-`occupancy.ts` 驗證 ID 與位置唯一性。敵我單位、HP 歸零單位及障礙均依其既定規則佔格。HP 歸零單位目前不釋放佔位。
+`occupancy.ts` 驗證 ID 與位置唯一性。致命 Impact 造成的 HP 歸零單位在死亡動畫期間仍佔格；死亡結算移除該單位後釋放棋格。直接初始化為 HP 0 的測試 Fixture 不會觸發死亡流程，仍保留佔位。
 
 ## 移動動畫生命週期
 
@@ -154,8 +154,8 @@ Renderer 不再於 Dispatch 前建立 Floating Damage 或依預計結果播放�
 - 合法 Impact 時播放目標 Hit Flash、約 160 ms 震動及職業色 Impact Effect。
 - Floating Damage 顯示 `-${appliedDamage}`；Overkill 時只顯示實際扣除值。
 - 魔法球、箭矢與聖光由共用投射物時間軸驅動。
-- HP 數字在 Impact 後立即顯示權威值；血條使用純視覺平滑過渡。
-- 受擊演出不變更 BattleUnit 位置；HP 歸零仍保留模型與佔位。
+- HP 數字在合法 Impact 後顯示已結算的值；血條平滑過渡僅影響顯示。Unit Label 以單一 CanvasTexture／Sprite 繪製面板、數值與血條，血槽與填充共用畫布座標，填充從固定左側起點向右繪製。
+- 受擊演出不變更 BattleUnit 棋格座標；致命 Impact 後，模型依死亡階段呈現，佔位直到死亡結算才釋放。
 
 ## 待命
 
@@ -276,6 +276,5 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 - 無回合、行動次數、敵方 AI、勝敗。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
-- 尚未導入攻擊音效、正式骨架動畫、死亡演出或 Physics。
-- 無死亡移除。
+- 尚未導入攻擊音效、正式骨架動畫或 Physics；目前的死亡演出使用 Placeholder 模型。
 - UI 目前要求選取目標後再確認攻擊。

@@ -54,7 +54,7 @@ npm run dev
 
 所有攻擊模式都共用 `battle.attack.ts` 的範圍與目標判定，UI Highlight 與 Reducer 最終確認使用相同幾何規則。普通攻擊仍只攻擊一名目標，並沿用 `max(1, ATK - DEF)`；AGI 與 SP 目前只儲存、驗證及顯示，尚不影響行動順序，也不會由普通攻擊消耗。
 
-若要調整職業平衡，請修改 `CLASS_DEFINITIONS`；若要新增測試角色，使用 `createBattleUnit()` 並指定 ID、職業、陣營與座標，可選擇覆寫顯示名稱。初始戰場包含五名我方職業與三隻各自擁有獨立 HP／SP 的哥布林。失能單位仍保留模型及棋格佔位，既有移動、撤銷、待命與傷害規則不變。
+若要調整職業平衡，請修改 `CLASS_DEFINITIONS`；若要新增測試角色，使用 `createBattleUnit()` 並指定 ID、職業、陣營與座標，可選擇覆寫顯示名稱。初始戰場包含五名我方職業與三隻各自擁有獨立 HP／SP 的哥布林。死亡佔位與移除規則見 [Combat System](docs/COMBAT_SYSTEM.md)。
 
 ## 部署至 GitHub Pages
 

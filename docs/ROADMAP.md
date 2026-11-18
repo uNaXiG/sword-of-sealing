@@ -35,7 +35,7 @@
 | M2-5 | 移動撤銷系統 | COMPLETED |
 | M2-5 Patch | 路徑預覽、左鍵拖曳與移動確認事件識別 | COMPLETED |
 
-## M3：基礎戰鬥系統 — IN PROGRESS
+## M3：基礎戰鬥系統 — COMPLETED
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
@@ -45,15 +45,16 @@
 | M3-2 | 基礎傷害公式與 HP | COMPLETED |
 | M3-2 Patch | 職業抽象化與攻擊模式系統 | COMPLETED |
 | M3-3 | 攻擊動畫與受擊反饋 | COMPLETED |
-| M3-4 | 單位死亡及移除 | IMPLEMENTED — Acceptance Pending |
+| M3-4 | 單位死亡及移除 | COMPLETED |
+| M3-4 Patch 1 | HP Bar 位置修正（Revision 2） | COMPLETED |
 
-M3-3 已納入 `5fba4ed`，通過 100/100 自動化測試、40/40 AC、15/15 Browser Verification 及 CI Run `44226768648`。M3-4 已實作並等待使用者驗收；M3 完成度維持 75%，整體主要里程碑等權重估算為 27.5%。
+M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
-## M4：回合制與敵方 AI — PENDING
+## M4：回合制與敵方 AI — UP NEXT
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
-| M4-1 | 玩家／敵方回合切換 | PENDING |
+| M4-1 | 玩家／敵方回合切換 | UP NEXT |
 | M4-2 | 行動狀態與回合重置 | PENDING |
 | M4-3 | 敵方移動與攻擊決策 | PENDING |
 | M4-4 | 勝利、失敗與戰鬥結束 | PENDING |
@@ -114,4 +115,4 @@ M5-2 包含 [UX-001 至 UX-005](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV
 | M10-3 | 效能、手機及桌面適配 | PENDING |
 | M10-4 | GitHub Pages 正式發布 | PENDING |
 
-M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑等權重進度約 27.5%，不是實際工時比例。
+M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑等權重進度為 30.0%，不是實際工時比例。

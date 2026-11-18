@@ -2,6 +2,8 @@
 
 狀態只反映已確認事實。Proposed 解法不代表已核准實作；未確認目標標為 TBD。
 
+**技術債統計（TD-001 至 TD-015）**：共 15 項；CLOSED 8、OPEN 6、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
+
 | ID | Description | Impact | Priority | Status | Suggested Resolution | Target |
 | --- | --- | --- | --- | --- | --- | --- |
 | TD-001 | 待命後仍可撤銷移動 | Standby 未正確確認移動紀錄 | — | CLOSED | Reducer 清除 `lastMove` | M3-1 Patch 2 |
@@ -18,7 +20,16 @@
 | TD-012 | 攻擊屬性驗證模組耦合 | `validateAttackProperties()` 位於 `class.data.ts`，未來武器／技能也可能使用 | Low | OPEN | Proposed：規格確認後抽成中性攻擊驗證模組 | M7 Candidate |
 | TD-013 | README 舊攻擊範圍敘述殘留 | 文件仍稱曼哈頓範圍，與四種模式不符 | Low | CLOSED | README 已改為依職業攻擊模式描述，並完成使用者驗收 | DOC-01 |
 | TD-014 | Attack Animation Controller 的 emitted Attack ID 集合持續增長 | 長時間重複攻擊可能累積記憶體與 ID Set Entries | Low | OPEN | Proposed：在不破壞 StrictMode 防護下設計受限生命週期或清理窗口 | M10-3 Candidate |
-| TD-015 | 命中視覺回饋可能早於 Reducer 確認 | 浮動傷害、受擊與死亡可能依預計結果誤顯示 | Medium | IMPLEMENTED — Acceptance Pending | M3-4 已改用 Core Confirmed Impact Event Queue；已加入無效／重複 Impact、Complete 與 Abort 回歸測試，等待使用者瀏覽器驗收 | M3-4 |
+| TD-015 | 命中視覺回饋可能早於 Reducer 確認 | 浮動傷害、受擊與死亡可能依預計結果誤顯示 | Medium | CLOSED | 改用 Confirmed Impact Event Queue；依據為無效／重複 Impact、Complete、Abort 等[回歸測試](../tests/battle.impact-feedback.test.mjs)及使用者 M3-4 瀏覽器驗收（BV-01 至 BV-20 全部 PASS） | M3-4 |
+
+## 已結案 Bug
+
+- **M3-4-BUG-001 — CLOSED**：Revision 1 的固定 Sprite Anchor 未通過使用者視覺驗收。Revision 2 改用 Single CanvasTexture／Single Sprite，血槽與填充共用畫布座標。結案依據：[Revision 2 自動化回歸測試](../tests/unitLabel.test.mjs)及使用者瀏覽器驗收 8/8 PASS。
+
+## Code Review 待追蹤風險
+
+- **TD-010 · Unit Label Draw Cache**：[UnitLabel](../src/features/battle/components/UnitLabel.tsx) 的 Effect 建立新 CanvasTexture 時未明確重置 `lastDrawn`；若特殊 Effect 重建情境保留上一張 Texture 的快取，且內容與比例未變，可能跳過首次繪製。尚無使用者回報，未確認為實際缺陷。
+- **Confirmed Impact Queue**：正常流程已通過使用者驗收（TD-015 CLOSED）。異常卸載／重新掛載時的事件清理、重播以及長時間資源累積，留待後續生命週期壓力測試；未確認為實際缺陷。
 
 ## 已知非阻擋性警告
 
@@ -27,6 +38,4 @@
 
 M3-3 已依使用者 BV-15 關閉 TD-004。TD-010 的直接相關 Texture Cleanup 已實作及通過場景重入驗收，但缺少長時間資源壓力與記憶體測量，因此保持 PARTIALLY RESOLVED。其餘技術債維持既有狀態。
 
-M3-4 新增 TD-014，且依規格不在本次額外重構。TD-015 已實作及自動化驗證，但須等待使用者瀏覽器驗收後才可 CLOSED。
-
-M3-4 Patch 1 Revision 1 的固定 Sprite Anchor 未通過使用者視覺驗收，並未關閉 M3-4-BUG-001。Revision 2 將 Unit Label 背景、血槽、Fill 與文字改為同一 CanvasTexture／Sprite，以避免分離 Sprite 座標系失配；生命週期與 Canvas 幾何有 Regression Tests，但仍需使用者完成 BV-01 至 BV-08 瀏覽器驗收。
+TD-014 維持 OPEN，本次結案不進行重構。

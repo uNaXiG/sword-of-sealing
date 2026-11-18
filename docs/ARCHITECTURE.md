@@ -66,7 +66,8 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/battle/battle.attack.ts` | 攻擊距離、範圍、合法目標 |
 | `game/battle/battle.damage.ts` | 純傷害計算 |
 | `game/battle/battle.animation.ts` | Attack Animation Type、職業 Mapping、Profile、純 Timeline |
-| `game/battle/battle.death.ts` | Death Profile、1,200 ms Timeline、Life／Direction Helpers |
+| `game/battle/battle.death.ts` | Death Profile、1,200 ms Timeline、倒地方向 |
+| `game/battle/battle.unit.ts` | Unit Life State 與存活判定 |
 | `game/battle/battle.movement.ts` | 單位移動預算與完成前驗證 |
 | `game/battle/occupancy.ts` | 棋格佔位唯一性 |
 | `game/battle/obstacles.ts` | 障礙配置與驗證 |
@@ -80,6 +81,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `features/battle/components/DeathParticleEffect.tsx` | 24 顆低成本死亡粒子與清理 |
 | `features/battle/components/AttackProjectile.tsx` | 魔法球、箭矢與聖光投射物 |
 | `features/battle/components/HitEffect.tsx` / `FloatingDamage.tsx` | 命中特效與 Applied Damage 漂浮數字 |
+| `features/battle/components/UnitLabel.tsx` / `unitLabel.utils.ts` | 單一 CanvasTexture／Sprite、HP 視覺過渡與同畫布繪製 |
 | `features/battle/BattleScene.tsx` | Canvas、UI 與 Hook 整合 |
 | `features/battle/components/` | 棋盤、模型、標籤與障礙 Rendering |
 
@@ -89,7 +91,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 
 `BattleState` 集中保存選取、操作模式、移動動畫、單次 Undo 紀錄及攻擊結算。`battleReducer` 驗證 Action，處理過期 `motionId`、生命狀態、佔位、範圍、撤銷條件及狀態轉換，並以不可變方式更新。
 
-正式 Unit 座標在移動動畫完成後才更新。攻擊確認只建立 `PENDING_IMPACT` AttackMotion 與預計 AttackResult；合法 `attack-impact` 才更新 HP，`attack-complete` 解鎖，`attack-abort` 依階段保留或不套用傷害。
+正式 Unit 座標在移動動畫完成後才更新。攻擊確認只建立 `PENDING_IMPACT` AttackMotion 與預計 AttackResult；合法 `attack-impact` 才更新 HP，`attack-complete` 清除 AttackMotion，`attack-abort` 依階段保留或不套用傷害。若仍有 DeathMotion，戰鬥操作不會因攻擊收招完成而提前解鎖。
 
 AttackMotion 與 Move Motion 互斥。`BattleState` 保存 Attack ID、雙方座標快照、Animation Type、結算 Phase 及預計結果；逐幀時間只由 Animation Controller 的局部時鐘保存。
 
@@ -126,6 +128,7 @@ Rendering 座標由 `column/row` 透過 `cellPosition()` 轉換為 Three.js 世�
 - 六種 Animation Profile、Timeline 事件及大 Delta。
 - Death Complete／Abort、Dying 佔位、多 DeathMotion 與 Death Record。
 - Confirmed Impact Queue、TD-015、無效 Impact 與事件跨 Attack Complete／Unit Removal。
+- Unit Label 血槽與填充幾何、比例邊界及 Canvas 繪製呼叫；不取代 WebGL 瀏覽器驗收。
 - Dijkstra、地形成本、障礙與佔位。
 
 ## 部署架構
