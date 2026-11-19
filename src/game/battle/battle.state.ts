@@ -4,6 +4,13 @@ import { cellKey, isInsideGrid } from '../grid/grid.utils.ts'
 import { reachableForUnit, moveUnit } from './battle.movement.ts'
 import { canAttackTarget } from './battle.attack.ts'
 import type { BattleState, BattleUnit, DeathMotion, InteractionMode } from './battle.types'
+import {
+  canConfirmAttack,
+  canEnterAttackMode,
+  canStandby,
+  createTurnActionState,
+  matchesTurnContext,
+} from './battle.action.ts'
 import { unitAt } from './occupancy.ts'
 import { obstacleCell, validateObstacles, type BattleObstacle } from './obstacles.ts'
 import { TERRAIN_MOVEMENT_COST } from '../grid/terrain.constants.ts'
@@ -17,22 +24,22 @@ import {
   initializeTurnState,
   removeDefeatedUnitFromTimeline,
 } from './battle.turn.ts'
-import type { PendingTurnCompletion } from './battle.turn.types.ts'
+import type { PendingTurnCompletion, TurnContext } from './battle.turn.types.ts'
 
-type BattleAction =
-  | { type: 'select'; unitId: string }
-  | { type: 'cell'; cell: Cell }
-  | { type: 'clear' }
-  | { type: 'standby' }
+export type BattleAction =
+  | ({ type: 'select'; targetId: string } & TurnContext)
+  | ({ type: 'cell'; cell: Cell } & TurnContext)
+  | ({ type: 'clear' } & TurnContext)
+  | ({ type: 'standby' } & TurnContext)
   | { type: 'finish'; unitId: string; motionId: number }
   | { type: 'cancel'; unitId: string; motionId: number }
-  | { type: 'undo' }
-  | { type: 'commit' }
-  | { type: 'set-mode'; mode: Exclude<InteractionMode, 'COMMAND'> }
-  | { type: 'cancel-move-mode' }
-  | { type: 'select-attack-target'; targetId: string }
-  | { type: 'cancel-attack' }
-  | { type: 'confirm-attack' }
+  | ({ type: 'undo' } & TurnContext)
+  | ({ type: 'commit' } & TurnContext)
+  | ({ type: 'set-mode'; mode: Exclude<InteractionMode, 'COMMAND'> } & TurnContext)
+  | ({ type: 'cancel-move-mode' } & TurnContext)
+  | ({ type: 'select-attack-target'; targetId: string } & TurnContext)
+  | ({ type: 'cancel-attack' } & TurnContext)
+  | ({ type: 'confirm-attack' } & TurnContext)
   | { type: 'attack-impact'; attackId: number }
   | { type: 'attack-complete'; attackId: number }
   | { type: 'attack-abort'; attackId: number }
@@ -80,7 +87,7 @@ export function createBattleState(units: readonly BattleUnit[], obstacles: reado
     motion: null,
     nextMotionId: 1,
     lastMove: null,
-    movementUsedTurnId: null,
+    turnAction: createTurnActionState(turn),
     interactionMode: 'COMMAND',
     selectedAttackTargetId: null,
     lastAttackCommand: null,
@@ -103,11 +110,15 @@ export function isBattleBusy(state: BattleState): boolean {
 export function canEnterMoveMode(state: BattleState): boolean {
   const selectedUnit = state.units.find((unit) => unit.id === state.selectedUnitId)
   return !isBattleBusy(state) &&
+    !state.pendingTurnCompletion &&
     state.interactionMode === 'COMMAND' &&
     selectedUnit?.faction === 'player' &&
     selectedUnit.id === state.turn.activeUnitId &&
     isUnitAlive(selectedUnit) &&
-    state.movementUsedTurnId !== state.turn.turnId
+    state.turnAction?.movementUsed === false &&
+    state.turnAction.movementInitiationLocked === false &&
+    state.turnAction.turnId === state.turn.turnId &&
+    state.turnAction.unitId === state.turn.activeUnitId
 }
 
 export function canUndoLastMove(state: BattleState): boolean {
@@ -115,8 +126,13 @@ export function canUndoLastMove(state: BattleState): boolean {
   if (
     !record ||
     record.turnId !== state.turn.turnId ||
+    state.turnAction?.turnId !== state.turn.turnId ||
+    state.turnAction.unitId !== record.unitId ||
+    !state.turnAction.movementUsed ||
+    state.turnAction.movementInitiationLocked ||
     isBattleBusy(state) ||
     state.interactionMode !== 'COMMAND' ||
+    state.pendingTurnCompletion !== null ||
     state.selectedUnitId !== record.unitId ||
     state.turn.activeUnitId !== record.unitId
   ) return false
@@ -185,12 +201,24 @@ function selectUnitOrAttackTarget(state: BattleState, unitId: string): BattleSta
 function abortAttack(state: BattleState): BattleState {
   const attack = state.attackMotion
   if (!attack) return state
+  const turnAction = state.turnAction
+  if (
+    !turnAction ||
+    turnAction.turnId !== attack.turnId ||
+    turnAction.unitId !== attack.attackerId ||
+    (attack.phase === 'PENDING_IMPACT' &&
+      (turnAction.combatAction !== 'RESERVED' || turnAction.reservedAttackId !== attack.attackId)) ||
+    (attack.phase === 'IMPACTED' && turnAction.combatAction !== 'CONSUMED')
+  ) return state
   const attackerStillSelectable = state.units.some(
     (unit) => unit.id === attack.attackerId && unit.faction === 'player' && isUnitAlive(unit),
   )
   return {
     ...state,
     attackMotion: null,
+    turnAction: attack.phase === 'PENDING_IMPACT'
+      ? { ...turnAction, combatAction: 'AVAILABLE', reservedAttackId: null }
+      : turnAction,
     interactionMode: 'COMMAND',
     selectedUnitId: attackerStillSelectable ? attack.attackerId : null,
     selectedAttackTargetId: null,
@@ -211,15 +239,15 @@ function clearTurnContext(state: BattleState): BattleState {
   }
 }
 
-function advanceIndividualTurn(state: BattleState, completedUnitId: string): BattleState {
-  if (state.turn.activeUnitId !== completedUnitId || isBattleBusy(state)) return state
+function advanceIndividualTurn(state: BattleState, context: TurnContext): BattleState {
+  if (!matchesTurnContext(state, context) || isBattleBusy(state)) return state
   const turn = completeIndividualTurn(state.turn, state.units)
   const activeUnit = state.units.find((unit) => unit.id === turn.activeUnitId && isUnitAlive(unit)) ?? null
   return {
     ...clearTurnContext(state),
     turn,
+    turnAction: createTurnActionState(turn),
     pendingTurnCompletion: null,
-    movementUsedTurnId: null,
     selectedUnitId: activeUnit?.faction === 'player' ? activeUnit.id : null,
   }
 }
@@ -230,7 +258,7 @@ function resolvePendingTurnCompletion(state: BattleState): BattleState {
   if (pending.turnId !== state.turn.turnId || pending.unitId !== state.turn.activeUnitId) {
     return { ...state, pendingTurnCompletion: null }
   }
-  return advanceIndividualTurn(state, pending.unitId)
+  return advanceIndividualTurn(state, pending)
 }
 
 function queueTurnCompletion(
@@ -242,6 +270,22 @@ function queueTurnCompletion(
 }
 
 export function battleReducer(state: BattleState, action: BattleAction): BattleState {
+  if (
+    action.type === 'select' ||
+    action.type === 'cell' ||
+    action.type === 'clear' ||
+    action.type === 'standby' ||
+    action.type === 'undo' ||
+    action.type === 'commit' ||
+    action.type === 'set-mode' ||
+    action.type === 'cancel-move-mode' ||
+    action.type === 'select-attack-target' ||
+    action.type === 'cancel-attack' ||
+    action.type === 'confirm-attack'
+  ) {
+    if (!matchesTurnContext(state, action) || state.pendingTurnCompletion) return state
+  }
+
   if (action.type === 'simulate-enemy-standby') {
     const activeUnit = state.units.find((unit) => unit.id === state.turn.activeUnitId)
     if (
@@ -250,9 +294,10 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       !isUnitAlive(activeUnit) ||
       action.unitId !== activeUnit.id ||
       action.turnId !== state.turn.turnId ||
-      isBattleBusy(state)
+      isBattleBusy(state) ||
+      state.pendingTurnCompletion
     ) return state
-    return advanceIndividualTurn(state, activeUnit.id)
+    return advanceIndividualTurn(state, action)
   }
 
   if (action.type === 'consume-impact') {
@@ -290,7 +335,11 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       !attack ||
       attack.attackId !== action.attackId ||
       attack.turnId !== state.turn.turnId ||
-      attack.phase !== 'PENDING_IMPACT'
+      attack.phase !== 'PENDING_IMPACT' ||
+      state.turnAction?.turnId !== attack.turnId ||
+      state.turnAction.unitId !== attack.attackerId ||
+      state.turnAction.combatAction !== 'RESERVED' ||
+      state.turnAction.reservedAttackId !== attack.attackId
     ) return state
     const attacker = state.units.find((unit) => unit.id === attack.attackerId)
     const target = state.units.find((unit) => unit.id === attack.targetId)
@@ -329,6 +378,11 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       ...state,
       units: state.units.map((unit) => unit.id === target.id ? { ...unit, hp: attack.result.remainingHp } : unit),
       attackMotion: { ...attack, phase: 'IMPACTED' },
+      turnAction: {
+        ...state.turnAction,
+        combatAction: 'CONSUMED',
+        reservedAttackId: null,
+      },
       lastAttackResult: attack.result,
       deathMotions: deathMotion ? [...(state.deathMotions ?? []), deathMotion] : state.deathMotions ?? [],
       nextDeathId: deathMotion ? state.nextDeathId + 1 : state.nextDeathId,
@@ -359,7 +413,8 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       !attack ||
       attack.attackId !== action.attackId ||
       attack.turnId !== state.turn.turnId ||
-      attack.phase !== 'IMPACTED'
+      attack.phase !== 'IMPACTED' ||
+      state.turnAction?.combatAction !== 'CONSUMED'
     ) return state
     const completed: BattleState = {
       ...state,
@@ -427,7 +482,9 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       action.unitId !== motion.unitId ||
       action.motionId !== motion.motionId ||
       motion.turnId !== state.turn.turnId ||
-      motion.unitId !== state.turn.activeUnitId
+      motion.unitId !== state.turn.activeUnitId ||
+      state.turnAction?.turnId !== motion.turnId ||
+      state.turnAction.unitId !== motion.unitId
     ) return state
     if (action.type === 'cancel') return { ...state, motion: null, interactionMode: 'COMMAND' }
 
@@ -440,7 +497,10 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       motion: null,
       interactionMode: 'COMMAND',
       lastAttackResult: null,
-      movementUsedTurnId: motion.turnId,
+      turnAction: {
+        ...state.turnAction,
+        movementUsed: true,
+      },
       lastMove: {
         motionId: motion.motionId,
         turnId: motion.turnId,
@@ -460,7 +520,9 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       ...state,
       units: state.units.map((unit) => unit.id === record.unitId ? { ...unit, position: { ...record.from } } : unit),
       lastMove: null,
-      movementUsedTurnId: null,
+      turnAction: state.turnAction
+        ? { ...state.turnAction, movementUsed: false }
+        : state.turnAction,
       interactionMode: 'COMMAND',
       lastAttackResult: null,
     }
@@ -478,7 +540,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       selectedUnit?.id !== state.turn.activeUnitId
     ) return state
     if (action.mode === 'MOVE' && !canEnterMoveMode(state)) return state
-    if (action.mode === 'ATTACK' && (selectedUnit?.faction !== 'player' || !isUnitAlive(selectedUnit))) return state
+    if (action.mode === 'ATTACK' && !canEnterAttackMode(state)) return state
     return {
       ...state,
       interactionMode: action.mode,
@@ -511,35 +573,26 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
   }
 
   if (action.type === 'standby') {
-    const selectedUnit = state.units.find((unit) => unit.id === state.selectedUnitId)
-    if (
-      isBattleBusy(state) ||
-      state.interactionMode !== 'COMMAND' ||
-      selectedUnit?.faction !== 'player' ||
-      !isUnitAlive(selectedUnit)
-      || selectedUnit.id !== state.turn.activeUnitId
-    ) return state
-    return advanceIndividualTurn(clearTurnContext(state), selectedUnit.id)
+    if (!canStandby(state)) return state
+    return advanceIndividualTurn(clearTurnContext(state), action)
   }
 
   if (action.type === 'confirm-attack') {
-    if (isBattleBusy(state) || state.interactionMode !== 'ATTACK' || !state.selectedAttackTargetId) return state
+    if (!canConfirmAttack(state)) {
+      if (isBattleBusy(state)) return state
+      const invalidTarget = state.interactionMode === 'ATTACK' &&
+        state.selectedAttackTargetId !== null
+      return invalidTarget
+        ? { ...state, selectedAttackTargetId: null, lastAttackCommand: null, lastAttackResult: null }
+        : state
+    }
     const attackerId = state.selectedUnitId
     const targetId = state.selectedAttackTargetId
-    if (!attackerId || !targetId) return state
+    const turnAction = state.turnAction
+    if (!attackerId || !targetId || !turnAction) return state
     const attacker = state.units.find((unit) => unit.id === attackerId)
     const target = state.units.find((unit) => unit.id === targetId)
-    if (
-      !attacker ||
-      attacker.faction !== 'player' ||
-      !isUnitAlive(attacker) ||
-      attacker.id !== state.turn.activeUnitId ||
-      !target ||
-      !isUnitAlive(target) ||
-      !canAttackTarget(state.units, attackerId, targetId)
-    ) {
-      return { ...state, selectedAttackTargetId: null, lastAttackCommand: null, lastAttackResult: null }
-    }
+    if (!attacker || !target) return state
     const result = {
       attackerId,
       targetId,
@@ -561,6 +614,12 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
         animationType: getAttackProfile(attacker.class).type,
         phase: 'PENDING_IMPACT',
         result,
+      },
+      turnAction: {
+        ...turnAction,
+        movementInitiationLocked: true,
+        combatAction: 'RESERVED',
+        reservedAttackId: state.nextAttackId,
       },
       nextAttackId: state.nextAttackId + 1,
       lastMove: null,
@@ -584,7 +643,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     }
   }
   if (action.type === 'select') {
-    return selectUnitOrAttackTarget(state, action.unitId)
+    return selectUnitOrAttackTarget(state, action.targetId)
   }
 
   if (action.type === 'select-attack-target') {
@@ -616,7 +675,9 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     movingUnit.faction !== 'player' ||
     !isUnitAlive(movingUnit) ||
     movingUnit.id !== state.turn.activeUnitId ||
-    state.movementUsedTurnId === state.turn.turnId ||
+    !state.turnAction ||
+    state.turnAction.movementUsed ||
+    state.turnAction.movementInitiationLocked ||
     state.lastMove?.unitId === movingUnit.id
   ) return state
   const destination = reachableForUnit(state.units, movingUnit.id, state.obstacles.map(obstacleCell)).get(cellKey(action.cell))

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useReducer } from 'react'
 import { INITIAL_UNITS } from '../../../game/battle/battle.data'
-import { canAttackTarget, getAttackableTargets, getAttackableTiles, getAttackDistance } from '../../../game/battle/battle.attack'
+import { getAttackableTargets, getAttackableTiles, getAttackDistance } from '../../../game/battle/battle.attack'
 import { reachableForUnit } from '../../../game/battle/battle.movement'
 import { battleReducer, canEnterMoveMode, canUndoLastMove, createBattleState, isBattleBusy } from '../../../game/battle/battle.state'
 import { INITIAL_OBSTACLES, obstacleCell } from '../../../game/battle/obstacles'
@@ -9,6 +9,7 @@ import { cellKey } from '../../../game/grid/grid.utils'
 import type { Cell } from '../../../game/grid/grid.types'
 import type { ReachableTile } from '../../../game/grid/movement'
 import { predictUpcomingTurns } from '../../../game/battle/battle.turn'
+import { canConfirmAttack, canEnterAttackMode, canStandby } from '../../../game/battle/battle.action'
 
 export function useBattleMovement() {
   const [state, dispatch] = useReducer(battleReducer, undefined, () => createBattleState(INITIAL_UNITS, INITIAL_OBSTACLES))
@@ -42,18 +43,50 @@ export function useBattleMovement() {
     ? getAttackDistance(selectedUnit.position, selectedAttackTarget.position, selectedUnit.attackPattern)
     : null
 
-  const selectUnit = useCallback((unitId: string) => dispatch({ type: 'select', unitId }), [])
-  const clearSelection = useCallback(() => dispatch({ type: 'clear' }), [])
-  const standby = useCallback(() => dispatch({ type: 'standby' }), [])
-  const selectCell = useCallback((cell: Cell) => dispatch({ type: 'cell', cell }), [])
+  const turnId = state.turn.turnId
+  const activeUnitId = state.turn.activeUnitId ?? ''
+  const selectUnit = useCallback(
+    (unitId: string) => dispatch({ type: 'select', targetId: unitId, turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
+  const clearSelection = useCallback(
+    () => dispatch({ type: 'clear', turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
+  const standby = useCallback(
+    () => dispatch({ type: 'standby', turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
+  const selectCell = useCallback(
+    (cell: Cell) => dispatch({ type: 'cell', cell, turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
   const finishMove = useCallback((unitId: string, motionId: number) => dispatch({ type: 'finish', unitId, motionId }), [])
   const cancelMove = useCallback((unitId: string, motionId: number) => dispatch({ type: 'cancel', unitId, motionId }), [])
-  const undoMove = useCallback(() => dispatch({ type: 'undo' }), [])
-  const setInteractionMode = useCallback((mode: Exclude<InteractionMode, 'COMMAND'>) => dispatch({ type: 'set-mode', mode }), [])
-  const cancelMoveMode = useCallback(() => dispatch({ type: 'cancel-move-mode' }), [])
-  const selectAttackTarget = useCallback((targetId: string) => dispatch({ type: 'select-attack-target', targetId }), [])
-  const cancelAttack = useCallback(() => dispatch({ type: 'cancel-attack' }), [])
-  const confirmAttack = useCallback(() => dispatch({ type: 'confirm-attack' }), [])
+  const undoMove = useCallback(
+    () => dispatch({ type: 'undo', turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
+  const setInteractionMode = useCallback(
+    (mode: Exclude<InteractionMode, 'COMMAND'>) => dispatch({ type: 'set-mode', mode, turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
+  const cancelMoveMode = useCallback(
+    () => dispatch({ type: 'cancel-move-mode', turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
+  const selectAttackTarget = useCallback(
+    (targetId: string) => dispatch({ type: 'select-attack-target', targetId, turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
+  const cancelAttack = useCallback(
+    () => dispatch({ type: 'cancel-attack', turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
+  const confirmAttack = useCallback(
+    () => dispatch({ type: 'confirm-attack', turnId, unitId: activeUnitId }),
+    [turnId, activeUnitId],
+  )
   const impactAttack = useCallback((attackId: number) => dispatch({ type: 'attack-impact', attackId }), [])
   const completeAttack = useCallback((attackId: number) => dispatch({ type: 'attack-complete', attackId }), [])
   const abortAttack = useCallback((attackId: number) => dispatch({ type: 'attack-abort', attackId }), [])
@@ -90,8 +123,9 @@ export function useBattleMovement() {
     defeatedUnits: state.defeatedUnits ?? [],
     confirmedImpacts: state.confirmedImpacts ?? [],
     canEnterMoveMode: canEnterMoveMode(state),
-    canConfirmAttack: !battleBusy && state.interactionMode === 'ATTACK' &&
-      Boolean(state.selectedAttackTargetId && canAttackTarget(state.units, state.selectedUnitId ?? '', state.selectedAttackTargetId)),
+    canEnterAttackMode: canEnterAttackMode(state),
+    canConfirmAttack: canConfirmAttack(state),
+    canStandby: canStandby(state),
     canUndoMove: state.interactionMode === 'COMMAND' && canUndoLastMove(state),
     selectUnit,
     clearSelection,

@@ -1,7 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createBattleUnit } from '../src/game/classes/class.factory.ts'
-import { battleReducer, createBattleState } from '../src/game/battle/battle.state.ts'
+import { createBattleState } from '../src/game/battle/battle.state.ts'
+import { battleReducerFixture as battleReducer } from './turn.fixture.mjs'
 
 const attacker = createBattleUnit({
   id: 'knight',

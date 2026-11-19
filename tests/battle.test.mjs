@@ -2,9 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { INITIAL_UNITS } from '../src/game/battle/battle.data.ts'
 import { reachableForUnit, moveUnit } from '../src/game/battle/battle.movement.ts'
-import { battleReducer, canUndoLastMove, createBattleState as createCoreBattleState } from '../src/game/battle/battle.state.ts'
+import { canUndoLastMove, createBattleState as createCoreBattleState } from '../src/game/battle/battle.state.ts'
 import { getOccupancy, unitAt } from '../src/game/battle/occupancy.ts'
-import { activateUnitFixture } from './turn.fixture.mjs'
+import { activateUnitFixture, battleReducerFixture as battleReducer } from './turn.fixture.mjs'
 
 const initialGoblin = INITIAL_UNITS.find((unit) => unit.id === 'goblin')
 
@@ -410,14 +410,14 @@ test('未確認移動時禁止直接再次移動，待命後下一 Turn 不得�
 test('合法移動後核心拒絕再次移動、獨立確認及重選繞過', () => {
   let state = completeKnightMove()
   const turnSnapshot = state.turn
-  assert.equal(state.movementUsedTurnId, state.turn.turnId)
+  assert.equal(state.turnAction.movementUsed, true)
   assert.equal(beginMove(state), state)
   assert.equal(battleReducer(state, { type: 'commit' }), state)
 
   state = battleReducer(state, { type: 'clear' })
   assert.ok(state.lastMove)
   state = battleReducer(state, { type: 'select', unitId: 'knight' })
-  assert.equal(state.movementUsedTurnId, state.turn.turnId)
+  assert.equal(state.turnAction.movementUsed, true)
   assert.equal(beginMove(state), state)
   assert.equal(state.turn, turnSnapshot)
 })
@@ -430,7 +430,7 @@ test('移動後取消會解除移動限制且不推進 PAS', () => {
 
   state = battleReducer(state, { type: 'undo' })
   assert.equal(state.lastMove, null)
-  assert.equal(state.movementUsedTurnId, null)
+  assert.equal(state.turnAction.movementUsed, false)
   assert.equal(state.turn.battleTime, battleTime)
   assert.equal(state.turn.turnId, turnId)
   assert.equal(state.turn.activeUnitId, activeUnitId)

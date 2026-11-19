@@ -47,9 +47,24 @@
 
 成功完成移動後建立單次 `BattleMoveRecord`，包含 `from`、`to`、`path`、`cost`、`unitId`、`motionId`。
 
-可撤銷條件包含：角色仍選中且存活、無動畫、仍位於目的格、原始格合法未佔用、紀錄未確認。撤銷會還原座標與佔位、清除紀錄且不倒播動畫或消耗 MOV。
+可撤銷條件包含：角色仍選中且存活、無動畫、Movement Initiation Lock 未鎖定、仍位於目的格、原始格合法未佔用、紀錄未確認。即使異常狀態保留 `lastMove`，一旦 Lock 已建立仍不得 Undo。撤銷會還原座標與佔位、清除紀錄且不倒播動畫或消耗 MOV。
 
 移動完成後以 `lastMove` 保存可撤銷資訊，並以 Turn-scoped Movement Commitment 禁止同一 Turn 再次移動。攻擊確認與待命會隱式確認移動；沒有獨立「確認移動」事件或按鈕。
+
+## Individual Action Economy
+
+`TurnActionState` 以 `turnId` 與 Active Unit ID 建立目前回合的行動權：
+
+- `movementUsed`：合法 Movement Finish 後為 `true`；合法 Undo 後恢復 `false`。
+- `movementInitiationLocked`：合法 Confirm Attack 後鎖定；Pre-impact Abort 不解除。
+- `combatAction`：`AVAILABLE` → `RESERVED` → `CONSUMED`。
+- `reservedAttackId`：只在 `RESERVED` 時對應目前 Attack Motion。
+
+Movement Action 與 `lastMove` 分開。清除 Undo Record 不會恢復已消耗的 Movement Action；Movement Cancel 尚未 Finish，因此不消耗。Combat Action 只在合法 Impact 轉為 `CONSUMED`，非法攻擊或取消 ATTACK Mode 不消耗。
+
+UI 的 `canConfirmAttack()` 與 Reducer 使用相同 Domain Guard。Guard 包含 Active Unit／Turn Context、Interaction Mode、Combat Action Availability、Reservation、有效攻擊者、有效目標、陣營、生命狀態及 Attack Pattern；Renderer 只消費結果，不作為權限來源。
+
+玩家指令在 Hook callback 建立時捕捉 Turn ID／Unit ID。Set Mode、Move Request、Undo、Target Selection、Confirm、Cancel、Standby 等若在下一個 Turn 或不同 Unit 重播，Reducer 直接拒絕；Animation Event 則透過不可變 Motion、Attack、Death ID 與其 Turn Record 驗證。
 
 ## 操作模式
 
@@ -77,6 +92,8 @@ Confirm → PENDING_IMPACT → Impact → IMPACTED → Complete
 - Impact 更新 HP 與 `lastAttackResult`，並保留 AttackMotion 至 Recovery 完成。
 - Complete 只接受 `IMPACTED`，保留攻擊者選取並返回 COMMAND。
 - Abort 在命中前清除未完成指令且不扣血；命中後保留已正式結算的 HP。
+- Pre-impact Abort 釋放 Combat Reservation，Combat Action 回到 `AVAILABLE`，不結束 Turn；已使用的 Movement Action、已清除的 Undo 及 Movement Initiation Lock 保持不變。
+- Post-impact Abort 保留 `CONSUMED`、傷害及已確認 Impact，並沿 Pending Turn Completion 完成 Turn。
 - 攻擊期間 Reducer、Hook 與 UI 均鎖定一般戰鬥操作；鏡頭操作不受影響。
 - 逐幀時間不寫入 Battle State；唯一時鐘由 Attack Animation Controller 管理。
 
@@ -264,9 +281,10 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 - `ACTION_DISTANCE = 1000` BU；`ROUND_DURATION = 200` BTU；預覽 10 次。
 - 每名存活單位保存固定 `initialOrder`、`remainingDistance` 與 `velocity`；M4-1 的 `velocity = unit.agi`。
-- `AV = remainingDistance / velocity`。最小 AV 作為 DES 的時間推進量，所有合資格單位同步扣除 `velocity × deltaTime`。
-- 只有接近零的合法浮點殘值會正規化；重大負值直接視為錯誤，不以絕對值修正。
-- 同時抵達依 AGI 高者、Initial Order 小者排序；後續同時抵達 Turn 的 `deltaTime` 可為零。
+- `AV = remainingDistance / velocity`。Scheduler 先對所有合資格單位計算真正的最小 AV，所有合資格單位同步扣除 `velocity × deltaTime`。
+- `TURN_TIME_EPSILON = 1e-9` BTU 用於建立同時抵達候選；`TURN_DISTANCE_EPSILON = 1e-7` BU 只用於處理負的浮點殘值。Time Epsilon 外的非 Tie Candidate 保留正剩餘距離。
+- Tie Candidate 依 AGI 高者、Initial Order 小者排序。候選集合內的微量距離歸零；重大負值或非有限值直接視為錯誤，不以任意絕對值修正。
+- Round Boundary 先將 `BattleTime` 的微量時間誤差正規化，再以 `floor(BattleTime / 200) + 1` 計算，不提前跨越實際邊界。
 - `round = floor(battleTime / 200) + 1`；Round 改變不重置角色屬性或距離。
 - 一次只有一名 Active Unit。玩家只能操作自己的 Active Unit；敵方 Turn 鎖定玩家戰鬥指令。
 - Attack Complete／Post-impact Abort 只在所有 Movement、Attack、Death Motion 結束後完成 Turn。
@@ -275,9 +293,9 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 正式初始戰場前 17 次順序與 Round 邊界由 [battle.turn.test.mjs](../tests/battle.turn.test.mjs) 驗證。
 
-M4-1 尚未實作完整個體行動資源、正式敵方 AI、勝敗或 M7 效果。每個個體 Turn 最多合法移動一次；Undo 只在未確認時恢復該次移動權。Development Build 可使用「模擬敵方待命」；Production Build 不顯示此控制。
+M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。正式敵方 AI、勝敗或 M7 效果仍未實作。Development Build 可使用「模擬敵方待命」；Production Build 不顯示此控制。
 
-條件式結案風險見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)：TD-016 追蹤 PAS 浮點 Near-tie Arrival；TD-017 追蹤玩家待命事件的 Turn／Unit Context 防重複缺口，為 M4-2 Entry Requirement；TD-019 追蹤敵方開發控制的核心授權邊界，留待 M4-3。上述項目為核准延後風險，不表示正常 Browser 操作已發生 Bug。
+M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案；TD-019 的敵方指令核心授權仍留待 M4-3。
 
 ## 初始測試戰場
 
@@ -296,7 +314,7 @@ M4-1 尚未實作完整個體行動資源、正式敵方 AI、勝敗或 M7 效�
 
 ## 已知限制
 
-- 無完整個體行動次數／資源管理、正式敵方 AI、勝敗。
+- 無正式敵方 AI、勝敗、技能或 M7 效果。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
 - 尚未導入攻擊音效、正式骨架動畫或 Physics；目前的死亡演出使用 Placeholder 模型。
 - UI 目前要求選取目標後再確認攻擊。

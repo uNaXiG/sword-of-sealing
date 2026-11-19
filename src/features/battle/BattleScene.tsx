@@ -29,11 +29,12 @@ export default function BattleScene() {
     units, obstacles, selectedUnit, selectedAttackTarget, selectedAttackTargetDistance, lastAttackResult,
     motion, lastMove, reachable, interactionMode, selectedAttackTargetId,
     attackRange, attackableTargets, attackableTargetIds, attackableTargetCells,
-    canUndoMove, canEnterMoveMode, canConfirmAttack, battleBusy, selectUnit, clearSelection, standby, selectCell,
+    canUndoMove, canEnterMoveMode, canEnterAttackMode, canConfirmAttack, canStandby, battleBusy, selectUnit, clearSelection, standby, selectCell,
     finishMove, cancelMove, undoMove, setInteractionMode, cancelMoveMode, cancelAttack, confirmAttack,
     impactAttack, completeAttack, abortAttack, attackMotion, confirmedImpacts, deathMotions, defeatedUnits,
     consumeImpact, completeDeath, abortDeath,
     turn, activeUnit, upcomingTurns, simulateEnemyStandby,
+    pendingTurnCompletion,
   } = useBattleMovement()
   const { clockRef, onImpact, onComplete, onAbort } = useAttackAnimation(impactAttack, completeAttack, abortAttack)
   const {
@@ -200,18 +201,20 @@ export default function BattleScene() {
             {units.length > 0 ? '正在結算死亡動畫……' : '正在結算戰鬥單位……'}
           </p>
         )}
-        {selectedUnit && !motion && !attackMotion && interactionMode === 'COMMAND' && (
+        {selectedUnit && !battleBusy && !pendingTurnCompletion && interactionMode === 'COMMAND' && (
           <div className="battle-actions">
             {canEnterMoveMode && (
               <button className="battle-deselect" type="button" onClick={handleMoveMode}>移動</button>
             )}
-            <button className="battle-deselect" type="button" onClick={handleAttackMode}>攻擊</button>
+            {canEnterAttackMode && (
+              <button className="battle-deselect" type="button" onClick={handleAttackMode}>攻擊</button>
+            )}
             {lastMove?.unitId === selectedUnit.id && (
               <button className="battle-deselect battle-undo" type="button" disabled={!canUndoMove} onClick={handleUndoMove}>
                 取消
               </button>
             )}
-            <button className="battle-deselect" type="button" onClick={handleStandby}>待命</button>
+            <button className="battle-deselect" type="button" disabled={!canStandby} onClick={handleStandby}>待命</button>
           </div>
         )}
         {selectedUnit && !motion && interactionMode === 'MOVE' && (

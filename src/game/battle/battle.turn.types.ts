@@ -19,6 +19,20 @@ export interface PendingTurnCompletion {
   readonly attackId: number
 }
 
+export interface TurnContext {
+  readonly turnId: number
+  readonly unitId: string
+}
+
+export type CombatActionStatus = 'AVAILABLE' | 'RESERVED' | 'CONSUMED'
+
+export interface TurnActionState extends TurnContext {
+  readonly movementUsed: boolean
+  readonly movementInitiationLocked: boolean
+  readonly combatAction: CombatActionStatus
+  readonly reservedAttackId: number | null
+}
+
 export interface TurnPreviewEntry {
   readonly unitId: string
   readonly turnId: number

@@ -30,8 +30,10 @@ export function calculateRound(battleTime: number): number {
 }
 
 function normalizeNearZero(value: number): number {
-  if (Math.abs(value) <= TURN_DISTANCE_EPSILON) return 0
-  if (value < 0) throw new RangeError('Remaining distance cannot become negative')
+  if (value < 0) {
+    if (Math.abs(value) <= TURN_DISTANCE_EPSILON) return 0
+    throw new RangeError('Remaining distance cannot become negative')
+  }
   return value
 }
 
@@ -102,12 +104,21 @@ export function scheduleNextTurn(
     }
   }
 
-  const next = selectNextTurnUnit(eligible, aliveUnitIds)
-  const deltaTime = calculateActionValue(next.remainingDistance, next.velocity)
+  const candidates = eligible.map((entry) => ({
+    entry,
+    av: calculateActionValue(entry.remainingDistance, entry.velocity),
+  }))
+  const deltaTime = Math.min(...candidates.map(({ av }) => av))
+  const simultaneous = candidates
+    .filter(({ av }) => Math.abs(av - deltaTime) <= TURN_TIME_EPSILON)
+    .sort(compareArrival)
+  const next = simultaneous[0].entry
   const battleTime = normalizeBoundary(turn.battleTime + deltaTime)
   const timeline = eligible.map((entry) => ({
     ...entry,
-    remainingDistance: normalizeNearZero(entry.remainingDistance - entry.velocity * deltaTime),
+    remainingDistance: Math.abs(calculateActionValue(entry.remainingDistance, entry.velocity) - deltaTime) <= TURN_TIME_EPSILON
+      ? 0
+      : normalizeNearZero(entry.remainingDistance - entry.velocity * deltaTime),
   }))
 
   return {

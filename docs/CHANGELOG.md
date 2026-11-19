@@ -2,6 +2,37 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-19 — M4-2 Final Verification Addendum
+
+- **Added / FV-01**：同一 Scheduler 連續排程 10,000 個 Near-tie Event，驗證 Turn ID、Battle Time、Round、Remaining Distance 及獨立 Arrival Queue Oracle；不重建 Turn State。
+- **Added / FV-02**：直接呼叫 `battleReducer()` 驗證缺少 Turn ID、缺少 Unit ID、過期 Turn ID、錯誤 Unit ID、舊 Standby Replay 及過期 Confirm Attack。
+- **Verification**：`npm run lint` PASS；`npm test` 181/181 PASS；`npm run build` PASS。`git diff --check` 在 repository 既有 CRLF tracked files 下將 CR 判為 trailing whitespace；`git -c core.whitespace=cr-at-eol diff --check` PASS，未發現真實 trailing whitespace。
+- **Formal Acceptance**：Architecture Review、Code Review、Final Verification 與 Product Owner Browser Acceptance 均 PASS。
+- **Status**：M4-2 **COMPLETED — Formal Acceptance Approved**；Patch 1 **COMPLETED**。M4 50%、Overall 35.0%；TD-016／017／020 CLOSED；M4-3 UP NEXT — Enemy AI。
+
+## 2026-11-19 — M4-2 Patch 1 — Review Hardening — IMPLEMENTED — Review / Acceptance Pending
+
+- **Fixed / CR-01**：`canUndoLastMove()` 顯式檢查 Movement Initiation Lock；Lock 建立後即使異常保留 `lastMove` 仍不可 Undo。
+- **Changed / CR-02**：Confirm Attack 的 UI 與 Reducer 共用 `canConfirmAttack()`；非法 Context、已消耗 Combat Action 或非法目標不建立 Reservation。
+- **Added / CR-03**：10,000 次 Near-tie × Round Boundary stress、Epsilon 內外邊界及 1,000 次 Preview／正式排程一致性；Epsilon 未放大。
+- **Reconciled / CR-04**：建立 32 項 Planned Scenario Coverage Mapping；既有測試已涵蓋項目以 Test Name／Assertion 對應，未新增空測試。
+- **Browser / CR-05**：已實際驗證普通攻擊、23 點傷害、後續 Turn、致命攻擊與實扣 14 HP、死亡阻擋、Timeline 移除、攻擊中離場重入、非 Active Unit 拒絕及多次重入。
+- **Verification**：`npm test` 179/179 PASS；`npm run lint` PASS；`npm run build` PASS。既有 Battle Chunk > 500 kB warning 保留。Patch 1 未 Commit、未 Push、無新 CI，未提前宣告正式結案。
+- **Closure**：後續 Final Verification 及 Product Owner Acceptance PASS；本 Patch 現更新為 **COMPLETED**。
+
+## 2026-11-19 — M4-2 Individual Action Economy — IMPLEMENTED — Review / Acceptance Pending
+
+- **Added**：Turn-scoped `TurnActionState`、Movement／Combat Action lifecycle、Turn-bound Command Context、Combat Reservation／Consumption、Movement Initiation Lock 與原子 Turn Reset。
+- **Fixed**：玩家 `standby` 及 Set Mode、Movement Request、Undo、Target Selection、Confirm／Cancel 等指令不再被下一個 Turn 的 Active Unit 自動重新綁定；同 Context 重複事件為安全 no-op。
+- **Fixed**：PAS 先使用全域最小 AV 作為 `deltaTime`，再以獨立 Time Epsilon 建立 Tie Candidate；Time／Distance Epsilon 分離，保留非 Tie Candidate 的正剩餘距離。
+- **Added Tests**：Action Economy、Pre-/Post-impact Abort、Turn Reset、Context Replay 與 10,000 次固定速度獨立理論 Oracle；Patch 1 後總測試由 154 增至 179。
+- **Verification**：`npm run lint` PASS；`npm run build` PASS。既有 Battle Chunk > 500 kB 警告保留。
+- **Browser Verification**：PARTIAL；已驗證 Development／Production 戰場進入、HUD／Timeline、Move 隱藏、Undo、Attack Mode Cancel 保留 Undo、Standby 切換、同步重複 Standby 防跳 Turn、Development Enemy Standby、Production 無 Dev Control、移動中離場重入及 Camera 操作。Three.js 既有兩項 Warning；攻擊／傷害／死亡尚未於本次完整操作。
+- **Documentation**：README、Architecture、Game Design、Combat System、Development Status、Roadmap、Technical Debt 與 Changelog 已同步；M4 完成度維持 25%，Project Completion 維持 32.5%。
+- **Known Limitations**：M4-3 Enemy AI、M4-4 勝敗、M7 Effect／Skill、正式 Product Owner Acceptance 及 Formal Closure 尚未完成。
+- **Git / CI**：Starting HEAD `818cc6634bce89eaeffb4de13c98e9c9c05737fa`。本次 M4-2 實作未 Commit、未 Push，無新 CI 結果，不宣告 COMPLETED。
+- **Closure**：M4-2 後續通過 Final Verification、Formal Acceptance、TD-016／017／020 Closure；正式 Git／CI Baseline 由本次 Closure 提交後補充。
+
 ## 2026-11-19 — M4-1 & Patch 1 Milestone Closure — Conditional
 
 - **Closure**：M4-1 標記為 **COMPLETED — Conditional Closure**；M4-1 Patch 1 標記為 **COMPLETED**。

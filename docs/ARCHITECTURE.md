@@ -74,6 +74,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/battle/battle.turn.ts` | PAS DES 排程、確定性排序、Turn Completion 與唯讀 Preview |
 | `game/battle/battle.turn.types.ts` | Turn Timeline、Pending Completion 與 Preview 型別 |
 | `game/battle/battle.turn.constants.ts` | 1000 BU、200 BTU／Round、預覽數量與容差 |
+| `game/battle/battle.action.ts` | Turn Action State 初始化、Turn Context 比對與 Combat／Attack 可用性 |
 | `game/battle/battle.movement.ts` | 單位移動預算與完成前驗證 |
 | `game/battle/occupancy.ts` | 棋格佔位唯一性 |
 | `game/battle/obstacles.ts` | 障礙配置與驗證 |
@@ -114,11 +115,15 @@ flowchart LR
 
 Attack Complete 或 Post-impact Abort 在存在 DeathMotion 時保留 `PendingTurnCompletion`。最後一個阻擋 Motion 結束後才原子重置 Active Unit Distance、清理舊 Turn 操作上下文並排程下一位。
 
-`movementUsedTurnId` 是 M4-1 的最小 Turn-scoped Movement Commitment。合法 Move Finish 建立限制；合法 Undo 清除限制；攻擊確認可清除 `lastMove`，但保留 Commitment 以防 Pre-impact Abort 後重複移動。下一個 Individual Turn 及 Scene Re-entry 會重置此狀態。UI Move Availability 與 Reducer 共用 `canEnterMoveMode` 判斷。
+M4-2 以 `TurnActionState` 取代 M4-1 的 `movementUsedTurnId`，集中保存 Movement Used、Movement Initiation Lock、Combat Action 狀態及 Reserved Attack ID。每個新 Individual Turn 原子建立 `AVAILABLE / AVAILABLE / unlocked` 狀態；Action State 與 `turnId`、Active Unit ID 不符時所有玩家 Turn Command 均為 no-op。
+
+合法 Move Finish 才消耗 Movement Action；Undo 還原位置並清除 Movement Used。確認攻擊先將 Combat Action 設為 `RESERVED`，清除合法 Undo Record 並鎖定後續 Movement Initiation；合法 Impact 同一 Transition 轉為 `CONSUMED`。Pre-impact Abort 只釋放 Reservation 回到 `AVAILABLE`，不解除 Movement Lock；Post-impact Abort 保留 `CONSUMED` 並進入 Pending Turn Completion。UI 與 Hook 的按鈕可用性只讀取共用 Domain Guards，Reducer 執行最終驗證。
+
+Patch 1 對 Guard 邊界做兩項硬化：`canUndoLastMove()` 顯式拒絕已建立 Movement Initiation Lock，即使異常狀態仍保留 `lastMove`；Reducer 的 Confirm Attack 採用與 UI 相同的 `canConfirmAttack()` Domain Guard，再建立 Reservation 與 Damage Snapshot。UI 不授權操作，Reducer 仍以相同 Pure Guard 作最終裁決。
 
 Development Build 的「模擬敵方待命」只經明確 Development Control Action 驅動；Production UI 不呈現玩家敵方操作，未來 M4-3 將以 AI Lifecycle 替換。
 
-M4-1 已依 `db30869` 條件式結案。已核准延後的架構風險見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)：TD-016 需分離 PAS 最小事件時間與 Active Unit 選擇；TD-017 需讓玩家待命 Action 攜帶 Turn Context。這些是 M4-2 前置風險或驗證工作，不表示已存在實作模組。TD-019 的核心敵方指令授權留待 M4-3。
+M4-2 已將 TD-017 的 Context Integrity 整合至玩家指令產生與 Reducer Guard。Hook 在指令建立時捕捉 `turnId/unitId`，Animation Lifecycle 仍以不可變 Motion／Attack／Death ID 驗證；延遲 Callback 不會重新讀取下一個 Active Unit。TD-016 的 Scheduler 先計算全域最小 AV，再選擇 Time Epsilon 內候選；Time Epsilon（BTU）與 Distance Epsilon（BU）分開使用。所有 Tie Candidate 的微量距離被歸零，但 Time Epsilon 外的候選保留正距離；非有限值與超出容差的負距離仍明確拋錯。M4-2 已完成 Formal Acceptance；Review 修復、181/181 自動化驗證及 Product Owner Browser Acceptance 證據見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) 與 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)。
 
 ## Battle State 與 Reducer
 
@@ -163,6 +168,8 @@ Rendering 座標由 `column/row` 透過 `cellPosition()` 轉換為 Three.js 世�
 - Confirmed Impact Queue、TD-015、無效 Impact 與事件跨 Attack Complete／Unit Removal。
 - Unit Label 血槽與填充幾何、比例邊界及 Canvas 繪製呼叫；不取代 WebGL 瀏覽器驗收。
 - Dijkstra、地形成本、障礙與佔位。
+- Individual Action Economy、Turn Context、Reservation、Abort Recovery 與 Turn Reset。
+- PAS Exact-tie、Near-tie、Round Boundary、Preview 一致性及獨立理論 Oracle 長跑。
 
 ## 部署架構
 

@@ -51,17 +51,18 @@
 
 M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
-## M4：動態回合制與敵方 AI — IN PROGRESS（25%）
+## M4：動態回合制與敵方 AI — IN PROGRESS（50%）
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
 | M4-1 | 物理競速式行動與個體回合系統 | COMPLETED — Conditional Closure |
 | M4-1 Patch 1 | 移動確認與指令流程修正 | COMPLETED |
-| M4-2 | Individual Action Economy & Turn State Reset | UP NEXT |
-| M4-3 | 敵方移動與攻擊決策 | PENDING |
+| M4-2 | Individual Action Economy & Turn State Reset | COMPLETED — Formal Acceptance Approved |
+| M4-2 Patch 1 | Code Review Hardening & Verification | COMPLETED |
+| M4-3 | 敵方移動與攻擊決策 | UP NEXT — Enemy AI |
 | M4-4 | 勝利、失敗與戰鬥結束 | PENDING |
 
-M4-1 已完成 PAS Core、DES Scheduler、個體回合生命週期、HUD／Timeline 與 Patch 1；使用者 BV、Git 基準及 CI 已確認。TD-016 至 TD-020 已核准延後，因此採條件式結案。TD-017 是 M4-2 Entry Requirement。
+M4-1 與 M4-2 均已完成。M4-2 包含完整 Action Economy、Turn Context、Combat Reservation、Turn Reset、PAS Precision、10,000 Continuous Near-tie、Direct Reducer Context Tests、Architecture／Code Review 及 Product Owner Browser Acceptance。M4-2 與 Patch 1 均為 **COMPLETED**；M4 整體完成度為 50%。下一階段為 M4-3 Enemy AI，本次未開始實作。
 
 ## M5：戰鬥 UI／UX — PENDING
 
@@ -119,4 +120,4 @@ M5-2 包含 [UX-001 至 UX-005](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV
 | M10-3 | 效能、手機及桌面適配 | PENDING |
 | M10-4 | GitHub Pages 正式發布 | PENDING |
 
-M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑完成度為 M1 100%、M2 100%、M3 100%、M4 25%、M5–M10 0%；完整結案主要里程碑為 3/10，等權重進度為 32.5%。此為 Roadmap Completion Percentage，不是實際工時比例。
+M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑完成度為 M1 100%、M2 100%、M3 100%、M4 50%、M5–M10 0%；完整結案主要里程碑仍為 3/10，等權重進度為 35.0%。此為 Roadmap Completion Percentage，不是實際工時比例。

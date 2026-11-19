@@ -2,7 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { INITIAL_UNITS } from '../src/game/battle/battle.data.ts'
 import { canAttackTarget, getAttackableTiles, getAttackDistance, isWithinAttackRange } from '../src/game/battle/battle.attack.ts'
-import { battleReducer, createBattleState } from '../src/game/battle/battle.state.ts'
+import { createBattleState } from '../src/game/battle/battle.state.ts'
+import { battleReducerFixture as battleReducer } from './turn.fixture.mjs'
 import { createBattleUnit } from '../src/game/classes/class.factory.ts'
 
 const knight = INITIAL_UNITS.find((unit) => unit.id === 'knight')

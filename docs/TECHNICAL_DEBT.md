@@ -2,7 +2,7 @@
 
 狀態只反映已確認事實。Proposed 解法不代表已核准實作；未確認目標標為 TBD。
 
-**技術債統計（TD-001 至 TD-020）**：共 20 項；CLOSED 8、OPEN 11、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
+**技術債統計（TD-001 至 TD-020）**：共 20 項；CLOSED 11、OPEN 8、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
 
 | ID | Description | Impact | Priority | Status | Suggested Resolution | Target |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -21,11 +21,11 @@
 | TD-013 | README 舊攻擊範圍敘述殘留 | 文件仍稱曼哈頓範圍，與四種模式不符 | Low | CLOSED | README 已改為依職業攻擊模式描述，並完成使用者驗收 | DOC-01 |
 | TD-014 | Attack Animation Controller 的 emitted Attack ID 集合持續增長 | 長時間重複攻擊可能累積記憶體與 ID Set Entries | Low | OPEN | Proposed：在不破壞 StrictMode 防護下設計受限生命週期或清理窗口 | M10-3 Candidate |
 | TD-015 | 命中視覺回饋可能早於 Reducer 確認 | 浮動傷害、受擊與死亡可能依預計結果誤顯示 | Medium | CLOSED | 改用 Confirmed Impact Event Queue；依據為無效／重複 Impact、Complete、Abort 等[回歸測試](../tests/battle.impact-feedback.test.mjs)及使用者 M3-4 瀏覽器驗收（BV-01 至 BV-20 全部 PASS） | M3-4 |
-| TD-016 | PAS Floating-point Arrival Tolerance | Scheduler 使用容差選中角色後，若以該角色 AV 而非全域最小 AV 推進，近似同時抵達可能過度推進或產生非法負距離 | Medium | OPEN | 分離最小事件時間與 Active Unit 選擇；定義時間／距離容差正規化；新增 Near-tie Arrival 測試並保留 Reference Scenarios | M4-2 |
-| TD-017 | Player Standby Turn Context Integrity | 玩家 `standby` 缺少 Turn／Unit Context，重複事件在下一個玩家 Turn 可能完成非預期的第二次 Turn | High | OPEN | 待命 Action 攜帶 `turnId`／`unitId`，Reducer 驗證目前 Active Unit；拒絕重複、過期及同角色新 Turn 的舊事件。**M4-2 Entry Requirement** | M4-2 — Blocking |
+| TD-016 | PAS Floating-point Arrival Tolerance | 舊 Scheduler 以 Tie Candidate 的 AV 推進，近似同時抵達可能過度推進 | Medium | CLOSED | M4-2 分離最小事件時間與 Tie Selection；Exact-tie、Near-tie、Round Boundary、10,000 Continuous Events 均通過 | M4-2 |
+| TD-017 | Player Standby Turn Context Integrity | 玩家 `standby` 舊缺少 Turn／Unit Context，重複事件可能污染下一 Turn | High | CLOSED | M4-2 玩家指令攜帶 Context；Reducer Guard 與 Direct Context Replay Tests 通過 | M4-2 |
 | TD-018 | AGI Validation Consistency | Class Registry 接受 finite positive number，Battle State 要求 non-negative safe integer，PAS 又要求正速度；資料契約不一致 | Low | OPEN | 統一 Base AGI 合法值；未來明確分離 Base AGI 與 Effective Velocity；不為 M7 Buff 提前放寬所有基礎屬性 | M7 |
 | TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | OPEN | M4-3 建立 AI 指令來源與核心授權，移除 Development Enemy Standby，驗證過期與異常 AI Action | M4-3 |
-| TD-020 | Extended Scheduling Verification Coverage | 10,000 次測試未完整驗證長期理論行動頻率、Round 邊界精確性、數值漂移及 Preview 一致性 | Medium | OPEN | 增加理論／實際行動次數、Battle Time 誤差、Round Boundary、Near-tie 與 Preview／實際一致性測試；保留原長跑測試 | M4-2 |
+| TD-020 | Extended Scheduling Verification Coverage | 舊 10,000 次測試缺少獨立 Oracle 與長期數值誤差證據 | Medium | CLOSED | M4-2 加入固定速度 Oracle、Continuous Near-tie、Round Boundary、Preview 一致性、長期誤差與非負距離驗證 | M4-2 |
 
 ## 已結案 Bug
 
@@ -44,6 +44,18 @@ TD-016 至 TD-020 分別對應 ChatGPT Code Review CR-01 至 CR-05。使用者�
 - TD-016 與 TD-020 納入 M4-2 開發與驗證範圍。
 - TD-018 留待 M7。
 - TD-019 留待 M4-3。
+
+## M4-2 Implementation Evidence — Formal Acceptance Approved
+
+TD-016、TD-017、TD-020 的程式修復已實作並由本次 181/181 測試、ESLint 及 Production Build 驗證：
+
+- TD-016：`deltaTime = min(AV_i)`；Tie Candidate 另以 Time Epsilon 選取，Time／Distance Epsilon 分離，非 Tie 的正剩餘距離不被正規化。
+- TD-017：玩家 Set Mode、Move Request、Undo、Target Selection、Confirm、Cancel 及 Standby 在 Hook 建立時捕捉 Context；Reducer 先驗證 `turnId/unitId` 及 Action State。Animation Events 仍由不可變 Lifecycle ID 驗證。
+- TD-020：新增 10,000 次 `k × ACTION_DISTANCE / velocity` 獨立 Oracle，覆蓋行動次數比例、最大時間／距離誤差、Round Boundary、Near-tie、同時抵達及 Preview／正式排程一致性。
+- Patch 1 HARDENING：新增 10,000 次 Near-tie × Round Boundary Deterministic Stress、Time Epsilon 內／外邊界、1,000 次 Preview／正式排程一致性；未放大既有 Epsilon。
+- Final Verification Addendum：新增同一 Scheduler 連續 10,000-event Near-tie 測試與 Direct Reducer Context Replay 測試；仍未修改 Epsilon 或 Gameplay 規則。
+
+Architecture Review、Code Review、Final Verification 與 Product Owner Browser Acceptance 均已完成。TD-016、TD-017、TD-020 更新為 **CLOSED**；Git／CI Baseline 將由本次 Formal Closure Commit 後正式同步。
 
 ## 已知非阻擋性警告
 

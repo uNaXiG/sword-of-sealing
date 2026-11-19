@@ -9,9 +9,9 @@ import {
   predictUpcomingTurns,
 } from '../src/game/battle/battle.turn.ts'
 import { ACTION_DISTANCE } from '../src/game/battle/battle.turn.constants.ts'
-import { createBattleState, battleReducer } from '../src/game/battle/battle.state.ts'
+import { createBattleState } from '../src/game/battle/battle.state.ts'
 import { createBattleUnit } from '../src/game/classes/class.factory.ts'
-import { activateUnitFixture } from './turn.fixture.mjs'
+import { activateUnitFixture, battleReducerFixture as battleReducer } from './turn.fixture.mjs'
 
 const closeTo = (actual, expected, tolerance = 1e-7) => {
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} != ${expected}`)
@@ -163,7 +163,7 @@ test('Turn 權限、過期完成及空 Timeline 安全停止', () => {
   }), state)
 
   const stale = { ...state, turn: { ...state.turn, turnId: state.turn.turnId + 1 } }
-  assert.equal(battleReducer(stale, { type: 'standby' }).turn.turnId, stale.turn.turnId + 1)
+  assert.equal(battleReducer(stale, { type: 'standby' }), stale)
 
   const empty = createBattleState([])
   assert.equal(empty.turn.activeUnitId, null)
@@ -242,7 +242,7 @@ test('獨立確認移動不清除 Undo 且本 Turn 禁止再次移動', () => {
   state = battleReducer(state, { type: 'cell', cell: { column: 4, row: 3 } })
   state = battleReducer(state, { type: 'finish', unitId: 'knight', motionId: state.motion.motionId })
   assert.equal(state.lastMove.turnId, state.turn.turnId)
-  assert.equal(state.movementUsedTurnId, state.turn.turnId)
+  assert.equal(state.turnAction.movementUsed, true)
   state = battleReducer(state, { type: 'commit' })
   assert.ok(state.lastMove)
   assert.equal(state.turn.turnId, 1)
@@ -282,7 +282,7 @@ test('移動後攻擊 Pre-impact Abort 不解除本 Turn 移動限制', () => {
   state = battleReducer(state, { type: 'attack-abort', attackId: state.attackMotion.attackId })
 
   assert.equal(state.turn.turnId, turnId)
-  assert.equal(state.movementUsedTurnId, turnId)
+  assert.equal(state.turnAction.movementUsed, true)
   assert.equal(state.lastMove, null)
   assert.equal(battleReducer(state, { type: 'set-mode', mode: 'MOVE' }), state)
 })
@@ -303,7 +303,7 @@ test('下一個個體 Turn 重置移動限制，即使相同角色再次取得�
 
   assert.equal(state.turn.activeUnitId, knight.id)
   assert.equal(state.turn.turnId, previousTurnId + 1)
-  assert.equal(state.movementUsedTurnId, null)
+  assert.equal(state.turnAction.movementUsed, false)
   assert.equal(state.lastMove, null)
   assert.notEqual(battleReducer(state, { type: 'set-mode', mode: 'MOVE' }), state)
 })
