@@ -6,6 +6,7 @@ import { battleReducerFixture as battleReducer } from './turn.fixture.mjs'
 import { getOccupancy } from '../src/game/battle/occupancy.ts'
 import { activateUnitFixture } from './turn.fixture.mjs'
 import { ensureAttackAnimationClock } from '../src/features/battle/hooks/attackAnimationClock.ts'
+import { AttackAnimationControllerLifecycle } from '../src/features/battle/hooks/attackAnimationControllerLifecycle.ts'
 import {
   ATTACK_ANIMATION_PROFILES,
   getAttackTimelineFrame,
@@ -76,6 +77,60 @@ test('Clock Helper 保留同 Attack ID 進度並替換不同 Attack ID Clock', (
   )
   assert.equal(mismatch.attackId, 8)
   assert.equal(mismatch.elapsedMs, 0)
+})
+
+test('Controller Lifecycle 對 Effect Replay 僅 Abort 一次，且同一 Frame 恰好套用 Impact 與 Complete', async () => {
+  let state = beginAttack()
+  const motion = state.attackMotion
+  const clockRef = { current: null }
+  const lifecycle = new AttackAnimationControllerLifecycle(clockRef)
+  const aborts = []
+  const callbacks = {
+    onImpact: (attackId) => {
+      state = battleReducer(state, { type: 'attack-impact', attackId })
+    },
+    onComplete: (attackId) => {
+      state = battleReducer(state, { type: 'attack-complete', attackId })
+    },
+    onAbort: (attackId) => aborts.push(attackId),
+  }
+  const trace = () => {}
+
+  lifecycle.frame(motion, 0, callbacks, trace)
+  assert.equal(clockRef.current.attackId, motion.attackId)
+  assert.equal(clockRef.current.elapsedMs, 0)
+
+  const firstCleanup = lifecycle.setup(motion, callbacks.onAbort, trace)
+  firstCleanup()
+  const replayCleanup = lifecycle.setup(motion, callbacks.onAbort, trace)
+  await Promise.resolve()
+  assert.deepEqual(aborts, [])
+
+  lifecycle.frame(motion, 2, callbacks, trace)
+  lifecycle.frame(motion, 2, callbacks, trace)
+  assert.equal(state.units.find((unit) => unit.id === goblin.id).hp, 45)
+  assert.equal(state.attackMotion, null)
+  assert.equal(state.confirmedImpacts.length, 1)
+
+  replayCleanup()
+  lifecycle.setup(null, callbacks.onAbort, trace)
+  await Promise.resolve()
+  assert.deepEqual(aborts, [])
+})
+
+test('Controller Lifecycle 以 Attack ID 隔離 Clock，拒絕錯配 Motion', () => {
+  const clockRef = { current: null }
+  const lifecycle = new AttackAnimationControllerLifecycle(clockRef)
+  const motion = beginAttack().attackMotion
+  const aborts = []
+  lifecycle.setup(motion, (attackId) => aborts.push(attackId), () => {})
+  clockRef.current.attackId += 1
+  lifecycle.frame(motion, 0.1, {
+    onImpact: () => assert.fail('Unexpected impact'),
+    onComplete: () => assert.fail('Unexpected completion'),
+    onAbort: (attackId) => aborts.push(attackId),
+  }, () => {})
+  assert.deepEqual(aborts, [motion.attackId])
 })
 
 test('Battle State 初始化 AttackMotion 並從 Attack ID 1 開始', () => {

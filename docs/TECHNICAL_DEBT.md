@@ -24,7 +24,7 @@
 | TD-016 | PAS Floating-point Arrival Tolerance | 舊 Scheduler 以 Tie Candidate 的 AV 推進，近似同時抵達可能過度推進 | Medium | CLOSED | M4-2 分離最小事件時間與 Tie Selection；Exact-tie、Near-tie、Round Boundary、10,000 Continuous Events 均通過 | M4-2 |
 | TD-017 | Player Standby Turn Context Integrity | 玩家 `standby` 舊缺少 Turn／Unit Context，重複事件可能污染下一 Turn | High | CLOSED | M4-2 玩家指令攜帶 Context；Reducer Guard 與 Direct Context Replay Tests 通過 | M4-2 |
 | TD-018 | AGI Validation Consistency | Class Registry 接受 finite positive number，Battle State 要求 non-negative safe integer，PAS 又要求正速度；資料契約不一致 | Low | OPEN | 統一 Base AGI 合法值；未來明確分離 Base AGI 與 Effective Velocity；不為 M7 Buff 提前放寬所有基礎屬性 | M7 |
-| TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | PENDING REVIEW | M4-3 已移除 Development Enemy Standby，並以私有 Capability Action、AI Controller 與 Reducer 重驗證取代；已完成 Automated Verification、主要 Product Owner Browser Acceptance，Git Commit `a912457` 與 CI Run `44489947675` SUCCESS；等待 Architecture／Code Review 後才可 CLOSED | M4-3 |
+| TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | PENDING REVIEW | M4-3 已移除 Development Enemy Standby；Patch 3 改由 AI Gateway 依 Controller Intent 發行凍結且以私有 identity set 驗證的 Action，Reducer 保留重驗證。Patch 3 本機 213/213、Lint、Build PASS；尚未提交／進 CI／完成 Browser Acceptance；待 Architecture／Code Review 後才可 CLOSED。既有 Patch 1／2 CI Run `44489947675` 與主要 Product Owner Acceptance 不代表 Patch 3 已驗收 | M4-3 |
 | TD-020 | Extended Scheduling Verification Coverage | 舊 10,000 次測試缺少獨立 Oracle 與長期數值誤差證據 | Medium | CLOSED | M4-2 加入固定速度 Oracle、Continuous Near-tie、Round Boundary、Preview 一致性、長期誤差與非負距離驗證 | M4-2 |
 
 ## 已結案 Bug
@@ -66,17 +66,26 @@ M3-3 已依使用者 BV-15 關閉 TD-004。TD-010 的直接相關 Texture Cleanu
 
 TD-014 維持 OPEN，本次結案不進行重構。
 
-## M4-3 Implementation Evidence — Pending Acceptance
+## M4-3 Implementation Evidence — Pending Formal Review
 
 TD-019 的 `simulate-enemy-standby` UI／Reducer 入口已移除，並由以下正式設計取代：
 
-- `battle.ai.ts` 的 Capability Symbol 只由 `createAIAction()` 發行；單一 `source` 字串不具授權。
+- `battle.ai.ts` 僅負責純 AI Decision；`battle.ai.gateway.ts` 以私有 WeakSet identity capability 記錄凍結的 Action，且只根據當前 State 的 Controller Intent 發行，不接受任意呼叫端 Intent。
 - `battleReducer` 對 AI Turn／Unit、Faction、Alive、Action State、Busy／Pending、目標、目的地、路徑、Reservation 與 Progress Phase 再驗證。
 - `useBattleAI` 不直接修改 Battle State；所有 Move、Attack、Abort Recovery 與 Standby 均經 Reducer。
-- AI Progress 由 State 管理，StrictMode 重送、過期 Context、重複 Attack／Move 及 Pre-impact Abort 具有冪等與有限後續流程。
+- AI Progress 由 State 管理；敵方 Pre-impact Abort 釋放 Reservation 並明確排入該 Turn Completion，Pending Completion 仍等待阻擋 Motion；玩家 Abort 行為不變。
 - Terminal State 只停止 AI Controller，不建立 M4-4 Victory／Defeat Outcome。
 
-TD-019 目前為 **PENDING REVIEW**；Automated Verification、主要 Product Owner Browser Acceptance、Git Commit 與 CI 已完成，但 Architecture／Code Review 仍待完成，因此不得改為 CLOSED。
+Patch 3 本機回歸以 [213/213 tests](../DEVELOPMENT_STATUS.md#驗證結果)、ESLint 與 Production Build 通過；受控 Frame Harness 驗證首幀 Clock 初始化、Effect Replay cleanup、Attack ID mismatch，以及同一 Frame 跨越 Impact／Complete 時只結算一次傷害。Patch 3 未執行 Browser Verification，未取得新 CI 或 Product Owner Acceptance，且未提交／推送。
+
+TD-019 目前為 **PENDING REVIEW**；Architecture／Code Review 未完成前不得改為 CLOSED。
+
+## M4-3 Patch 3 — Abort and Capability Hardening
+
+- **Capability Issuance**：移除純決策模組公開的 Action signer；Gateway 只可從當前 Battle State 衍生 Controller Intent，再建立凍結 Action 並以物件 identity 驗證授權。Reducer 對 Action 狀態與戰鬥條件繼續重新驗證。
+- **Enemy Pre-impact Abort**：清除未命中結果與 Reservation 後，敵方 AI Abort 將該攻擊者 Turn 排入既有 Pending Turn Completion 流程；Death Motion 等阻擋仍由共用 Resolver 處理。Player Pre-impact Abort 不改變既有保留 Turn 行為。
+- **Attack Controller Lifecycle**：React component 與 Node 測試共用 `AttackAnimationControllerLifecycle`；驗證 useFrame 先於 Effect 的 Clock 初始化、StrictMode cleanup replay、錯誤 Attack ID 隔離及一次 Frame 內 Impact／Complete。
+- **Verification**：本機 `npm test` 213/213 PASS、ESLint PASS、Production Build PASS；Build 僅有既有 Chunk-size warning。Browser、Product Owner Acceptance、GitHub CI 與正式 Review 未驗證。
 
 ## BUG-M4-3-003 — Enemy Animation Impact Regression
 

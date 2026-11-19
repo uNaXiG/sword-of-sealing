@@ -77,7 +77,8 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/battle/battle.turn.types.ts` | Turn Timeline、Pending Completion 與 Preview 型別 |
 | `game/battle/battle.turn.constants.ts` | 1000 BU、200 BTU／Round、預覽數量與容差 |
 | `game/battle/battle.action.ts` | Turn Action State 初始化、Turn Context 比對與 Combat／Attack 可用性 |
-| `game/battle/battle.ai.ts` | 純 Rule-based Tactical AI、穩定 Comparator、Movement／Attack Decision 與 AI Capability Action |
+| `game/battle/battle.ai.ts` | 純 Rule-based Tactical AI、穩定 Comparator 與 Movement／Attack Decision |
+| `game/battle/battle.ai.gateway.ts` | 從目前 State 導出 Controller Intent、凍結 AI Action 與私有 identity capability 驗證 |
 | `game/battle/battle.movement.ts` | 單位移動預算與完成前驗證 |
 | `game/battle/occupancy.ts` | 棋格佔位唯一性 |
 | `game/battle/obstacles.ts` | 障礙配置與驗證 |
@@ -89,6 +90,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `features/battle/components/BattleTurnHUD.tsx` | Round、Battle Time、Turn ID 與 Active Unit HUD |
 | `features/battle/components/TurnOrderTimeline.tsx` | Active Unit 與未來 10 次唯讀行動預覽 |
 | `features/battle/hooks/useAttackAnimation.ts` | 單一動畫時鐘介面 |
+| `features/battle/hooks/attackAnimationControllerLifecycle.ts` | React 與 Frame Harness 共用的 Clock／事件／Abort Lifecycle Runtime |
 | `features/battle/components/AttackAnimationController.tsx` | Wind-up／Impact／Recovery 的權威計時與事件派送 |
 | `features/battle/components/DeathAnimationController.tsx` | Death ID 獨立時鐘、完成與 System Abort |
 | `features/battle/components/DeathParticleEffect.tsx` | 24 顆低成本死亡粒子與清理 |
@@ -131,15 +133,17 @@ M4-2 已將 TD-017 的 Context Integrity 整合至玩家指令產生與 Reducer 
 
 `battle.ai.ts` 提供不 Dispatch、不修改 State、不使用隨機或真實時間的 `decideEnemyTurn()`。決策優先直接攻擊，再建立 Move-to-Attack；兩者都不可行時，以可通行路徑至未來攻擊位置的剩餘地形成本判斷 Approach；沒有嚴格改善則 Standby。擊倒、Applied Damage、Initial Order、移動成本、Row／Column 與 Unit ID 的比較順序均由穩定 Comparator 明確定義。
 
-AI Controller 只可透過 `createAIAction()` 建立具有模組私有 Capability 的 Intent。單純的 `source: 'ai'` 字串不具授權。Reducer 仍重新驗證 Active Enemy、Faction、Turn／Unit Context、Action State、Busy／Pending、目的地、射程、目標與 Idempotency。玩家 Guard 與敵方 Guard 不共用入口；底層移動、戰鬥及傷害規則共用。
+`battle.ai.ts` 只負責純決策。`battle.ai.gateway.ts` 從當前 Battle State 導出 Controller Intent，再建立 frozen AI Action；私有 WeakSet 以物件 identity 授權，單純的 `source: 'ai'` 字串或複製物件不具授權。Reducer 仍重新驗證 Active Enemy、Faction、Turn／Unit Context、Action State、Busy／Pending、目的地、射程、目標與 Lifecycle。玩家 Guard 與敵方 Guard 不共用入口；底層移動、戰鬥及傷害規則共用。
 
 `useBattleAI` 觀察 Active Enemy Turn，呼叫純決策後提交唯一階段 Intent。`BattleState.aiProgress` 保存 Turn-scoped `MOVING`／`ATTACKING` Phase，使 StrictMode 重複 Effect、Movement Finish／Cancel、Pre-/Post-impact Abort 均經 Reducer 狀態機有限推進。AI 移動仍使用既有 Motion ID；攻擊仍使用相同 Attack Reservation、Impact、Confirmed Event 與 Death Barrier。Controller 不直接推進 PAS；Standby 或 Attack Complete 使用既有 Turn Completion Gateway。
 
 M4-3 Patch 1 將 Phase 改為 Durable Contract：Reducer 的 Movement Finish 由 `MOVING` 原子轉為 `MOVE_COMPLETED`；Controller 的純 Next-intent 函式只在後者提交 Attack。此設計允許同一 Turn 多個不同合法 Phase Action，但同一 Phase 的重播仍由 Reducer no-op。Move 完成後以最新位置檢查原目標；失效時可做一次 Direct-target Re-decision，否則有限 Standby。
 
-M4-3 Patch 2 補足 Rendering / Effect 競態邊界。有效 AttackMotion 可能先被 `useFrame` 觀察到，再由 `useEffect` 初始化 `clockRef`；Frame 必須以純 Helper 為該 Attack 建立 0ms Clock，而非視為異常 Abort。Clock ID 必須吻合；非法 Delta 或已有不同 Attack ID 的 Clock 仍走 Abort／Stale Guard。Damage 仍只在 Reducer `attack-impact` 成功接受後更新。
+M4-3 Patch 2 補足 Rendering / Effect 競態邊界。有效 AttackMotion 可能先被 `useFrame` 觀察到，再由 `useEffect` 初始化 `clockRef`；Frame 必須為該 Attack 建立 0ms Clock，而非視為異常 Abort。Patch 3 將 Clock、Impact／Complete event gating 與 deferred cleanup Abort 收入 `AttackAnimationControllerLifecycle`，React component 和受控 Node Frame Harness 共用同一實作；Effect Replay、錯誤 Attack ID 及大 Delta 同幀 Impact／Complete 均有回歸驗證。Damage 仍只在 Reducer `attack-impact` 成功接受後更新。
 
-沒有存活玩家與敵人的對戰時，Controller 進入穩定非執行狀態，不建立 M4-4 Outcome 或重複排程。M4-3 已實作並納入 Commit `a912457ae7eb159bd7f5411217f8548e30956e67`，210/210 Automated Verification、Lint、Production Build、GitHub CI 與主要 Product Owner Browser Acceptance 已確認；Architecture Review、Code Review 與 Formal Closure 仍為 PENDING，M4 完成度維持 50%。Patch 2 已修正 AttackMotion 先進入 Frame、`useEffect` 尚未初始化 Clock 的競態；只有合法 Impact 可更新 HP。
+敵方 AI 的 Pre-impact Abort 與玩家 Abort 有意不同：敵方已進入 Attack 後若動畫於 Impact 前終止，Reducer 清除 Reservation 並 queue 該敵方 Turn Completion，交由既有 Pending Resolver 等待任何阻擋性 Death Motion；玩家 Pre-impact Abort 仍釋放 Reservation 並保留其 Turn。
+
+沒有存活玩家與敵人的對戰時，Controller 進入穩定非執行狀態，不建立 M4-4 Outcome 或重複排程。M4-3 Enemy AI、Patch 1／2 已納入 Commit `a912457ae7eb159bd7f5411217f8548e30956e67`，其 210/210 驗證、Lint、Build、GitHub CI 與主要 Product Owner Browser Acceptance 已確認。Patch 3 目前僅為未提交工作樹變更：本機 213/213 測試、Lint、Build 通過，但未執行 Browser Verification、未取得新 CI 或 Product Owner Acceptance。Architecture Review、Code Review 與 Formal Closure 仍為 PENDING，M4 完成度維持 50%；M4-4 未開始。
 
 ## Battle State 與 Reducer
 

@@ -1,10 +1,11 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { decideEnemyTurn } from '../src/game/battle/battle.ai.ts'
 import {
-  createAIAction,
-  decideEnemyTurn,
+  dispatchAIControllerAction,
+  getAIControllerIntent,
   isAuthorizedAIAction,
-} from '../src/game/battle/battle.ai.ts'
+} from '../src/game/battle/battle.ai.gateway.ts'
 import { battleReducer, createBattleState } from '../src/game/battle/battle.state.ts'
 import { createBattleUnit } from '../src/game/classes/class.factory.ts'
 import { canAttackTarget } from '../src/game/battle/battle.attack.ts'
@@ -12,7 +13,6 @@ import { calculatePathCost } from '../src/game/grid/movement.ts'
 import { TERRAIN_MOVEMENT_COST } from '../src/game/grid/terrain.constants.ts'
 import { getTerrainType } from '../src/game/grid/terrain.data.ts'
 import { activateUnitFixture } from './turn.fixture.mjs'
-import { getAIControllerIntent } from '../src/features/battle/hooks/useBattleAI.ts'
 
 function unit(id, unitClass, faction, column, row, overrides = {}) {
   return {
@@ -30,13 +30,22 @@ function enemyState(units, enemyId, obstacles = []) {
   return activateUnitFixture(createBattleState(units, obstacles), enemyId)
 }
 
-function aiAction(state, type, payload = {}) {
-  return createAIAction({
+function aiAction(state, type) {
+  let action
+  dispatchAIControllerAction(state, (issued) => { action = issued })
+  if (!action || action.type !== type) {
+    throw new Error(`AI Gateway did not issue expected ${type} action`)
+  }
+  return action
+}
+
+function forgedAIAction(state, type, payload = {}) {
+  return {
     type,
     turnId: state.turn.turnId,
     unitId: state.turn.activeUnitId,
     ...payload,
-  })
+  }
 }
 
 function completeMove(state) {
@@ -53,17 +62,15 @@ test('AI Capability Factory 是受控入口，來源字串無法偽造授權', (
     unit('enemy', 'goblin', 'enemy', 3, 3),
     unit('player', 'knight', 'player', 3, 4),
   ], 'enemy')
-  const authorized = aiAction(state, 'ai-attack', { targetId: 'player' })
+  const authorized = aiAction(state, 'ai-attack')
   assert.equal(isAuthorizedAIAction(authorized), true)
-  const forged = {
-    type: 'ai-attack',
-    source: 'ai',
-    turnId: state.turn.turnId,
-    unitId: 'enemy',
-    targetId: 'player',
-  }
+  assert.equal(Object.isFrozen(authorized), true)
+  const forged = forgedAIAction(state, 'ai-attack', { targetId: 'player' })
   assert.equal(isAuthorizedAIAction(forged), false)
   assert.equal(battleReducer(state, forged), state)
+  const copied = { ...authorized }
+  assert.equal(isAuthorizedAIAction(copied), false)
+  assert.equal(battleReducer(state, copied), state)
 })
 
 test('AI 決策為純函式、確定性且相同輸入不被修改', () => {
@@ -216,11 +223,16 @@ test('玩家 Active Turn 與錯誤 Faction 的 AI 指令均被拒絕', () => {
   const player = unit('player', 'knight', 'player', 2, 2)
   const enemy = unit('enemy', 'goblin', 'enemy', 3, 2)
   const state = activateUnitFixture(createBattleState([player, enemy]), player.id)
-  assert.equal(battleReducer(state, aiAction(state, 'ai-attack', { targetId: enemy.id })), state)
+  assert.equal(battleReducer(state, forgedAIAction(state, 'ai-attack', { targetId: enemy.id })), state)
 
   const enemyTurn = activateUnitFixture(state, enemy.id)
-  const wrongFaction = aiAction(enemyTurn, 'ai-attack', { targetId: player.id, unitId: player.id })
-  assert.equal(battleReducer(enemyTurn, wrongFaction), enemyTurn)
+  const authorized = aiAction(enemyTurn, 'ai-attack')
+  const wrongFaction = {
+    ...enemyTurn,
+    units: enemyTurn.units.map((candidate) =>
+      candidate.id === enemy.id ? { ...candidate, faction: 'player' } : candidate),
+  }
+  assert.equal(battleReducer(wrongFaction, authorized), wrongFaction)
 })
 
 test('過期 Turn、錯誤 Unit、Busy、Pending 與重播 AI Action 均為 no-op', () => {
@@ -228,14 +240,11 @@ test('過期 Turn、錯誤 Unit、Busy、Pending 與重播 AI Action 均為 no-o
     unit('enemy', 'goblin', 'enemy', 2, 2),
     unit('player', 'knight', 'player', 3, 2),
   ], 'enemy')
-  assert.equal(battleReducer(state, aiAction(state, 'ai-attack', {
-    targetId: 'player',
-    turnId: state.turn.turnId + 1,
-  })), state)
-  assert.equal(battleReducer(state, aiAction(state, 'ai-attack', {
-    targetId: 'player',
-    unitId: 'missing',
-  })), state)
+  const authorized = aiAction(state, 'ai-attack')
+  const staleTurn = { ...state, turn: { ...state.turn, turnId: state.turn.turnId + 1 } }
+  assert.equal(battleReducer(staleTurn, authorized), staleTurn)
+  const wrongUnit = { ...state, turn: { ...state.turn, activeUnitId: 'missing' } }
+  assert.equal(battleReducer(wrongUnit, authorized), wrongUnit)
   const busy = { ...state, motion: {
     motionId: 1,
     turnId: state.turn.turnId,
@@ -243,10 +252,10 @@ test('過期 Turn、錯誤 Unit、Busy、Pending 與重播 AI Action 均為 no-o
     path: [{ column: 2, row: 2 }, { column: 2, row: 3 }],
     cost: 1,
   } }
-  assert.equal(battleReducer(busy, aiAction(busy, 'ai-standby')), busy)
+  assert.equal(battleReducer(busy, authorized), busy)
 
-  const reserved = battleReducer(state, aiAction(state, 'ai-attack', { targetId: 'player' }))
-  assert.equal(battleReducer(reserved, aiAction(state, 'ai-attack', { targetId: 'player' })), reserved)
+  const reserved = battleReducer(state, authorized)
+  assert.equal(battleReducer(reserved, authorized), reserved)
 })
 
 test('直接 AI Attack 使用既有 Reservation、Impact、Confirmed Event 與 Combat Action', () => {
@@ -254,7 +263,7 @@ test('直接 AI Attack 使用既有 Reservation、Impact、Confirmed Event 與 C
     unit('enemy', 'goblin', 'enemy', 2, 2),
     unit('player', 'knight', 'player', 3, 2),
   ], 'enemy')
-  const reserved = battleReducer(state, aiAction(state, 'ai-attack', { targetId: 'player' }))
+  const reserved = battleReducer(state, aiAction(state, 'ai-attack'))
   assert.equal(reserved.attackMotion.phase, 'PENDING_IMPACT')
   assert.equal(reserved.turnAction.combatAction, 'RESERVED')
   assert.equal(reserved.units.find((candidate) => candidate.id === 'player').hp, 100)
@@ -279,17 +288,12 @@ test('Enemy AI Move-to-Attack 使用 Motion Finish 後才可建立 Reservation',
   ], 'enemy')
   const decision = decideEnemyTurn(state)
   assert.equal(decision.type, 'MOVE_ATTACK')
-  const moving = battleReducer(state, aiAction(state, 'ai-move', {
-    destination: decision.destination,
-    targetId: decision.targetId,
-  }))
+  const moving = battleReducer(state, aiAction(state, 'ai-move'))
   assert.ok(moving.motion)
   assert.equal(moving.turnAction.movementUsed, false)
-  assert.equal(battleReducer(moving, aiAction(state, 'ai-attack', {
-    targetId: decision.targetId,
-  })), moving)
 
   const moved = completeMove(moving)
+  assert.equal(battleReducer(moving, aiAction(moved, 'ai-attack')), moving)
   assert.equal(moved.turnAction.movementUsed, true)
   assert.equal(moved.aiProgress.phase, 'MOVE_COMPLETED')
   assert.deepEqual(getAIControllerIntent(moved), {
@@ -297,9 +301,7 @@ test('Enemy AI Move-to-Attack 使用 Motion Finish 後才可建立 Reservation',
     targetId: decision.targetId,
   })
   assert.deepEqual(moved.units.find((candidate) => candidate.id === 'enemy').position, decision.destination)
-  const attacking = battleReducer(moved, aiAction(moved, 'ai-attack', {
-    targetId: decision.targetId,
-  }))
+  const attacking = battleReducer(moved, aiAction(moved, 'ai-attack'))
   assert.equal(attacking.attackMotion.attackerId, 'enemy')
   assert.equal(attacking.turnAction.movementInitiationLocked, true)
 })
@@ -332,14 +334,11 @@ test('Move-to-Attack 完整 Reducer Transition 建立 Attack、Impact 並完成 
     unit('player', 'knight', 'player', 6, 2),
   ], 'enemy')
   const decision = decideEnemyTurn(state)
-  let next = battleReducer(state, aiAction(state, 'ai-move', {
-    destination: decision.destination,
-    targetId: decision.targetId,
-  }))
+  let next = battleReducer(state, aiAction(state, 'ai-move'))
   next = completeMove(next)
   const intent = getAIControllerIntent(next)
   assert.equal(intent.type, 'ATTACK')
-  next = battleReducer(next, aiAction(next, 'ai-attack', { targetId: intent.targetId }))
+  next = battleReducer(next, aiAction(next, 'ai-attack'))
   assert.equal(next.attackMotion.phase, 'PENDING_IMPACT')
   next = battleReducer(next, { type: 'attack-impact', attackId: next.attackMotion.attackId })
   assert.equal(next.units.find((candidate) => candidate.id === 'player').hp, 95)
@@ -353,10 +352,7 @@ test('Move 完成後原目標失效可重新驗證並攻擊另一個合法目標
     unit('original', 'knight', 'player', 3, 3),
     unit('alternate', 'knight', 'player', 7, 7),
   ], 'enemy')
-  const moving = battleReducer(state, aiAction(state, 'ai-move', {
-    destination: { column: 2, row: 3 },
-    targetId: 'original',
-  }))
+  const moving = battleReducer(state, aiAction(state, 'ai-move'))
   const moved = completeMove(moving)
   const retargeted = {
     ...moved,
@@ -370,9 +366,7 @@ test('Move 完成後原目標失效可重新驗證並攻擊另一個合法目標
     type: 'ATTACK',
     targetId: 'alternate',
   })
-  const attacking = battleReducer(retargeted, aiAction(retargeted, 'ai-attack', {
-    targetId: 'alternate',
-  }))
+  const attacking = battleReducer(retargeted, aiAction(retargeted, 'ai-attack'))
   assert.equal(attacking.attackMotion.targetId, 'alternate')
 })
 
@@ -381,18 +375,13 @@ test('Movement Initiation Lock 不禁止 Move-completed AI Attack', () => {
     unit('enemy', 'goblin', 'enemy', 2, 2),
     unit('player', 'knight', 'player', 4, 2),
   ], 'enemy')
-  let moved = battleReducer(state, aiAction(state, 'ai-move', {
-    destination: { column: 3, row: 2 },
-    targetId: 'player',
-  }))
+  let moved = battleReducer(state, aiAction(state, 'ai-move'))
   moved = completeMove(moved)
   moved = {
     ...moved,
     turnAction: { ...moved.turnAction, movementInitiationLocked: true },
   }
-  const attacking = battleReducer(moved, aiAction(moved, 'ai-attack', {
-    targetId: 'player',
-  }))
+  const attacking = battleReducer(moved, aiAction(moved, 'ai-attack'))
   assert.equal(attacking.attackMotion.targetId, 'player')
   assert.equal(attacking.turnAction.combatAction, 'RESERVED')
 })
@@ -402,11 +391,18 @@ test('Reducer 拒絕移動後無法攻擊指定目標的 AI Move Intent', () => 
     unit('enemy', 'goblin', 'enemy', 2, 2),
     unit('player', 'knight', 'player', 7, 7),
   ], 'enemy')
-  const invalid = aiAction(state, 'ai-move', {
-    destination: { column: 2, row: 3 },
-    targetId: 'player',
-  })
-  assert.equal(battleReducer(state, invalid), state)
+  const action = aiAction(state, 'ai-move')
+  const invalid = {
+    ...state,
+    units: [...state.units, unit(
+      'blocker',
+      'goblin',
+      'enemy',
+      action.destination.column,
+      action.destination.row,
+    )],
+  }
+  assert.equal(battleReducer(invalid, action), invalid)
 })
 
 test('AI 攻擊後再移動被 Action Economy 與 Progress 拒絕', () => {
@@ -414,30 +410,73 @@ test('AI 攻擊後再移動被 Action Economy 與 Progress 拒絕', () => {
     unit('enemy', 'goblin', 'enemy', 2, 2),
     unit('player', 'knight', 'player', 3, 2),
   ], 'enemy')
-  const reserved = battleReducer(state, aiAction(state, 'ai-attack', { targetId: 'player' }))
-  assert.equal(battleReducer(reserved, aiAction(state, 'ai-move', {
-    destination: { column: 2, row: 3 },
-    targetId: null,
-  })), reserved)
+  const attackAction = aiAction(state, 'ai-attack')
+  const distantState = {
+    ...state,
+    units: state.units.map((candidate) =>
+      candidate.id === 'player'
+        ? { ...candidate, position: { column: 7, row: 7 } }
+        : candidate),
+  }
+  const moveAction = aiAction(distantState, 'ai-move')
+  const reserved = battleReducer(state, attackAction)
+  assert.equal(battleReducer(reserved, moveAction), reserved)
 })
 
-test('Pre-impact AI Abort 不扣血、保留 Movement Lock，Standby 有限結束 Turn', () => {
+test('Pre-impact AI Abort 不扣血並明確結束 Turn', () => {
   const state = enemyState([
     unit('enemy', 'goblin', 'enemy', 2, 2),
     unit('player', 'knight', 'player', 3, 2),
   ], 'enemy')
-  const reserved = battleReducer(state, aiAction(state, 'ai-attack', { targetId: 'player' }))
+  const reserved = battleReducer(state, aiAction(state, 'ai-attack'))
   const aborted = battleReducer(reserved, {
     type: 'attack-abort',
     attackId: reserved.attackMotion.attackId,
   })
   assert.equal(aborted.units.find((candidate) => candidate.id === 'player').hp, 100)
-  assert.equal(aborted.turnAction.combatAction, 'AVAILABLE')
-  assert.equal(aborted.turnAction.movementInitiationLocked, true)
-  assert.equal(aborted.aiProgress.phase, 'ATTACKING')
-  const completed = battleReducer(aborted, aiAction(aborted, 'ai-standby'))
-  assert.equal(completed.turn.turnId, aborted.turn.turnId + 1)
-  assert.equal(completed.aiProgress, null)
+  assert.equal(aborted.turn.turnId, state.turn.turnId + 1)
+  assert.equal(aborted.turnAction.movementInitiationLocked, false)
+  assert.equal(aborted.aiProgress, null)
+  assert.equal(battleReducer(aborted, {
+    type: 'attack-abort',
+    attackId: reserved.attackMotion.attackId,
+  }), aborted)
+})
+
+test('Pre-impact AI Abort 等待其他 Death Motion Barrier 才完成 Turn', () => {
+  const downedPlayer = unit('downed', 'ranger', 'player', 5, 5, { hp: 0 })
+  const state = enemyState([
+    unit('enemy', 'goblin', 'enemy', 2, 2),
+    unit('player', 'knight', 'player', 3, 2),
+    downedPlayer,
+  ], 'enemy')
+  const reserved = battleReducer(state, aiAction(state, 'ai-attack'))
+  const withDeathBarrier = {
+    ...reserved,
+    deathMotions: [{
+      deathId: 1,
+      unitId: downedPlayer.id,
+      killerId: 'player',
+      attackId: 99,
+      position: { ...downedPlayer.position },
+      sourcePosition: { column: 4, row: 5 },
+    }],
+    nextDeathId: 2,
+  }
+  const aborted = battleReducer(withDeathBarrier, {
+    type: 'attack-abort',
+    attackId: reserved.attackMotion.attackId,
+  })
+  assert.equal(aborted.turn.turnId, state.turn.turnId)
+  assert.ok(aborted.pendingTurnCompletion)
+
+  const completed = battleReducer(aborted, {
+    type: 'death-complete',
+    deathId: 1,
+    unitId: downedPlayer.id,
+  })
+  assert.equal(completed.turn.turnId, state.turn.turnId + 1)
+  assert.equal(completed.pendingTurnCompletion, null)
 })
 
 test('Post-impact AI Abort 保留傷害且不重複扣血', () => {
@@ -445,7 +484,7 @@ test('Post-impact AI Abort 保留傷害且不重複扣血', () => {
     unit('enemy', 'goblin', 'enemy', 2, 2),
     unit('player', 'knight', 'player', 3, 2),
   ], 'enemy')
-  const reserved = battleReducer(state, aiAction(state, 'ai-attack', { targetId: 'player' }))
+  const reserved = battleReducer(state, aiAction(state, 'ai-attack'))
   const impacted = battleReducer(reserved, {
     type: 'attack-impact',
     attackId: reserved.attackMotion.attackId,
@@ -467,7 +506,7 @@ test('致命 AI Impact 建立 Death Motion，死亡完成後才切 Turn', () => 
     unit('enemy', 'goblin', 'enemy', 2, 2),
     unit('player', 'knight', 'player', 3, 2, { hp: 5 }),
   ], 'enemy')
-  const reserved = battleReducer(state, aiAction(state, 'ai-attack', { targetId: 'player' }))
+  const reserved = battleReducer(state, aiAction(state, 'ai-attack'))
   const impacted = battleReducer(reserved, {
     type: 'attack-impact',
     attackId: reserved.attackMotion.attackId,
@@ -494,8 +533,16 @@ test('AI Turn Reset 清除 Progress，不污染下一位並拒絕舊 Context', (
     unit('enemy', 'goblin', 'enemy', 2, 2),
     unit('player', 'knight', 'player', 3, 2),
   ], 'enemy')
-  const staleAction = aiAction(state, 'ai-standby')
-  const completed = battleReducer(state, staleAction)
+  const staleAction = aiAction(state, 'ai-attack')
+  const reserved = battleReducer(state, staleAction)
+  const impacted = battleReducer(reserved, {
+    type: 'attack-impact',
+    attackId: reserved.attackMotion.attackId,
+  })
+  const completed = battleReducer(impacted, {
+    type: 'attack-complete',
+    attackId: reserved.attackMotion.attackId,
+  })
   assert.equal(completed.aiProgress, null)
   assert.equal(completed.turnAction.turnId, completed.turn.turnId)
   assert.equal(battleReducer(completed, staleAction), completed)

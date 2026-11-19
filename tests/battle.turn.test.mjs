@@ -11,7 +11,6 @@ import {
 import { ACTION_DISTANCE } from '../src/game/battle/battle.turn.constants.ts'
 import { createBattleState } from '../src/game/battle/battle.state.ts'
 import { createBattleUnit } from '../src/game/classes/class.factory.ts'
-import { createAIAction } from '../src/game/battle/battle.ai.ts'
 import { activateUnitFixture, battleReducerFixture as battleReducer } from './turn.fixture.mjs'
 
 const closeTo = (actual, expected, tolerance = 1e-7) => {
@@ -66,26 +65,20 @@ test('RS-01 四角色競速產生確認順序與虛擬時間', () => {
 })
 
 test('RS-02 正式初始戰場 17 次順序與 Round 正確', () => {
-  let state = createBattleState(INITIAL_UNITS)
+  let turn = createBattleState(INITIAL_UNITS).turn
   const actual = [{
-    turnId: state.turn.turnId,
-    round: state.turn.round,
-    time: state.turn.battleTime,
-    unitId: state.turn.activeUnitId,
+    turnId: turn.turnId,
+    round: turn.round,
+    time: turn.battleTime,
+    unitId: turn.activeUnitId,
   }]
   for (let index = 1; index < 17; index += 1) {
-    state = state.units.find((unit) => unit.id === state.turn.activeUnitId)?.faction === 'enemy'
-      ? battleReducer(state, createAIAction({
-        type: 'ai-standby',
-        turnId: state.turn.turnId,
-        unitId: state.turn.activeUnitId,
-      }))
-      : battleReducer(state, { type: 'standby' })
+    turn = completeIndividualTurn(turn, INITIAL_UNITS)
     actual.push({
-      turnId: state.turn.turnId,
-      round: state.turn.round,
-      time: state.turn.battleTime,
-      unitId: state.turn.activeUnitId,
+      turnId: turn.turnId,
+      round: turn.round,
+      time: turn.battleTime,
+      unitId: turn.activeUnitId,
     })
   }
 
@@ -134,34 +127,28 @@ test('行動預覽唯讀且包含可重複出現的未來 10 次', () => {
 })
 
 test('10,000 次 DES 排程維持有限、單調及合法距離', () => {
-  let state = createBattleState(INITIAL_UNITS)
+  let turn = createBattleState(INITIAL_UNITS).turn
   for (let index = 0; index < 10_000; index += 1) {
-    const previousTime = state.turn.battleTime
-    state = state.units.find((unit) => unit.id === state.turn.activeUnitId)?.faction === 'enemy'
-      ? battleReducer(state, createAIAction({
-        type: 'ai-standby',
-        turnId: state.turn.turnId,
-        unitId: state.turn.activeUnitId,
-      }))
-      : battleReducer(state, { type: 'standby' })
-    assert.ok(state.turn.battleTime >= previousTime)
-    assert.ok(Number.isFinite(state.turn.battleTime))
-    assert.ok(state.turn.timeline.every((entry) =>
+    const previousTime = turn.battleTime
+    turn = completeIndividualTurn(turn, INITIAL_UNITS)
+    assert.ok(turn.battleTime >= previousTime)
+    assert.ok(Number.isFinite(turn.battleTime))
+    assert.ok(turn.timeline.every((entry) =>
       Number.isFinite(entry.remainingDistance) &&
       entry.remainingDistance >= 0 &&
       entry.remainingDistance <= ACTION_DISTANCE))
   }
-  assert.equal(state.turn.turnId, 10_001)
+  assert.equal(turn.turnId, 10_001)
 })
 
 test('Turn 權限、過期完成及空 Timeline 安全停止', () => {
   const state = createBattleState(INITIAL_UNITS)
   assert.equal(battleReducer(state, { type: 'select', unitId: 'knight' }), state)
-  assert.equal(battleReducer(state, createAIAction({
+  assert.equal(battleReducer(state, {
     type: 'ai-standby',
     turnId: state.turn.turnId,
     unitId: 'goblin',
-  })), state)
+  }), state)
 
   const stale = { ...state, turn: { ...state.turn, turnId: state.turn.turnId + 1 } }
   assert.equal(battleReducer(stale, { type: 'standby' }), stale)

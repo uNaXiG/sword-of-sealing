@@ -10,20 +10,12 @@ import { reachableForUnit } from './battle.movement.ts'
 import { isUnitAlive } from './battle.unit.ts'
 import type { BattleState, BattleUnit } from './battle.types.ts'
 import { obstacleCell } from './obstacles.ts'
-import type { TurnContext } from './battle.turn.types.ts'
 
 export type AIDecision =
   | { type: 'ATTACK'; targetId: string }
   | { type: 'MOVE_ATTACK'; destination: Cell; targetId: string }
   | { type: 'APPROACH'; destination: Cell }
   | { type: 'STANDBY' }
-
-type AIActionIntent =
-  | ({ type: 'ai-move'; destination: Cell; targetId: string | null } & TurnContext)
-  | ({ type: 'ai-attack'; targetId: string } & TurnContext)
-  | ({ type: 'ai-standby' } & TurnContext)
-
-export type AIAction = AIActionIntent & AIAuthorization
 
 type RankedTarget = {
   unit: BattleUnit
@@ -40,27 +32,6 @@ type RankedApproach = {
   destination: Cell
   movementCost: number
   remainingCost: number
-}
-
-const AI_ACTION_CAPABILITY: unique symbol = Symbol('battle-ai-action-capability')
-
-type AIAuthorization = {
-  readonly [AI_ACTION_CAPABILITY]: true
-}
-
-export function createAIAction<T extends AIActionIntent>(
-  action: T,
-): T & AIAuthorization {
-  return { ...action, [AI_ACTION_CAPABILITY]: true }
-}
-
-export function isAuthorizedAIAction(action: unknown): action is AIAction {
-  return Boolean(
-    action &&
-    typeof action === 'object' &&
-    AI_ACTION_CAPABILITY in action &&
-    (action as AIAuthorization)[AI_ACTION_CAPABILITY] === true,
-  )
 }
 
 function getInitialOrder(state: BattleState, unitId: string): number {

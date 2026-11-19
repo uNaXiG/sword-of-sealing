@@ -2,6 +2,16 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-19 — M4-3 Patch 3 — Capability, Abort, and Animation Lifecycle Hardening
+
+- **Changed**：AI Action signer 從純 Decision Engine 移至 `battle.ai.gateway.ts`；Gateway 僅依目前 Battle State 導出的 Controller Intent 發行 frozen Action，使用私有 identity set 授權，Reducer 繼續完整重驗證。
+- **Fixed**：Enemy AI Pre-impact Abort 在清除 Reservation 後 queue 該 Turn Completion，並沿 Pending Resolver 等待阻擋 Motion；Player Pre-impact Abort 行為不變。
+- **Changed / Verified**：React Attack Controller 與 Node Frame Harness 共用 Lifecycle Runtime；新增首幀 Clock race、Effect cleanup replay、Attack ID mismatch、同一 Frame Impact／Complete exactly-once 回歸。
+- **Verification**：本機 `npm test` 213/213 PASS；`npm run lint` PASS；`npm run build` PASS（既有 Battle Chunk > 500 kB warning）。
+- **Browser / Acceptance / CI**：Patch 3 未執行 Browser Verification，未取得新的 Product Owner Acceptance 或 GitHub CI；不沿用 Patch 1／2 結果。
+- **Status**：IMPLEMENTED；Architecture Review／Code Review／Formal Closure PENDING；TD-019 PENDING REVIEW；M4 50%、Overall 35.0%、M4-4 PENDING。
+- **Git / Scope**：Patch 3 僅為本機未提交／未推送工作樹變更；最新已驗證分支基準及 `origin/main` 為 `d71d8df9315a46123dc18ab442ef0d146f28ec62`。
+
 ## 2026-11-19 — DOC-M4-3-01 — M4-3 Git Baseline Synchronization
 
 - **Baseline**：M4-3 Enemy AI、Patch 1 與 Patch 2 已納入 Git Commit `a912457ae7eb159bd7f5411217f8548e30956e67`，Commit 訊息為 `feat: Implement AI decision-making for battle actions`。

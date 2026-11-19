@@ -92,10 +92,12 @@ Confirm → PENDING_IMPACT → Impact → IMPACTED → Complete
 - Impact 更新 HP 與 `lastAttackResult`，並保留 AttackMotion 至 Recovery 完成。
 - Complete 只接受 `IMPACTED`，保留攻擊者選取並返回 COMMAND。
 - Abort 在命中前清除未完成指令且不扣血；命中後保留已正式結算的 HP。
-- Pre-impact Abort 釋放 Combat Reservation，Combat Action 回到 `AVAILABLE`，不結束 Turn；已使用的 Movement Action、已清除的 Undo 及 Movement Initiation Lock 保持不變。
+- Pre-impact Player Abort 釋放 Combat Reservation，Combat Action 回到 `AVAILABLE` 且不結束 Turn；已使用的 Movement Action、已清除的 Undo 及 Movement Initiation Lock 保持不變。Enemy AI Pre-impact Abort 則在清除 Reservation 後 queue 該 AI Turn Completion，交由 Pending Resolver 等待其他阻擋性 Motion。
 - Post-impact Abort 保留 `CONSUMED`、傷害及已確認 Impact，並沿 Pending Turn Completion 完成 Turn。
 - 攻擊期間 Reducer、Hook 與 UI 均鎖定一般戰鬥操作；鏡頭操作不受影響。
 - 逐幀時間不寫入 Battle State；唯一時鐘由 Attack Animation Controller 管理。
+
+Attack Controller 的 React Effect 與 `useFrame` 共用 lifecycle runtime。有效 Attack Motion 在 Frame 先於 Effect 執行時以 matching Attack ID 初始化 0ms Clock；Effect Replay 的 deferred Abort 以 generation／Attack ID 隔離。Impact 與 Complete 在同一 Frame 都跨過時間界線時各派送一次，傷害仍只由 Reducer 接受 `attack-impact` 後結算。
 
 ## 攻擊動畫 Profile
 
@@ -307,11 +309,11 @@ M4-3 目前為 IMPLEMENTED — PENDING FORMAL REVIEW：
 - 無直接攻擊時枚舉合法可達格，產生 Move-to-Attack；依擊倒、Damage、Move Cost、Initial Order、目的地 Row／Column、Unit ID 排序。
 - 無本回合攻擊時，從所有合法 Grid Cell 計算未來攻擊位置的 Terrain／Obstacle／Occupancy Path Cost，只在剩餘成本嚴格改善時 Approach。
 - AI Move 使用既有 Motion；AI Attack 使用相同 Attack Pattern、Damage、Reservation、Impact、Confirmed Impact、Abort、Death Motion 與 Turn Completion。
-- AI Action 需具有模組私有 Capability；Reducer 重新驗證 Context、Faction、Alive、Action State、Busy、Destination、Target 與 Lifecycle Phase。
-- Pre-impact Abort 由有限 Standby Recovery 收尾；Post-impact Abort 保留傷害與消耗狀態。
+- AI Action 由 Gateway 從目前 State 衍生 Controller Intent 後發行凍結物件，並以模組私有 identity capability 驗證；Reducer 重新驗證 Context、Faction、Alive、Action State、Busy、Destination、Target 與 Lifecycle Phase。
+- Enemy Pre-impact Abort 釋放 Reservation 並 queue Turn Completion；Post-impact Abort 保留傷害與消耗狀態。一般玩家 Pre-impact Abort 仍保留 Turn。
 - 沒有存活玩家時 Controller 安全停止，不建立勝敗結果，不連續推進 PAS。
 
-正式 AI 已移除 `simulate-enemy-standby` UI／Reducer 入口；TD-019 等待 Architecture Review。
+正式 AI 已移除 `simulate-enemy-standby` UI／Reducer 入口；TD-019 等待 Architecture／Code Review。Patch 3 本機自動化驗證為 213/213，未執行新的 Browser Verification／Product Owner Acceptance，也未納入 GitHub CI。
 
 ### M4-3 Patch 1：Move-to-Attack Phase Integrity
 

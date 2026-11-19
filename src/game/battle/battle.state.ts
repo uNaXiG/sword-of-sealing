@@ -20,8 +20,8 @@ import { calculatePhysicalDamage } from './battle.damage.ts'
 import { isUnitAlive } from './battle.unit.ts'
 import { isUnitClass, validateAttackProperties } from '../classes/class.data.ts'
 import { getAttackProfile } from './battle.animation.ts'
-import type { AIAction } from './battle.ai.ts'
-import { isAuthorizedAIAction } from './battle.ai.ts'
+import type { AIAction } from './battle.ai.gateway.ts'
+import { isAuthorizedAIAction } from './battle.ai.gateway.ts'
 import {
   completeIndividualTurn,
   initializeTurnState,
@@ -610,7 +610,18 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     ) return state
     const attack = state.attackMotion
     const aborted = abortAttack(state)
-    if (attack.phase === 'PENDING_IMPACT') return aborted
+    if (attack.phase === 'PENDING_IMPACT') {
+      const attacker = state.units.find((unit) => unit.id === attack.attackerId)
+      if (attacker?.faction !== 'enemy') return aborted
+      return queueTurnCompletion(
+        { ...aborted, aiProgress: null },
+        {
+          turnId: attack.turnId,
+          unitId: attack.attackerId,
+          attackId: attack.attackId,
+        },
+      )
+    }
     return queueTurnCompletion(aborted, {
       turnId: attack.turnId,
       unitId: attack.attackerId,
