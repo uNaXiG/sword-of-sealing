@@ -2,7 +2,20 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M4-4B Conditional Closure & Documentation Synchronization
+
+- **Closure Decision**：M4-4B Implementation **COMPLETED**；Architecture Review **APPROVED**；Independent Code Review **APPROVED WITH LIMITATIONS**；Product Owner Acceptance **APPROVED**；Conditional Closure **APPROVED**。M4-4 Formal Acceptance 仍 **PENDING**；未啟動 M4-4B Patch 1。
+- **Verified Repository / CI**：Branch `main`、Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895`；GitHub Actions Run [44605672030](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44605672030) SUCCESS，Head SHA 相符。該實作提交包含 16 個異動檔案，Battle Core Modification 0。
+- **Verification Baseline**：265/265 Automated Tests、29/29 React Integration Tests、2/2 Session Tests、Lint 與 Build PASS；Build 保留既有 >500 kB Battle Chunk warning。Automated Test Traceability 維持 28 PASS／2 PARTIAL（B-T06、B-T30）；綜合 Acceptance Criteria 為 36 PASS／1 PARTIAL（AC-B30）。
+- **Product Owner Browser Acceptance**：2026-11-20 BV-B01～BV-B10 全部 PASS，Final Result 10/10 PASS — ACCEPTED。這是 Product Owner 驗收，不是 Agent 自動化或 Agent Browser Verification 結果。
+- **Independent Review**：RC-M4-4B-01～06 APPROVED；RC-M4-4B-07 PARTIAL，移交 M4-4C；RC-M4-4B-08 已以文件同步修正，未代替 reviewer 另行批准。
+- **Traceability / Remaining Verification**：AC-B07／B08 依 PO BV-B06 更新為 PASS；AC-B09 依 PO BV-B09 更新為 PASS；AC-B30 維持 PARTIAL。RV-M4-4B-01 Production Route Lifecycle Cleanup、RV-M4-4B-02 WebGL Resource Lifecycle、RV-M4-4B-03 Production Runtime Integration Coverage 均移交 M4-4C；此為待驗證項目，非已確認缺陷或已完成驗證。AI Capability Isolation 依 Runtime Dispatch Ownership 成立，不宣稱底層 Capability Session Binding 已實作。
+- **Historical Browser Record**：下方 M4-4B Implementation entry 保留 Agent 當時 WebGL fallback 與 PARTIAL／NOT VERIFIED 結果，不回溯改寫。Product Owner 10/10 Acceptance 為獨立後續證據。
+- **Roadmap / Scope**：M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**；M4-4C **NEXT — PENDING DEVELOPMENT**。M4 維持 75%、Overall 37.5%。本次僅同步文件，不修改 Runtime／Test Source Code，不開始 M4-4C，未 Commit／Push；TECHNICAL_DEBT 與 UX Backlog 未修改，既有狀態保留。
+
 ## 2026-11-20 — M4-4B Implementation (Pending Review)
+
+> 歷史快照：以下為 M4-4B 初始實作與 Agent Browser Verification 狀態；後續 PO Acceptance、Independent Review 及 Conditional Closure 見上方紀錄。Agent 原始 WebGL limitation 與 BV 結果不回溯改寫。
 
 - **Implementation**：新增單一 Victory／Defeat `BattleResultOverlay`，由正式 `BattleState.outcome` 驅動；以 `BattleSessionHost` Generation 與 Keyed `BattleSessionRuntime` Remount 實作 Restart 和 Session Isolation。重用 `createBattleScenarioSession()` 重新注入正式 Win／Loss Condition 並建立初始 State。
 - **Lifecycle / Reset**：Battle Reducer／Dispatch、AI Hook、Attack／Death Hooks、Frame Controllers、Canvas、Camera、選取及 Hover 等狀態全部屬於單場 Runtime。舊 Callback 維持舊 Dispatch；同 ID 重用仍隔離。測試直接證明 Frame Subscription cleanup；底層 GPU 資源釋放未宣稱已壓力驗證。

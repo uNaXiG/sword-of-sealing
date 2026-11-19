@@ -13,6 +13,7 @@
 | ACCEPTED | 使用者已驗收，但可能尚未提交或結案 |
 | COMPLETED | 已實作、已驗收且已納入確認基準 |
 | COMPLETED — Conditional Closure | 功能、驗收、Git／CI 已確認；核准延後的風險已登錄且尚未修復 |
+| COMPLETED — CONDITIONALLY ACCEPTED | 已完成實作與 Product Owner 驗收；審查限制及延後驗證項目已記錄並移交後續階段 |
 
 ## M1：基礎 3D 戰場 — COMPLETED
 
@@ -62,10 +63,10 @@ M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./D
 | M4-3 | 敵方移動與攻擊決策 | COMPLETED — FORMALLY ACCEPTED |
 | M4-4 | 勝利、失敗與戰鬥結束 | IN PROGRESS |
 | M4-4A | Extensible End Condition Architecture & Battle Resolution | COMPLETED — FORMALLY ACCEPTED |
-| M4-4B | Overlay、Restart 與 Session Isolation | IMPLEMENTED — PENDING REVIEW |
-| M4-4C | Final Regression、Browser Verification、Independent Review 與 Formal Acceptance | PENDING DEVELOPMENT |
+| M4-4B | Overlay、Restart 與 Session Isolation | COMPLETED — CONDITIONALLY ACCEPTED |
+| M4-4C | Final Regression、Browser Verification、Independent Review 與 Formal Acceptance | UP NEXT — PENDING DEVELOPMENT |
 
-M4-1 與 M4-2 均已完成。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收結案。M4-4A End Condition Framework & Battle Outcome 已於 2026-11-20 完成正式結案：Patch 1 **COMPLETED — ACCEPTED**，Final Review Correction **COMPLETED — VERIFIED**；Architecture Review、Independent Code Review、Product Owner Acceptance 與 Formal Closure 均 APPROVED。已驗證基準為 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747`／GitHub Actions Run `44596893220` SUCCESS；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。M4-4A 結案基準為 246/246 Automated Tests、12/12 React Integration、AC 32/32、原始 Test Traceability 28/28、Patch Traceability 9/9 PASS；Lint、Build 與 Product Owner Post-Patch Browser Acceptance 5/5 PASS。M4-4B 已在本機實作並通過 265/265 Automated Tests、29/29 React Integration Tests、Lint 與 Build；Browser 終局流程受 WebGL fallback 阻擋，結果尚待獨立審查及 Product Owner 驗收。上述 41b Commit／CI 是 M4-4B 的開始基準，不涵蓋未提交的 M4-4B 異動。M4-4C 尚未開始，M4-4 整體仍 IN PROGRESS。M4 維持 75%；Overall 維持 37.5%。詳見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+M4-1 與 M4-2 均已完成。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收結案。M4-4A End Condition Framework & Battle Outcome 已於 2026-11-20 完成正式結案：Patch 1 **COMPLETED — ACCEPTED**，Final Review Correction **COMPLETED — VERIFIED**；Architecture Review、Independent Code Review、Product Owner Acceptance 與 Formal Closure 均 APPROVED。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**：Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Browser Acceptance BV-B01～B10 10/10 PASS、Conditional Closure APPROVED。Verified Repository Commit 為 `e299fa48e28d16e24aadba9cc7925bedf4d53895`；GitHub Actions Run [44605672030](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44605672030) SUCCESS，Branch `main` 且 Head SHA 相符。M4-4B 驗證基準為 265/265 Automated Tests、29/29 React Integration、2/2 Session Tests、Lint 與 Build PASS；Build 保留既有 >500 kB Battle Chunk warning。Agent 原始 WebGL fallback／PARTIAL／NOT VERIFIED 紀錄保持不變，並與 Product Owner Browser Acceptance 分開記錄。自動化 Test Traceability 為 28 PASS／2 PARTIAL，綜合 AC 為 36 PASS／1 PARTIAL。RC-M4-4B-07 及 RV-M4-4B-01～03 移交 M4-4C；RC-M4-4B-08 文件修正已記錄。M4-4B Patch 1 未啟動，M4-4 Formal Acceptance 仍 PENDING。M4-4C 為下一階段，負責整體 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance；詳見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。M4 維持 75%；Overall 維持 37.5%。
 
 ## M5：戰鬥 UI／UX — PENDING
 

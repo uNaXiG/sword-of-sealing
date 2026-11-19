@@ -12,15 +12,16 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `41b43c77e849276847c8c643deedd3a7ca0b0747` — M4-4A Formal Closure documentation |
-| Latest Verified Repository CI Run | [44596893220](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44596893220) — SUCCESS（`main` / `41b43c7`） |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `e299fa48e28d16e24aadba9cc7925bedf4d53895` — M4-4B implementation |
+| Latest Verified Repository CI Run | [44605672030](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44605672030) — SUCCESS（`main` / `e299fa4`；Head SHA 相符） |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Latest Verified Repository Commit | `main` @ `41b43c77e849276847c8c643deedd3a7ca0b0747`；本機 HEAD 及 `origin/main` tracking ref 相符 |
+| Latest Verified Repository Commit | `main` @ `e299fa48e28d16e24aadba9cc7925bedf4d53895`；本機 HEAD 及 `origin/main` tracking ref 相符 |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
-| Current Working Tree | M4-4B Runtime、Test 與文件異動尚未提交；`41b43c7`／Run `44596893220` 為開始基準，不涵蓋本次異動；未 Commit／Push |
+| M4-4B Implementation Baseline | 16 個異動檔案；Battle Core Modification 0；本次正式結案前的實際本機 Git 狀態為 `main`／`e299fa4`、工作樹乾淨 |
+| Current Working Tree | 本次 Conditional Closure 僅有文件同步異動，等待提交授權；無 Runtime Source Code 或 Test Source Code 異動，未 Commit／Push |
 | 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved；M4-3：COMPLETED — FORMALLY ACCEPTED |
-| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（75%）**，M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **IMPLEMENTED — PENDING REVIEW**；M4-4C **PENDING DEVELOPMENT**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
+| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（75%）**，M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**；M4-4C **NEXT — PENDING DEVELOPMENT**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | M4 進度 | 75%（3/4） |
@@ -30,7 +31,7 @@
 | M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
 | M4-3 狀態 | **COMPLETED — FORMALLY ACCEPTED**；Patch 1／2／3 與 TEST-M4-3-01 已完成；223/223 Automated Tests；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED |
 | Code Review Findings | CR-M4-3-01／02／03 CLOSED；TEST-M4-3-01 CLOSED — PASS；TD-019 CLOSED |
-| M4-4 狀態 | **IN PROGRESS**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **IMPLEMENTED — PENDING REVIEW**；M4-4C **PENDING DEVELOPMENT** |
+| M4-4 狀態 | **IN PROGRESS**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**；M4-4C **NEXT — PENDING DEVELOPMENT** |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
 ## 驗證結果
@@ -69,8 +70,9 @@
 | M4-4B Automated Tests | 265/265 PASS | 本機 `npm test`；原有 246 項意圖保留，新增 19 項測試 |
 | M4-4B React / Session Integration | 31/31 PASS（29 React + 2 Session） | `tests/battle.animation.react.integration.test.mjs` 與 `tests/battle.session.test.mjs` |
 | M4-4B ESLint / Production Build | PASS / PASS | `npm run lint`、`npm run build`；保留既有 >500 kB Battle Chunk warning |
-| M4-4B Browser Verification | PARTIAL | Battle Route 可載入，但頁面顯示 WebGL fallback；無法操作 3D 戰鬥及完成 Overlay／Restart Browser Regression |
-| M4-4B Product Owner Acceptance / Independent Review | PENDING | 未宣告 Browser Acceptance、Independent Review 或 Formal Acceptance |
+| M4-4B Product Owner Browser Acceptance | PASS — 10/10 | Product Owner 於 2026-11-20 確認 BV-B01～BV-B10 PASS；不回溯改寫 Agent 原始 WebGL fallback 與 PARTIAL／NOT VERIFIED 紀錄 |
+| M4-4B Independent Review / Conditional Closure | APPROVED WITH LIMITATIONS / APPROVED | Architecture Review APPROVED；Independent Code Review APPROVED WITH LIMITATIONS；Conditional Closure APPROVED；RC-M4-4B-01～06 APPROVED、07 PARTIAL（移交 M4-4C）、08 文件修正已完成 |
+| M4-4B Automated Test / AC Traceability | 28 PASS + 2 PARTIAL / 36 PASS + 1 PARTIAL | B-T06、B-T30 維持 Automated PARTIAL；AC-B07／08 由 PO BV-B06 補充為 PASS、AC-B09 由 PO BV-B09 補充為 PASS、AC-B30 維持 PARTIAL |
 
 ## M4-4A Acceptance Criteria Evidence Matrix
 
@@ -135,6 +137,8 @@ Product Owner 於 2026-11-20 完成 M4-4A Patch 1 Post-Patch Browser Regression�
 
 ## M4-4A Formal Closure Record
 
+> 歷史快照：本節記錄 M4-4A Formal Closure 文件同步時的專案狀態；後續 M4-4B 結案狀態見緊接其後的 Conditional Closure 紀錄。
+
 - **Formal Acceptance Date**：2026-11-20。M4-4A End Condition Framework & Battle Outcome 為 **COMPLETED — FORMALLY ACCEPTED**；Patch 1 為 **COMPLETED — ACCEPTED**；Final Review Correction 為 **COMPLETED — VERIFIED**。
 - **Reviews**：Architecture Review APPROVED；Independent Code Review APPROVED；Product Owner Acceptance APPROVED；Formal Closure APPROVED。CR-M4-4A-01～05 全數 CLOSED。
 - **Product Owner Browser Acceptance**：M4-4A Patch 1 Post-Patch Browser Regression，BV-A01～A05 5/5 PASS — ACCEPTED（2026-11-20）。Patch 前 Product Owner 5/5 PASS 與 Agent 原始 Browser PARTIAL／NOT VERIFIED 紀錄仍分列保留。
@@ -144,15 +148,16 @@ Product Owner 於 2026-11-20 完成 M4-4A Patch 1 Post-Patch Browser Regression�
 - **Technical Debt / UX Backlog**：本次不調整相關狀態；TD-018、TD-021 維持 OPEN，TD-019 維持 CLOSED — M4-3 FORMAL ACCEPTANCE；UX Backlog 未變更。
 - **Roadmap / Scope**：M4-4A 已完成；此 Formal Closure 的文件異動後續已納入 `41b43c7`。目前 M4-4B 為 IMPLEMENTED — PENDING REVIEW，M4-4C PENDING DEVELOPMENT；M4-4 整體仍 IN PROGRESS。M4 維持 75%、Overall 37.5%。
 
-## M4-4B Implementation & Verification — IMPLEMENTED — PENDING REVIEW
+## M4-4B Implementation & Conditional Closure — COMPLETED — CONDITIONALLY ACCEPTED
 
 ### Environment / Baseline
 
-- **Branch / HEAD**：`main`／`41b43c77e849276847c8c643deedd3a7ca0b0747`；`origin/main` tracking ref 相同，工作樹包含本次 M4-4B 未提交異動。
-- **Verified baseline CI**：GitHub Actions Run `44596893220` SUCCESS；僅代表開始基準 Commit，不包含本機 M4-4B 修改。
+- **Branch / HEAD**：`main`／`e299fa48e28d16e24aadba9cc7925bedf4d53895`；`origin/main` tracking ref 相同，Conditional Closure 開始前工作樹乾淨。
+- **Verified Repository / CI**：Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895`；GitHub Actions Run [44605672030](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44605672030) SUCCESS，Branch `main`、Head SHA 相符。
+- **Implementation Scope**：M4-4B 已提交異動 16 個檔案，Battle Core Modification 0；本次 Closure 為文件同步，無 Runtime Source Code 或 Test Source Code 異動。
 - **Local verification**：`npm test` 265/265 PASS；`npm run lint` PASS；`npm run build` PASS；本次 build 保留既有 >500 kB Battle Chunk warning。`tests/battle.animation.react.integration.test.mjs` 與 `tests/battle.session.test.mjs` 合計 31/31 PASS（29 React Integration + 2 Session tests）。
-- **Browser**：Battle Route 載入並顯示初始 HUD／資訊及 WebGL fallback。無法使用 3D 場景完成戰鬥與終局流程；BV-B01、BV-B10 PARTIAL，BV-B02～B09 NOT VERIFIED。測試瀏覽器操作不等於 Product Owner Acceptance；Acceptance PENDING。
-- **Final status**：M4-4B 已實作但尚未獨立審查、尚未 Product Owner 驗收，也未 Commit／Push；M4-4C 尚未開始。
+- **Agent Browser Verification (historical)**：Battle Route 載入並顯示初始 HUD／資訊及 WebGL fallback；Agent BV-B01、BV-B10 PARTIAL，BV-B02～B09 NOT VERIFIED。保留原始觀察，不回溯改寫。
+- **Final status**：Architecture Review、Product Owner Acceptance 與 Conditional Closure APPROVED；Independent Code Review APPROVED WITH LIMITATIONS。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**；M4-4C **NEXT — PENDING DEVELOPMENT**。未啟動 M4-4B Patch 1，亦未宣告 M4-4 Formal Acceptance。
 
 ### Implementation / Ownership Map
 
@@ -221,9 +226,9 @@ Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.ani
 | AC-B04 共用 Result Overlay Component | PASS | Production Runtime 同一 `BattleResultOverlay` 接收兩種正式 Outcome |
 | AC-B05 僅依據正式 Outcome 顯示 | PASS | Runtime 以 `outcome !== null` 條件 render；B-T01～04 |
 | AC-B06 背景戰場保留 | PASS | Runtime 中 Canvas 與 Overlay 同屬場景；Overlay 不替換 Battle Runtime |
-| AC-B07 終局背景操作隔離 | PARTIAL | 原生 `showModal()` 與 Reducer Terminal Guard；未能在 Browser 實際操作終局背景 |
-| AC-B08 Modal Keyboard／Focus | PARTIAL | jsdom 驗 Focus／Cancel；真實 Tab／Escape／背景焦點需 Browser Regression |
-| AC-B09 Desktop／Mobile 版面 | PARTIAL | 有響應式 CSS／reduced-motion；Overlay 未能於 Browser 顯示以驗證視覺 |
+| AC-B07 終局背景操作隔離 | PASS | PO BV-B06 Terminal Input Protection PASS；Agent 原自動化／瀏覽器證據保留原狀 |
+| AC-B08 Modal Keyboard／Focus | PASS | PO BV-B06 Terminal Input Protection PASS；B-T06 自動化覆蓋仍為 PARTIAL |
+| AC-B09 Desktop／Mobile 版面 | PASS | PO BV-B09 Responsive Layout PASS |
 | AC-B10 Victory Restart | PASS | B-T07 |
 | AC-B11 Defeat Restart | PASS | B-T08 |
 | AC-B12 不 Reload Page | PASS | Restart 只更新 Host Generation，未呼叫 location reload；integration Remount |
@@ -244,7 +249,7 @@ Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.ani
 | AC-B27 Restart Idempotency | PASS | B-T13 |
 | AC-B28 Stale Restart Handler 拒絕 | PASS | B-T14 |
 | AC-B29 React StrictMode | PASS | B-T26～27 |
-| AC-B30 Controller／Effect Cleanup | PARTIAL | Frame cleanup PASS；整個 Production Route／WebGL／GPU lifecycle 未實際驗證 |
+| AC-B30 Controller／Effect Cleanup | PARTIAL | Frame cleanup PASS；Production Route、WebGL／GPU lifecycle 與正式 Runtime wiring 另列 RV-M4-4B-01～03 |
 | AC-B31 原有 246 測試無退化 | PASS | Full suite 265/265；原有 integration assertions 保留 |
 | AC-B32 新增測試全部 PASS | PASS | Full suite 265/265；Session／React focused 31/31 |
 | AC-B33 ESLint | PASS | `npm run lint` |
@@ -268,7 +273,57 @@ Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.ani
 | BV-B09 Responsive Layout | NOT VERIFIED | Overlay 未能於 Desktop／Mobile 實際顯示；CSS 不代表視覺驗收 |
 | BV-B10 Runtime Regression | PARTIAL | Browser reload 僅觀察 Vite／React DevTools 訊息，未見 pageerror；WebGL fallback 持續存在，無法驗證終局／Restart lifecycle 或底層 GPU cleanup |
 
-實際 Browser Screenshot 顯示 Battle Route 背景與 HUD，但沒有 3D 棋盤／單位；DOM 另顯示 Canvas WebGL fallback。未據 Node／jsdom 證據宣稱視覺 PASS。Product Owner Acceptance 尚待正式結果。
+實際 Browser Screenshot 顯示 Battle Route 背景與 HUD，但沒有 3D 棋盤／單位；DOM 另顯示 Canvas WebGL fallback。未據 Node／jsdom 證據宣稱視覺 PASS。當時 Product Owner Acceptance 尚待正式結果；後續 PO 驗收另列於下方，不回溯改寫此 Agent 紀錄。
+
+> 上段為 Agent 原始 Browser Verification 快照，保留其 PARTIAL／NOT VERIFIED 狀態；以下為 Product Owner 後續獨立 Acceptance，不回溯改寫 Agent 結果。
+
+### Product Owner Browser Acceptance — 2026-11-20
+
+| BV | Product Owner Result |
+|---|---|
+| BV-B01 Normal Battle | PASS |
+| BV-B02 Victory Overlay | PASS |
+| BV-B03 Defeat Overlay | PASS |
+| BV-B04 Victory Restart | PASS |
+| BV-B05 Defeat Restart | PASS |
+| BV-B06 Terminal Input Protection | PASS |
+| BV-B07 Repeated Restart | PASS |
+| BV-B08 Rapid Restart Input | PASS |
+| BV-B09 Responsive Layout | PASS |
+| BV-B10 Runtime Regression | PASS |
+
+**Final Result：10/10 PASS — ACCEPTED。** 此為 Product Owner 提供的瀏覽器驗收結果，不是 Agent 自動化或 Agent Browser Verification 結果。
+
+### Independent Review Findings
+
+| Finding | Review Result | Closure Record |
+|---|---|---|
+| RC-M4-4B-01 | APPROVED | Independent review result recorded |
+| RC-M4-4B-02 | APPROVED | Independent review result recorded |
+| RC-M4-4B-03 | APPROVED | Independent review result recorded |
+| RC-M4-4B-04 | APPROVED | Independent review result recorded |
+| RC-M4-4B-05 | APPROVED | Independent review result recorded |
+| RC-M4-4B-06 | APPROVED | Independent review result recorded |
+| RC-M4-4B-07 | PARTIAL — DEFERRED TO M4-4C | Track with RV-M4-4B-01～03; not represented as a confirmed defect |
+| RC-M4-4B-08 | RESOLVED — DOCUMENTATION UPDATED | This closure synchronization records the corrected baseline, acceptance, review limitations, traceability, architecture boundary, and deferred verification; no new independent review approval is claimed |
+
+### M4-4C Remaining Verification — RV-M4-4B-01～03
+
+These are deferred verification items, not confirmed defects and not completed verification:
+
+| ID | Verification Scope | Status |
+|---|---|---|
+| RV-M4-4B-01 | Production Battle Route enter／leave／re-enter lifecycle and Runtime cleanup | DEFERRED TO M4-4C |
+| RV-M4-4B-02 | WebGL resource lifecycle across repeated Restart and Route Unmount; assess cumulative WebGL Contexts, Frame Subscriptions, and resource leaks. Canvas DOM count alone is insufficient evidence of GPU resource disposal. | DEFERRED TO M4-4C |
+| RV-M4-4B-03 | Production Runtime wiring for cross-Session Callback Isolation and Outcome／Restart Integration; prefer real Production Components and Hooks to reduce Probe divergence | DEFERRED TO M4-4C |
+
+### Conditional Closure Decision
+
+- M4-4B Implementation **COMPLETED**；Architecture Review **APPROVED**；Independent Code Review **APPROVED WITH LIMITATIONS**；Product Owner Acceptance **APPROVED**；Conditional Closure **APPROVED**。
+- Automated Test Traceability remains **28 PASS / 2 PARTIAL**: B-T06 and B-T30 remain partial automated coverage. PO BV-B06 supplements Browser Acceptance for terminal input protection but does not upgrade B-T06 automated coverage.
+- Combined Acceptance Criteria are **36 PASS / 1 PARTIAL**: AC-B07／B08 are PASS based on PO BV-B06; AC-B09 is PASS based on PO BV-B09; AC-B30 remains PARTIAL and transfers to M4-4C.
+- Architecture contract remains Keyed Session Remount, Session-owned Reducer Dispatch, Scenario Factory Initialization, Generation-based Restart Idempotency, Native Modal Dialog, and Outcome Single Source of Truth. AI Capability Isolation is based on Runtime Dispatch ownership, not underlying Capability Session Binding; the latter is not claimed as implemented.
+- M4-4B Patch 1 is not started. M4-4 Formal Acceptance remains PENDING. M4 remains 75%; Overall remains 37.5%.
 
 ## M4-4 Revision 2 Test Traceability
 
@@ -458,12 +513,14 @@ T-28 保留的 10 個 TEST-M4-3-01 Test Names（對照 `tests/battle.animation.r
 
 - **歷史狀態快照（M4-3 正式結案前）**：當時 M4-3 正式敵方 AI 尚待驗收；技能、成長、劇情、存檔、PWA 與勝敗系統亦尚未完成。
 
-**目前狀態（2026-11-20）**：M4-3 Enemy AI 已完成正式驗收（COMPLETED — FORMALLY ACCEPTED）；M4-4A End Condition Framework & Battle Outcome 已完成正式結案（COMPLETED — FORMALLY ACCEPTED）。Patch 1 為 COMPLETED — ACCEPTED，Final Review Correction 為 COMPLETED — VERIFIED；CR-M4-4A-01～05 全數 CLOSED。M4-4A Product Owner Post-Patch Browser Acceptance 為 BV-A01～A05 5/5 PASS；Agent 原始 PARTIAL／NOT VERIFIED 結果仍分列保留。最新已驗證 Repository Commit 為 `41b43c77e849276847c8c643deedd3a7ca0b0747`，GitHub Actions Run `44596893220` SUCCESS；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。M4-4A 結案基準為 246/246 Automated Tests、12/12 React Integration、AC 32/32、原始 Test Traceability 28/28、Patch Traceability 9/9 PASS；Lint、Build、Diff Check PASS。M4-4B Overlay／Restart／Keyed Session Isolation 已實作但尚待獨立 Review 與 Product Owner Acceptance；本機 `npm test` 265/265、React／Session integration 31/31、Lint 與 Build PASS，Build 保留既有 >500 kB Battle Chunk warning。Browser Route 可載入，但 WebGL fallback 阻擋 3D 戰鬥及終局 Browser Regression，BV-B01、BV-B10 PARTIAL，BV-B02～B09 NOT VERIFIED。M4-4B 本機異動尚未提交，41b Commit／CI 不涵蓋。M4-4C 尚未開始；M4 維持 75%、Overall 37.5%。
+> 歷史快照：以下記錄 M4-4A 結案後、M4-4B Conditional Closure 前的狀態；目前最新基準見上方「M4-4B Implementation & Conditional Closure」。
+
+**當時狀態（2026-11-20，M4-4B Conditional Closure 前）**：M4-3 Enemy AI 已完成正式驗收（COMPLETED — FORMALLY ACCEPTED）；M4-4A End Condition Framework & Battle Outcome 已完成正式結案（COMPLETED — FORMALLY ACCEPTED）。Patch 1 為 COMPLETED — ACCEPTED，Final Review Correction 為 COMPLETED — VERIFIED；CR-M4-4A-01～05 全數 CLOSED。M4-4A Product Owner Post-Patch Browser Acceptance 為 BV-A01～A05 5/5 PASS；Agent 原始 PARTIAL／NOT VERIFIED 結果仍分列保留。當時最新已驗證 Repository Commit 為 `41b43c77e849276847c8c643deedd3a7ca0b0747`，GitHub Actions Run `44596893220` SUCCESS；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。M4-4A 結案基準為 246/246 Automated Tests、12/12 React Integration、AC 32/32、原始 Test Traceability 28/28、Patch Traceability 9/9 PASS；Lint、Build、Diff Check PASS。M4-4B Agent Browser Route 顯示 WebGL fallback，原始 BV-B01、BV-B10 PARTIAL，BV-B02～B09 NOT VERIFIED；後續 Product Owner 驗收與 Conditional Closure 請見本文件上方。M4 維持 75%、Overall 37.5%。
 - 技術債及 UX 項目詳見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) 與 [UX_BACKLOG.md](./UX_BACKLOG.md)。
 
 ## 已知阻擋問題
 
-M3、M4-1、M4-2、M4-3 與 M4-4A 無已知正式驗收阻擋。M4-4B Browser Regression 目前受瀏覽器顯示 WebGL fallback 阻擋；此環境問題尚未確認為本次程式異動造成，相關終局與 Responsive Browser Criteria 維持 PARTIAL／NOT VERIFIED。
+M3、M4-1、M4-2、M4-3 與 M4-4A 無已知正式驗收阻擋。M4-4B 已取得 Product Owner BV-B01～B10 10/10 PASS；Agent 原始 WebGL fallback limitation 及 PARTIAL／NOT VERIFIED 紀錄仍保留。RC-M4-4B-07 與 RV-M4-4B-01～03 是 M4-4C 的剩餘驗證項目，不代表已確認程式缺陷或已完成驗證。
 
 ## M4-1 狀態
 
@@ -540,4 +597,4 @@ Final Addendum 額外證據：
 
 ## 下一步
 
-M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A End Condition Framework & Battle Outcome、Patch 1 與 Final Review Correction 已分別標記 **COMPLETED — FORMALLY ACCEPTED**、**COMPLETED — ACCEPTED**、**COMPLETED — VERIFIED**；CR-M4-4A-01～05 全數 CLOSED。Formal Closure 文件已納入 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747`／GitHub Actions Run `44596893220` SUCCESS；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。M4-4A 結案基準為 246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 T、9/9 P-T、Lint、Build 與 Diff Check PASS；Product Owner Post-Patch BV-A01～A05 5/5 PASS（2026-11-20）。Patch 前 PO 驗收與 Agent 原始 PARTIAL／NOT VERIFIED 結果仍分列保留。M4-4B **IMPLEMENTED — PENDING REVIEW**；本機 265/265 tests、31/31 Session／React Integration、Lint 與 Build PASS；Browser 終局驗證受 WebGL fallback 阻擋，Product Owner Acceptance PENDING。M4-4C 為 **PENDING DEVELOPMENT**；M4 整體仍 IN PROGRESS，維持 75%、Overall 37.5%。目前 M4-4B 程式、測試與文件異動尚未提交；不 Commit／Push。
+M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A End Condition Framework & Battle Outcome、Patch 1 與 Final Review Correction 已分別標記 **COMPLETED — FORMALLY ACCEPTED**、**COMPLETED — ACCEPTED**、**COMPLETED — VERIFIED**；CR-M4-4A-01～05 全數 CLOSED。Formal Closure 文件已納入 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747`／GitHub Actions Run `44596893220` SUCCESS；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。M4-4A 結案基準為 246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 T、9/9 P-T、Lint、Build 與 Diff Check PASS；Product Owner Post-Patch BV-A01～A05 5/5 PASS（2026-11-20）。Patch 前 PO 驗收與 Agent 原始 PARTIAL／NOT VERIFIED 結果仍分列保留。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**：Repository Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895`／GitHub Actions Run `44605672030` SUCCESS；265/265 Automated Tests、29/29 React Integration、2/2 Session Tests、Lint、Build PASS；PO BV-B01～B10 10/10 PASS。自動化追溯為 28 PASS／2 PARTIAL，綜合 AC 為 36 PASS／1 PARTIAL。RC-M4-4B-07 與 RV-M4-4B-01～03 移交 M4-4C；M4-4B Patch 1 未啟動，M4-4 Formal Acceptance 仍 PENDING。M4-4C 為 **NEXT — PENDING DEVELOPMENT**；M4 整體仍 IN PROGRESS，維持 75%、Overall 37.5%。本次 Conditional Closure 文件異動尚未提交；不 Commit／Push。

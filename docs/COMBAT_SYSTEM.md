@@ -295,7 +295,7 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 正式初始戰場前 17 次順序與 Round 邊界由 [battle.turn.test.mjs](../tests/battle.turn.test.mjs) 驗證。
 
-M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 Enemy AI 已實作並提交。M4-4A 已於 2026-11-20 正式結案，Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`；最新已驗證 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。M4-4B Overlay、Restart 與 Session Isolation 已實作但尚待 Review／Product Owner Acceptance；M4-4C 負責整體 M4-4 的 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance；M7 效果尚未實作。本機 M4-4B 未提交異動不屬於 41b CI。
+M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 Enemy AI 已實作並提交。M4-4A 已於 2026-11-20 正式結案，Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`；其結案 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747`／GitHub Actions Run `44596893220` SUCCESS。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**：Repository Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895`／Run [44605672030](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44605672030) SUCCESS，PO Browser Acceptance 10/10 PASS；Independent Code Review APPROVED WITH LIMITATIONS。Agent 原始 WebGL fallback 與 PARTIAL／NOT VERIFIED 紀錄仍保留。RV-M4-4B-01～03 移交 M4-4C；M4-4 Formal Acceptance 仍 PENDING。M7 效果尚未實作。
 
 M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案。TD-019 隨 M4-3 Formal Acceptance CLOSED；M4-3 的最新結案與 CI 基準見本節及 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
@@ -335,7 +335,7 @@ Active Enemy Turn 由獨立 React Controller 自動觀察；Player Turn 不提�
 - **223/223 Automated Tests PASS**；ESLint PASS；Production Build PASS（既有 >500 kB Battle Chunk warning 保留）。
 - Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED；CR-M4-3-01／02／03 與 TEST-M4-3-01 CLOSED。
 - Repository Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9` 的 GitHub Actions Run `44500720991` SUCCESS；M4-3 Gameplay Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25` 的 Run `44496931887` SUCCESS。
-- M4-3 **COMPLETED — FORMALLY ACCEPTED**；M4-4A **COMPLETED — FORMALLY ACCEPTED**（2026-11-20）。Patch 後 Product Owner Acceptance BV-A01～A05 5/5 PASS；Agent 原有 Browser PARTIAL／NOT VERIFIED 結果仍為獨立歷史紀錄。最新已驗證 Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` / Actions Run `44596893220` SUCCESS。M4-4B **IMPLEMENTED — PENDING REVIEW**；M4-4C 尚未開始。
+- M4-3 **COMPLETED — FORMALLY ACCEPTED**；M4-4A **COMPLETED — FORMALLY ACCEPTED**（2026-11-20）。Patch 後 Product Owner Acceptance BV-A01～A05 5/5 PASS；Agent 原有 Browser PARTIAL／NOT VERIFIED 結果仍為獨立歷史紀錄。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**：Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895`／Actions Run `44605672030` SUCCESS；Product Owner Browser Acceptance 10/10 PASS。M4-4 Formal Acceptance 仍 PENDING；M4-4C 為下一階段。
 
 ### M4-3 Patch 1：Move-to-Attack Phase Integrity
 
@@ -385,7 +385,7 @@ Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `u
 - Outcome 僅由明確允許的觸發點評估：有效 Move Finish／Cancel、合法 Attack／Death Lifecycle Completion，以及合法回合完成的 Pre-PAS Check。一般選取／模式操作、無效或未授權 Action、過期／重複 Callback 不觸發評估。Attack Impact 發生時 Attack Motion／Reservation 仍是阻擋邊界，須等生命周期完成；所有判定同時要求沒有 Move、Attack、Death Motion 或 Combat Reservation。
 - 最後一個阻擋 Motion 結束後，Pending Turn Completion 先評估 Outcome，再決定是否推進 PAS；若已終局便清除 Pending，避免多排一個 Turn。DEFEAT 優先與 Death Barrier 保持不變。
 - 終局轉移保留 DefeatedUnitRecord 與已結算戰鬥結果，清除操作選取、Turn Action、Pending、AI Progress 及待播放 Impact Queue。終局後 Reducer 對所有 Action／晚到 Callback 均回傳原 State；AI Gateway 亦不再產生 Intent。
-- M4-4A Battle Core 不因結果呈現而改寫勝敗判定。Overlay、Restart 與 Keyed Session Isolation 已由 M4-4B 實作，仍待獨立審查與 Product Owner 驗收；M4-4C 負責整體 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance。
+- M4-4A Battle Core 不因結果呈現而改寫勝敗判定。Overlay、Restart 與 Keyed Session Isolation 已由 M4-4B 實作並條件式驗收；Agent 原始 Browser 限制維持原紀錄，Product Owner BV-B01～B10 已另行 10/10 PASS。Production Route、WebGL Resource 與正式 Runtime Wiring 尚待 M4-4C 驗證，項目定義見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)；整體 Formal Acceptance 仍待 M4-4C。
 
 ## M4-4B Result Presentation 與 Restart Contract
 
@@ -394,7 +394,7 @@ Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `u
 - Restart 不重新載入頁面或離開 Battle Route。Session Host 對有效 Restart 增加 Generation，Keyed Remount 卸載舊 Runtime，再呼叫同一個 Scenario Factory 建立新 Session。
 - Reset 依正式 Scenario 初始配置恢復 roster、HP／SP、位置、障礙、PAS／Turn Action、Reservation、Outcome 與死亡記錄；Session-owned Hooks、選取／Hover、動作結果、Animation Clock、Controller 與 Canvas／Camera 由 Runtime Remount 重建，不逐欄位覆寫舊 State。
 - 各 callback 綁定建立當時的 Session Dispatch；舊與新 Session 即使重用相同 Unit／Turn／Motion／Attack／Death／Impact ID，也不會跨 Session 派送。Host 只接受仍屬目前 Generation 的 Restart Handler。
-- 本階段不新增 EXP、Gold、Loot、Level Up、戰鬥統計、劇情或 Save／Load。自動化測試驗證 Host／Reducer／Controller 的 Session 邊界；實際瀏覽器終局、Modal 與 Restart Regression 因 WebGL fallback 尚未完成，M4-4B 維持 **IMPLEMENTED — PENDING REVIEW**。
+- 本階段不新增 EXP、Gold、Loot、Level Up、戰鬥統計、劇情或 Save／Load。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**，Product Owner Browser Acceptance 為 10/10 PASS；Agent 先前受 WebGL fallback 限制的 Browser 結果保留為獨立歷史紀錄。RC-M4-4B-07 與 RV-M4-4B-01～03 延至 M4-4C；不代表已確認程式缺陷或已完成相關驗證。
 
 ### 擴充 Condition
 
@@ -402,7 +402,7 @@ Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `u
 
 ## 已知限制
 
-- M4-4A End Condition Framework & Battle Outcome **COMPLETED — FORMALLY ACCEPTED**；Patch 1 **COMPLETED — ACCEPTED**，Final Review Correction **COMPLETED — VERIFIED**。Architecture／Code Review、Product Owner Acceptance 與 Formal Closure 均 APPROVED；BV-A01～A05 為 2026-11-20 Product Owner Post-Patch 5/5 PASS。M4-4B Overlay／Restart／Session Isolation **IMPLEMENTED — PENDING REVIEW**，Browser Regression 與 Product Owner Acceptance 尚未完成；M4-4C 的整體 Final Regression／Browser Verification／Independent Review／Formal Acceptance、技能與 M7 效果尚未實作。Commit／CI 與逐項驗證見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+- M4-4A End Condition Framework & Battle Outcome **COMPLETED — FORMALLY ACCEPTED**；Patch 1 **COMPLETED — ACCEPTED**，Final Review Correction **COMPLETED — VERIFIED**。Architecture／Code Review、Product Owner Acceptance 與 Formal Closure 均 APPROVED；BV-A01～A05 為 2026-11-20 Product Owner Post-Patch 5/5 PASS。M4-4B Overlay／Restart／Session Isolation **COMPLETED — CONDITIONALLY ACCEPTED**；Product Owner BV-B01～B10 10/10 PASS，Independent Code Review APPROVED WITH LIMITATIONS；Agent 原始 WebGL fallback／PARTIAL／NOT VERIFIED 紀錄仍保留。RC-M4-4B-07 與 RV-M4-4B-01～03 移交 M4-4C。整體 Final Regression／Browser Verification／Independent Review／Formal Acceptance、技能與 M7 效果尚未完成；M4-4 Formal Acceptance 仍 PENDING。Commit／CI 與逐項驗證見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
 - 尚未導入攻擊音效、正式骨架動畫或 Physics；目前的死亡演出使用 Placeholder 模型。
 - UI 目前要求選取目標後再確認攻擊。

@@ -181,7 +181,7 @@ HP / Attack Motion / Turn State
 
 此測試真實掛載 React Controller；Frame Scheduler 使用可控制時序與 delta 的測試替身；Lifecycle Runtime 與 Reducer 不被 Mock，Visual Components 以 Stub 隔離。這是 Node + jsdom 的 Controller／Reducer 整合測試，不涵蓋 WebGL Rendering、視覺驗收或完整 E2E。
 
-M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，最新已驗證 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。正式結案基準為 246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 原始 Test Traceability、9/9 Patch Traceability PASS；Architecture、Independent Code Review 與 Product Owner Acceptance 均 APPROVED，Browser BV-A01～A05 5/5 PASS（2026-11-20）。Patch 前 Product Owner Acceptance 與 Agent 原始 PARTIAL／NOT VERIFIED Browser 結果仍分開保留。M4-4B **IMPLEMENTED — PENDING REVIEW**；M4-4C 尚未開始；M4 75%、Overall 37.5%。M4-4B 本機未提交異動不屬於 41b CI。
+M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，其正式結案 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**：Verified Repository Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895`／GitHub Actions Run `44605672030` SUCCESS；265/265 Automated Tests、29/29 React Integration、2/2 Session Tests、Lint、Build PASS；Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Browser Acceptance 10/10 PASS、Conditional Closure APPROVED。Agent 原始 PARTIAL／NOT VERIFIED 結果保留，與 Product Owner 驗收分開。RC-M4-4B-07 及 RV-M4-4B-01～03 移交 M4-4C；M4-4 Formal Acceptance 仍 PENDING。M4-4C 尚未開始；M4 75%、Overall 37.5%。
 
 ## Battle State 與 Reducer
 
@@ -281,8 +281,16 @@ M4-4A 於 2026-11-20 正式結案；Strategy、Dependency Injection、Configurat
 
 `BattleSessionRuntime` 是單場戰鬥所有權邊界，包含 `useBattleMovement`、Session Reducer／Dispatch、AI Hook、Attack／Death Animation Hooks、Canvas／Camera／OrbitControls、Controllers、Hover 與其他暫態 UI 狀態。Restart 以 Keyed Remount 卸載舊 Runtime，並透過 `createBattleScenarioSession()` 重新執行同一 Scenario 初始化；該 Factory 明確注入 Win／Loss AllDead Conditions，`createBattleSession()` 為每個 Session 複製 Unit、Obstacle 與初始名冊資料。既有 Session 不從終局狀態倒推初始值。
 
-動畫及玩家 Callback 閉包持有建立當下 Session 的 Dispatch；AI Effect 同樣以該 Session 的 State／Dispatch 運作。即使各 Session 重新從相同 Motion／Attack／Death／Impact ID 起算，舊 Callback 仍只派送到舊 Reducer，不能修改新 Battle State。卸載會清除 Controller Frame Subscription 與各 Runtime Hook／Ref；目前 `useBattleAI` 只同步派送，沒有 Timer。測試證明 Frame Subscription 清理及 Session Dispatch 隔離；底層 WebGL/GPU 資源釋放未由 DOM 數量推定，也未宣稱完成壓力驗證。
+動畫及玩家 Callback 閉包持有建立當下 Session 的 Dispatch；AI Effect 同樣以該 Session 的 State／Dispatch 運作。即使各 Session 重新從相同 Motion／Attack／Death／Impact ID 起算，舊 Callback 仍只派送到舊 Reducer，不能修改新 Battle State。卸載會清除 Controller Frame Subscription 與各 Runtime Hook／Ref；目前 `useBattleAI` 只同步派送，沒有 Timer。測試證明 Frame Subscription 清理及 Session Dispatch 隔離；底層 WebGL/GPU 資源釋放未由 DOM 數量推定，也未宣稱完成壓力驗證。AI Capability Isolation 目前建立於 Runtime Dispatch Ownership，不是底層 Capability Session Binding；不得宣稱後者已實作或完成驗證。
 
 `BattleResultOverlay` 是只接收正式 Outcome 與 Restart Callback 的 Presentation Component。原生 Modal Dialog 在終局後以 `showModal()` 開啟並將 Focus 移至 Restart；它不讀取 HP、死亡動畫或 Unit Count，也不呼叫 Reducer、AI 或 Condition Strategy。Outcome Terminal Guard 與 Motion／Reservation／Pre-PAS Resolution 仍完全由 M4-4A Battle Core 負責。
 
-M4-4B 的目前 Scenario Factory 可由未來專案端選擇不同正式 Scenario 設定，但通用 Scenario Registry、Save／Load Serialization、Round Limit Semantics 及其他戰役設定尚未實作。M4-4B 為 **IMPLEMENTED — PENDING REVIEW**；M4-4C Final Regression、Browser Verification、Independent Review 與 Formal Acceptance 尚未開始。
+M4-4B 的目前 Scenario Factory 可由未來專案端選擇不同正式 Scenario 設定，但通用 Scenario Registry、Save／Load Serialization、Round Limit Semantics 及其他戰役設定尚未實作。M4-4B 為 **COMPLETED — CONDITIONALLY ACCEPTED**；Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance BV-B01～B10 10/10 PASS。Agent 原始 Browser PARTIAL／NOT VERIFIED 結果仍獨立保留；M4-4 Formal Acceptance 仍 PENDING。
+
+RC-M4-4B-07 與以下剩餘驗證需求移交 M4-4C；它們不是已確認程式缺陷，亦不得標記為已完成：
+
+- **RV-M4-4B-01 — Production Route Lifecycle Cleanup**：驗證實際 Battle Route 進入、離開、重新進入與 Runtime Cleanup。
+- **RV-M4-4B-02 — WebGL Resource Lifecycle**：驗證多次 Restart 與 Route Unmount 後 WebGL Context、Frame Subscription 或 Resource 是否持續累積；不得僅依 Canvas DOM 數量推定 GPU Resource Disposal。
+- **RV-M4-4B-03 — Production Runtime Integration Coverage**：在正式 Runtime Wiring 驗證跨 Session Callback Isolation 與 Outcome／Restart Integration；優先重用 Production Component／Hook，降低測試 Probe 差異。
+
+M4-4C 為下一階段，負責整體 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance；M4 維持 75%、Overall 37.5%。
