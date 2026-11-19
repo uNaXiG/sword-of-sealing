@@ -12,22 +12,23 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `6052c6197588b00c8732f34b7dbda0a3dc696a25` — `Refactor AI logic and introduce AI action gateway` |
-| Latest Verified Repository CI Run | [44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS（`main` / `6052c619`） |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `4043459cfa3cb884aa9d9a6653ed646ef59975a9` — `feat(tests): add integration tests for AttackAnimationController and frame harness` |
+| Latest Verified Repository CI Run | [44500720991](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44500720991) — SUCCESS（`main` / `4043459c`） |
 | Latest Verified Gameplay Commit | `main` @ `6052c6197588b00c8732f34b7dbda0a3dc696a25`（M4-3 Patch 3） |
 | Gameplay CI Run | [44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS（`main` / `6052c619`） |
-| M4-3 Patch 3 Git Status | Patch 3 已 COMMITTED／PUSHED；`main` HEAD 與本機 `origin/main` tracking ref 均為 `6052c6197588b00c8732f34b7dbda0a3dc696a25`。TEST-M4-3-01 與相關文件目前為未提交異動；未 Commit／Push |
-| 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved；M4-3：IMPLEMENTED — PENDING FORMAL CLOSURE |
-| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（50%）**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
+| Baseline Working Tree | 核對開始時乾淨；HEAD 與本機 `origin/main` tracking ref 均為 `4043459cfa3cb884aa9d9a6653ed646ef59975a9`（未據此推定遠端最新狀態）；本次文件同步產生未提交 Markdown 異動，未 Commit／Push |
+| 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved；M4-3：COMPLETED — FORMALLY ACCEPTED |
+| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（75%）**，M4-4 尚未開始；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
-| M4 進度 | 50%（2/4） |
+| M4 進度 | 75%（3/4） |
 | 完整結案主要里程碑 | 3/10 |
-| 整體里程碑等權重進度 | 35.0%（Roadmap Completion Percentage，不代表實際工時比例） |
-| M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED** |
+| 整體里程碑等權重進度 | 37.5%（Roadmap Completion Percentage，不代表實際工時比例） |
+| M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED**；M4-3：**COMPLETED — FORMALLY ACCEPTED** |
 | M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
-| M4-3 狀態 | **IMPLEMENTED — PENDING FORMAL CLOSURE**；Patch 3 已提交並通過 CI；TEST-M4-3-01 本機整合測試 223/223、ESLint、Build PASS；Product Owner Browser Acceptance 於 2026-11-19 PASS；Architecture／Code Review CONDITIONAL PASS，待獨立審查新測試證據 |
-| Code Review Findings | CR-M4-3-01／02 PASS；CR-M4-3-03 Architecture PASS，React-mounted Controller Integration Evidence 已補且待獨立審查；TD-019 APPROVED FOR CLOSURE，待 Formal Closure |
+| M4-3 狀態 | **COMPLETED — FORMALLY ACCEPTED**；Patch 1／2／3 與 TEST-M4-3-01 已完成；223/223 Automated Tests；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED |
+| Code Review Findings | CR-M4-3-01／02／03 CLOSED；TEST-M4-3-01 CLOSED — PASS；TD-019 CLOSED |
+| M4-4 狀態 | **NEXT — PENDING DEVELOPMENT**；尚未開始實作 |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
 ## 驗證結果
@@ -42,16 +43,32 @@
 | Markdown 相對連結與文件一致性 | PASS | DOC-01 Patch 1 本次檢查 |
 | 使用者瀏覽器驗收 | M4-1 24/24 PASS；M4-1 Patch 1 10/10 PASS | 使用者後續正式驗收；不回溯改寫 Agent 原始 PARTIAL Browser Report |
 | Acceptance Criteria | M3-3 40/40 PASS；M3-4 52/52 PASS；M3-4 Patch 1 Revision 2 12/12 PASS；M4-1 Patch 1 24/24 PASS | Agent Implementation Report 與既有驗收證據。M4-1 原始 AC 不因此無條件標記為 70/70 PASS |
-| M4-3 Implementation | IMPLEMENTED | 已加入純決策、Capability Intent、Reducer AI 授權及 React Controller；Reviews CONDITIONAL PASS，TEST-M4-3-01 自動化證據完成，正式結案仍待獨立審查與核准 |
-| M4-3 Automated Verification | 223/223 PASS；ESLint PASS；Production Build PASS（本機本次執行）；GitHub CI SUCCESS（既有 Commit） | 本機驗證包含 TEST-M4-3-01；CI Run `44496931887` 僅對應 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，未包含目前未提交異動 |
-| M4-3 Browser Verification | PASS — Product Owner Acceptance（2026-11-19） | 使用者確認 Patch 3 Browser Acceptance；既有特殊戰術、Console Abort Fixture、長時間／特殊 Death Scenario 的個別 NOT VERIFIED 狀態不因此改寫 |
-| M4-3 Patch 1 | IMPLEMENTED — FUNCTIONALLY VERIFIED | 修正 BUG-M4-3-001／002 的 Controller Phase Ambiguity；新增 MOVE_COMPLETED、Controller Intent 與失效目標重新驗證；Direct／Move-to-Attack 與 HP Impact 已由功能驗證確認 |
-| M4-3 Patch 2 | IMPLEMENTED — FUNCTIONALLY VERIFIED | 修正 BUG-M4-3-003 Animation Clock Race；有效 Attack 不再因 Effect 尚未初始化 Clock 而誤 Abort；已確認 Impact、Applied Damage 與 HP 更新 |
-| M4-3 Patch 3 | IMPLEMENTED — CONDITIONAL REVIEW PASS | CR-M4-3-01／02 PASS；CR-M4-3-03 Architecture PASS；React-mounted Controller Integration Evidence 已補，待獨立審查 |
-| M4-3 Git / CI | Git Push SUCCESS；GitHub CI SUCCESS | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；GitHub Actions Run `44496931887` SUCCESS |
-| M4-3 Formal Review | Architecture Review CONDITIONAL PASS；Code Review CONDITIONAL PASS；Formal Closure PENDING | TEST-M4-3-01 已完成實作驗證，等待獨立 Architecture／Code Review；未正式結案，不調整 Roadmap 進度 |
+| M4-3 Implementation | COMPLETED — FORMALLY ACCEPTED | Pure Decision、AI Gateway、Reducer Authorization、AI Controller 與 Attack Lifecycle 均完成；Patch 1／2／3 及 TEST-M4-3-01 結案 |
+| M4-3 Automated Verification | 223/223 PASS；ESLint PASS；Production Build PASS | 本機 TEST-M4-3-01 證據；Repository CI Run `44500720991` 對應 `4043459cfa3cb884aa9d9a6653ed646ef59975a9`，Gameplay CI Run `44496931887` 對應 `6052c6197588b00c8732f34b7dbda0a3dc696a25` |
+| M4-3 Product Owner Browser Acceptance | PASS（2026-11-19） | 已確認 M4-3 gameplay acceptance；既有特殊戰術、Console Abort Fixture、長時間／特殊 Death Scenario 的個別 NOT VERIFIED 狀態不因此改寫 |
+| M4-3 Patch 1 | IMPLEMENTED — INCLUDED IN FORMAL CLOSURE | 修正 BUG-M4-3-001／002 的 Controller Phase Ambiguity；新增 MOVE_COMPLETED、Controller Intent 與失效目標重新驗證 |
+| M4-3 Patch 2 | IMPLEMENTED — INCLUDED IN FORMAL CLOSURE | 修正 BUG-M4-3-003 Animation Clock Race；有效 Attack 的首個 Frame 初始化 matching Clock |
+| M4-3 Patch 3 | IMPLEMENTED — INCLUDED IN FORMAL CLOSURE | AI Gateway Capability、Enemy Pre-impact Abort Contract、Animation Lifecycle Hardening；Review findings 已 CLOSED |
+| M4-3 Gameplay Commit / CI | Git Push SUCCESS；GitHub CI SUCCESS | Gameplay Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；Run `44496931887` SUCCESS；最新 Repository Commit／CI 見目前基準表 |
+| M4-3 Formal Review | Architecture Review APPROVED；Code Review APPROVED；Formal Closure APPROVED | M4-3 已正式結案；TEST-M4-3-01 與 CR-M4-3-01／02／03 均 CLOSED |
+
+## M4-3 Formal Closure Record
+
+- **Original Scope**：實作確定性 Enemy AI，依 Direct Attack、Move-to-Attack、Path-cost Approach、Standby 順序決策；沿用既有 Reducer、戰鬥規則、動畫生命週期與 PAS Turn Completion，不包含 M4-4 勝敗結果。
+- **Patch 1 — Controller Phase Fix**：修正 Direct Attack Intent 與 `MOVE_COMPLETED`／Move-to-Attack 銜接，包含失效目標重新驗證。
+- **Patch 2 — Attack Clock Race Fix**：有效 Attack 的首個 Frame 初始化 matching Attack ID 的 0ms Clock，避免 Clock 尚未由 Effect 建立時誤 Abort。
+- **Patch 3 — Lifecycle Hardening**：透過 AI Gateway 與 private WeakSet Action Identity 授權 AI Actions；Reducer 保留授權重驗證；修正 Enemy Pre-impact Abort Turn Completion，並共用 React／Frame Lifecycle Runtime。
+- **TEST-M4-3-01 — CLOSED — PASS**：10 項 ReactDOM／StrictMode 整合測試實際掛載 Controller；受控 Frame 驅動正式 Lifecycle Runtime，Impact／Complete／Abort callbacks 派送至正式 Reducer。AC-01～AC-20 證據矩陣及測試邊界見本文件上方。
+- **Product Owner Browser Acceptance — PASS**：2026-11-19，M4-3 gameplay acceptance。
+- **Architecture Review — APPROVED；Code Review — APPROVED**：CR-M4-3-01、CR-M4-3-02、CR-M4-3-03 均 CLOSED。
+- **Git / CI**：Repository baseline `4043459cfa3cb884aa9d9a6653ed646ef59975a9`；GitHub Actions Run `44500720991` SUCCESS，Head SHA 相符。M4-3 gameplay commit 為 `6052c6197588b00c8732f34b7dbda0a3dc696a25`。
+- **Automated Verification**：223/223 Tests PASS、ESLint PASS、Production Build PASS。Build 保留既有 Battle Chunk >500 kB warning。
+- **Remaining Non-blocking Risks**：整合測試使用 Node + jsdom；Frame Scheduler 為受控測試替身，Visual Components 為 stub。未涵蓋 WebGL Rendering／完整 E2E；既有特殊 Browser Scenarios 維持各自驗證狀態。其他技術債依 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) 追蹤。
+- **Formal Closure Decision**：**APPROVED**。M4-3 標記 **COMPLETED — FORMALLY ACCEPTED**；M4-4 為 **NEXT — PENDING DEVELOPMENT**；M4 75%、Overall 37.5%。
 
 ## M4-3 Patch 2
+
+> Patch 2 當時的測試與功能驗證快照；目前正式結案及最新 223/223 測試基準見上方「M4-3 Formal Closure Record」。
 
 - **BUG-M4-3-003 Root Cause**：`AttackAnimationController` 將「clockRef 尚未由 passive Effect 初始化」當作異常並 dispatch Pre-impact Abort。Patch 1 使 AI Attack 由 Controller Effect Phase Transition 提交，穩定暴露此 race。
 - **Patch 1 Differential**：Patch 1 只增加 AI Progress／MOVE_COMPLETED 與 Controller second-phase dispatch，未修改 damage、attack-impact Guard 或 Animation Profile；現象因此發生在新增 AI Attack 提交時序與既有 Animation Controller 的邊界。
@@ -61,7 +78,9 @@
 - **Fix**：首個 Frame 若有效 `attackMotion` 的 Clock 尚未初始化，建立 0ms Clock；只對非法 Delta 或錯誤 Attack ID Abort。尚無權繞過 Impact Guard。
 - **Verification**：210/210 PASS（新增 2 項 Clock 初始化／ID tests），ESLint、Build、Diff Check PASS。Browser Ranger HP 70/80 與 Confirmed Attack Result 已確認。
 
-## M4-3 Patch 3 — Implementation and Review Status
+## M4-3 Patch 3 — Historical Implementation and Review Snapshot
+
+> 歷史快照：以下 Review 尚為 Conditional、TEST-M4-3-01 尚待獨立審查的狀態，記錄於正式結案前；最新狀態以本文件「M4-3 Formal Closure Record」為準。
 
 - **Capability Issuance**：`battle.ai.gateway.ts` 以私有 identity set 記錄凍結的 AI Action；Gateway 依目前 Battle State 的 Controller Intent 發行，不接受呼叫端提供任意 Action intent；Reducer 保留 Context、Faction、Action State、Target、Destination 與 Lifecycle revalidation。
 - **Enemy Pre-impact Abort**：Reducer 清除未命中 Attack Reservation 後明確排入該敵方 Turn Completion；Pending Completion 仍等待阻擋性 Death Motion。玩家 Pre-impact Abort 原有保留 Turn／Combat Action 行為不變。
@@ -162,7 +181,7 @@
 
 ## 已知阻擋問題
 
-目前無已知 M3、M4-1 或 M4-2 驗收阻擋。M4-3 尚有正式 Review／Acceptance 與完整 Browser Verification 待完成。
+目前無已知 M3、M4-1、M4-2 或 M4-3 正式驗收阻擋。M4-3 的 Architecture／Code Review 已 APPROVED；既有特殊 Browser Scenarios 維持各自驗證狀態。
 
 ## M4-1 狀態
 
@@ -187,11 +206,11 @@
 - 已加入 Turn Action State、Movement／Combat Action Lifecycle、Turn-bound Command Context、Combat Reservation／Consumption、Movement Initiation Lock、Pre-/Post-impact Abort Integration 與 Turn Reset。
 - TD-016 已分離全域最小事件時間與 Tie-break，並加入 Near-tie／Round Boundary／Preview 與 10,000 次獨立 Oracle；TD-017 已完成 Command Context Audit；TD-020 具備長期理論抵達時間與行動次數驗證。
 - 以上修復已通過 M4-2 Formal Acceptance；對應 TD-016、TD-017 與 TD-020 已 CLOSED。
-- TD-018 留待 M7；TD-019 已由 M4-3 實作取代入口，目前 APPROVED FOR CLOSURE，TEST-M4-3-01 自動化證據已完成，待獨立審查及 Formal Closure。
-- 技術債統計：20 項；CLOSED 11、OPEN 7、APPROVED FOR CLOSURE 1、PARTIALLY RESOLVED 1。
+- TD-018 維持 OPEN、留待 M7；TD-019 已於 M4-3 Formal Acceptance 後 CLOSED。
+- 技術債統計：21 項；CLOSED 12、OPEN 8、PARTIALLY RESOLVED 1。非阻擋性 Dependency Maintenance 項目見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)。
 - TD-016、TD-017、TD-020：CLOSED。
 - CR-01 至 CR-05：RESOLVED。
-- M4-3：**IMPLEMENTED — PENDING FORMAL CLOSURE**；TEST-M4-3-01 證據已完成、待獨立審查；M4-4：PENDING。
+- M4-3：**COMPLETED — FORMALLY ACCEPTED**；CR-M4-3-01／02／03 與 TEST-M4-3-01 均 CLOSED；M4-4：**NEXT — PENDING DEVELOPMENT**。
 
 ### M4-2 Test Coverage Mapping（32 Planned Scenarios）
 
@@ -239,4 +258,4 @@ Final Addendum 額外證據：
 
 ## 下一步
 
-下一步為獨立審查 TEST-M4-3-01 React-mounted Controller Lifecycle Integration Evidence，之後依正式審查結果處理 Formal Closure。M4-3 維持 IMPLEMENTED — PENDING FORMAL CLOSURE；M4 維持 50%、Overall 維持 35.0%、M4-4 維持 PENDING。
+M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。下一階段為 M4-4，狀態 **NEXT — PENDING DEVELOPMENT**；M4 維持 75%、Overall 維持 37.5%。本次僅同步文件，未開始 M4-4。

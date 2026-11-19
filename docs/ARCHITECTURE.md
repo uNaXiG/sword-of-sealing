@@ -143,7 +143,35 @@ M4-3 Patch 2 補足 Rendering / Effect 競態邊界。有效 AttackMotion 可能
 
 敵方 AI 的 Pre-impact Abort 與玩家 Abort 有意不同：敵方已進入 Attack 後若動畫於 Impact 前終止，Reducer 清除 Reservation 並 queue 該敵方 Turn Completion，交由既有 Pending Resolver 等待任何阻擋性 Death Motion；玩家 Pre-impact Abort 仍釋放 Reservation 並保留其 Turn。
 
-沒有存活玩家與敵人的對戰時，Controller 進入穩定非執行狀態，不建立 M4-4 Outcome 或重複排程。M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，GitHub Actions Run `44496931887` SUCCESS；該 Commit 的 213/213 測試、Lint、Build 為 Agent 回報，Product Owner Browser Acceptance 於 2026-11-19 PASS。TEST-M4-3-01 後續本機 `npm test` 為 223/223 PASS，新增 ReactDOM／StrictMode／受控 Frame 與正式 Reducer 的整合證據；Architecture／Code Review 維持 CONDITIONAL PASS，CR-M4-3-01／02 PASS，CR-M4-3-03 新證據待獨立審查。未提交異動不屬於 GitHub CI；M4-3 尚待 Formal Closure。M4 完成度維持 50%、Overall 35.0%；M4-4 未開始。
+M4-3 的正式資料流包含 Pure AI Decision Layer、AI Command Gateway、Reducer Authorization Boundary、AI Controller Intent，以及 React Battle Controller。AttackAnimationController 將 R3F `useFrame` 接至 Attack Animation Lifecycle Runtime；Impact、Complete、Abort callbacks 派送至 Reducer。Reducer 是 HP、Attack Motion、Turn State 與 Death Barrier 的唯一正式更新入口；PAS Scheduler 仍由既有 Turn Completion 流程呼叫，不由 AI 或 Renderer 直接推進。
+
+TEST-M4-3-01 的 React Controller 整合邊界：
+
+```text
+ReactDOM / StrictMode
+        |
+        v
+AttackAnimationController
+        |
+        v
+Controlled R3F useFrame
+        |
+        v
+AttackAnimationControllerLifecycle
+        |
+        v
+Impact / Complete / Abort Callbacks
+        |
+        v
+battleReducer
+        |
+        v
+HP / Attack Motion / Turn State
+```
+
+此測試真實掛載 React Controller；Frame Scheduler 使用可控制時序與 delta 的測試替身；Lifecycle Runtime 與 Reducer 不被 Mock，Visual Components 以 Stub 隔離。這是 Node + jsdom 的 Controller／Reducer 整合測試，不涵蓋 WebGL Rendering、視覺驗收或完整 E2E。
+
+M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。TEST-M4-3-01 與完整自動化基準為 223/223；Repository Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9` 的 GitHub Actions Run `44500720991` SUCCESS。Product Owner Browser Acceptance PASS，Architecture／Code Review APPROVED，CR-M4-3-01／02／03 及 TEST-M4-3-01 CLOSED。M4-3 為 COMPLETED — FORMALLY ACCEPTED；M4-4 NEXT — PENDING DEVELOPMENT，尚未開始。M4 75%、Overall 37.5%。
 
 ## Battle State 與 Reducer
 

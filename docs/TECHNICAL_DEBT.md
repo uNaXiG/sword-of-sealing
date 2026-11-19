@@ -2,7 +2,7 @@
 
 狀態只反映已確認事實。Proposed 解法不代表已核准實作；未確認目標標為 TBD。
 
-**技術債統計（TD-001 至 TD-020）**：共 20 項；CLOSED 11、OPEN 7、APPROVED FOR CLOSURE 1、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
+**技術債統計（TD-001 至 TD-021）**：共 21 項；CLOSED 12、OPEN 8、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
 
 | ID | Description | Impact | Priority | Status | Suggested Resolution | Target |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -24,8 +24,9 @@
 | TD-016 | PAS Floating-point Arrival Tolerance | 舊 Scheduler 以 Tie Candidate 的 AV 推進，近似同時抵達可能過度推進 | Medium | CLOSED | M4-2 分離最小事件時間與 Tie Selection；Exact-tie、Near-tie、Round Boundary、10,000 Continuous Events 均通過 | M4-2 |
 | TD-017 | Player Standby Turn Context Integrity | 玩家 `standby` 舊缺少 Turn／Unit Context，重複事件可能污染下一 Turn | High | CLOSED | M4-2 玩家指令攜帶 Context；Reducer Guard 與 Direct Context Replay Tests 通過 | M4-2 |
 | TD-018 | AGI Validation Consistency | Class Registry 接受 finite positive number，Battle State 要求 non-negative safe integer，PAS 又要求正速度；資料契約不一致 | Low | OPEN | 統一 Base AGI 合法值；未來明確分離 Base AGI 與 Effective Velocity；不為 M7 Buff 提前放寬所有基礎屬性 | M7 |
-| TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | APPROVED FOR CLOSURE — PENDING FORMAL CLOSURE | M4-3 已移除 Development Enemy Standby；Patch 3 以 AI Gateway 發行凍結 Action 並由私有 identity set 驗證，Reducer 保留重驗證。CR-M4-3-01／02 PASS；TEST-M4-3-01 自動化證據已完成、待獨立審查及 Formal Closure | M4-3 |
+| TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | CLOSED — M4-3 FORMAL ACCEPTANCE | M4-3 移除 Development Enemy Standby；AI Gateway／private WeakSet Action Identity、Reducer Authorization Revalidation、Enemy Pre-impact Abort Contract、TEST-M4-3-01、223/223 Tests、GitHub CI、Product Owner Browser Acceptance 與獨立 Architecture／Code Review 均完成 | M4-3 |
 | TD-020 | Extended Scheduling Verification Coverage | 舊 10,000 次測試缺少獨立 Oracle 與長期數值誤差證據 | Medium | CLOSED | M4-2 加入固定速度 Oracle、Continuous Near-tie、Round Boundary、Preview 一致性、長期誤差與非負距離驗證 | M4-2 |
+| TD-021 | Existing Development Dependency Audit Advisories | Agent 回報 `npm audit` 有 7 個 Moderate advisories，主要涉及既有 dev-only `typescript-eslint`／`minimatch` 相依鏈；`npm audit --omit=dev` 為 0 vulnerabilities，非 Production Runtime Vulnerability | Low | OPEN | 另行評估受影響 transitive dependency 的相容更新，並重跑 audit、lint、tests、build | Dependency Maintenance |
 
 ## 已結案 Bug
 
@@ -43,9 +44,11 @@ TD-016 至 TD-020 分別對應 ChatGPT Code Review CR-01 至 CR-05。使用者�
 - TD-017 是 M4-2 必要前置修正，不得延至 M4-3。
 - TD-016 與 TD-020 納入 M4-2 開發與驗證範圍。
 - TD-018 留待 M7。
-- TD-019 已由 M4-3 Capability AI 入口實作；目前 APPROVED FOR CLOSURE，TEST-M4-3-01 自動化證據已完成，待獨立審查及 Formal Closure。
+- TD-019 已由 M4-3 Capability AI 入口實作並於 M4-3 Formal Acceptance 後 CLOSED；TEST-M4-3-01 與獨立 Review 結案證據見下方紀錄。
 
 ## M4-2 Implementation Evidence — Formal Acceptance Approved
+
+> 歷史驗證紀錄：以下是 M4-2 Formal Acceptance 當時的證據；其後 Git／CI 基準已在相應文件任務中同步。
 
 TD-016、TD-017、TD-020 的程式修復已實作並由本次 181/181 測試、ESLint 及 Production Build 驗證：
 
@@ -66,7 +69,20 @@ M3-3 已依使用者 BV-15 關閉 TD-004。TD-010 的直接相關 Texture Cleanu
 
 TD-014 維持 OPEN，本次結案不進行重構。
 
-## M4-3 Implementation Evidence — Conditional Review Pass
+## M4-3 Formal Closure — TD-019
+
+**Status：CLOSED — M4-3 FORMAL ACCEPTANCE。** TD-019 原始問題、Capability 修正歷史及相關 Patch／Bug 記錄均保留。
+
+- **AI Gateway**：從當前 Battle State 導出 Controller Intent，發行凍結 AI Action，並以 private WeakSet identity capability 驗證 Action 來源。
+- **Reducer Authorization Revalidation**：Reducer 重新驗證 AI Context、Faction、Alive、Action State、Busy／Pending、Target、Destination、Reservation 與 Lifecycle。
+- **Enemy Pre-impact Abort Contract**：不造成傷害、不自動重試攻擊；清除 Reservation 後安全完成敵方 Turn，並由 Pending Resolver 遵守 Death Barrier。
+- **React Controller Lifecycle Integration**：TEST-M4-3-01 的 10 項 ReactDOM／StrictMode 測試實際掛載 Controller；受控 Frame 驅動正式 Lifecycle Runtime，callback dispatch 至正式 Reducer。Lifecycle Runtime 與 Reducer 未 Mock，視覺元件以 Stub 隔離；不宣稱 WebGL 或完整 E2E。
+- **Verification**：223/223 Automated Tests、ESLint、Production Build PASS；GitHub Actions Run `44500720991` SUCCESS，對應 Repository Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9`。
+- **Acceptance / Review**：Product Owner Browser Acceptance PASS（2026-11-19）；Architecture Review、Code Review APPROVED；CR-M4-3-01／02／03 及 TEST-M4-3-01 CLOSED — PASS。
+
+## M4-3 Implementation Evidence — Historical Conditional Review Snapshot
+
+> 歷史快照：以下 Review 狀態記錄於正式結案前；目前 TD-019 狀態及結案證據見上方「M4-3 Formal Closure — TD-019」。
 
 TD-019 的 `simulate-enemy-standby` UI／Reducer 入口已移除，並由以下正式設計取代：
 
@@ -82,9 +98,11 @@ Architecture／Code Review 均為 **CONDITIONAL PASS**。CR-M4-3-01（AI Gateway
 
 **TEST-M4-3-01 — React Controller Lifecycle Integration Evidence**：已實作並由本機 10 項 ReactDOM 整合測試驗證，涵蓋 StrictMode Effect Replay、passive Effect 前 Frame Clock 初始化、受控 delta、Attack ID 隔離、Player／Enemy Abort、同幀 Impact／Complete、HP 更新與 Death Motion Barrier；所有 Controller callbacks 使用正式 Reducer。AC-01～AC-20 證據矩陣及案例結果記錄於 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。本次 `npm test` 223/223、ESLint、Production Build PASS；新證據尚待獨立 Architecture／Code Review，無正式豁免。
 
-TD-019 維持 **APPROVED FOR CLOSURE — PENDING FORMAL CLOSURE**；TEST-M4-3-01 已完成實作驗證，但在獨立審查及 Formal Closure 前不得標示 CLOSED。
+歷史狀態：當時 TD-019 為 APPROVED FOR CLOSURE，TEST-M4-3-01 等待獨立審查；該狀態已由上方 Formal Closure 取代。
 
 ## M4-3 Patch 3 — Abort and Capability Hardening
+
+> 歷史實作紀錄：以下列出 Patch 3 的技術內容與該次驗證範圍；最新 M4-3 Review、CI 及 Formal Closure 狀態見本文件上方「M4-3 Formal Closure — TD-019」。
 
 - **Capability Issuance**：移除純決策模組公開的 Action signer；Gateway 只可從當前 Battle State 衍生 Controller Intent，再建立凍結 Action 並以物件 identity 驗證授權。Reducer 對 Action 狀態與戰鬥條件繼續重新驗證。
 - **Enemy Pre-impact Abort**：清除未命中結果與 Reservation 後，敵方 AI Abort 將該攻擊者 Turn 排入既有 Pending Turn Completion 流程；Death Motion 等阻擋仍由共用 Resolver 處理。Player Pre-impact Abort 不改變既有保留 Turn 行為。
@@ -104,7 +122,7 @@ TD-019 維持 **APPROVED FOR CLOSURE — PENDING FORMAL CLOSURE**；TEST-M4-3-01
 
 ## M4-3 Patch 1 — AI Attack Lifecycle
 
-> Patch 1 當時的狀態快照；TD-019 最新狀態見上方 M4-3 Patch 3。
+> Patch 1 當時的狀態快照；TD-019 最新狀態見上方「M4-3 Formal Closure — TD-019」。
 
 - **BUG-M4-3-001 — FIXED — Patch 1**：Direct Attack 決策可被 Controller 純 Intent 函式獨立驗證，不會因 Controller 分支落入 Standby。
 - **BUG-M4-3-002 — FIXED — Patch 1**：Move-to-Attack 不再用 `MOVING + movementUsed` 隱含推斷完成；Reducer 的 Finish Transition 明確建立 `MOVE_COMPLETED`。

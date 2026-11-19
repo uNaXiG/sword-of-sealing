@@ -51,7 +51,7 @@
 
 M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
-## M4：動態回合制與敵方 AI — IN PROGRESS（50%）
+## M4：動態回合制與敵方 AI — IN PROGRESS（75%）
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
@@ -59,10 +59,10 @@ M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./D
 | M4-1 Patch 1 | 移動確認與指令流程修正 | COMPLETED |
 | M4-2 | Individual Action Economy & Turn State Reset | COMPLETED — Formal Acceptance Approved |
 | M4-2 Patch 1 | Code Review Hardening & Verification | COMPLETED |
-| M4-3 | 敵方移動與攻擊決策 | IMPLEMENTED — PENDING FORMAL CLOSURE |
-| M4-4 | 勝利、失敗與戰鬥結束 | PENDING |
+| M4-3 | 敵方移動與攻擊決策 | COMPLETED — FORMALLY ACCEPTED |
+| M4-4 | 勝利、失敗與戰鬥結束 | NEXT — PENDING DEVELOPMENT |
 
-M4-1 與 M4-2 均已完成。M4-2 包含完整 Action Economy、Turn Context、Combat Reservation、Turn Reset、PAS Precision、10,000 Continuous Near-tie、Direct Reducer Context Tests、Architecture／Code Review 及 Product Owner Browser Acceptance。M4-2 與 Patch 1 均為 **COMPLETED**。M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，GitHub Actions Run `44496931887` SUCCESS；該基準的 213/213 Tests、ESLint、Production Build 為 Agent 回報，Product Owner Browser Acceptance 於 2026-11-19 PASS。TEST-M4-3-01 已有本機 React-mounted 整合證據（本機 223/223 Tests），Architecture／Code Review 仍為 CONDITIONAL PASS；CR-M4-3-01／02 PASS，CR-M4-3-03 新證據待獨立審查。下一步為獨立審查，之後才處理 Formal Closure。M4 整體完成度維持 50%，Overall 維持 35.0%，M4-4 仍為 PENDING。
+M4-1 與 M4-2 均已完成。M4-2 包含完整 Action Economy、Turn Context、Combat Reservation、Turn Reset、PAS Precision、10,000 Continuous Near-tie、Direct Reducer Context Tests、Architecture／Code Review 及 Product Owner Browser Acceptance。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收結案：223/223 Automated Tests、ESLint、Production Build PASS；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED。Repository baseline 為 Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9`，GitHub Actions Run `44500720991` SUCCESS 且 Head SHA 相符。M4-3 closure evidence 見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。M4 完成度為 75%；Overall 為 37.5%；M4-4 是下一階段，仍未開始實作。
 
 ## M5：戰鬥 UI／UX — PENDING
 
@@ -120,4 +120,4 @@ M5-2 包含 [UX-001 至 UX-005](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV
 | M10-3 | 效能、手機及桌面適配 | PENDING |
 | M10-4 | GitHub Pages 正式發布 | PENDING |
 
-M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑完成度為 M1 100%、M2 100%、M3 100%、M4 50%、M5–M10 0%；完整結案主要里程碑仍為 3/10，等權重進度為 35.0%。此為 Roadmap Completion Percentage，不是實際工時比例。
+M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑完成度為 M1 100%、M2 100%、M3 100%、M4 75%、M5–M10 0%；完整結案主要里程碑仍為 3/10，M4 目前進行至 75%，等權重進度為 37.5%。此為 Roadmap Completion Percentage，不是實際工時比例。

@@ -297,15 +297,20 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 Enemy AI 已實作並提交；勝敗或 M7 效果仍未實作。
 
-M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案；TD-019 的正式 AI 入口已實作並納入 `a912457ae7eb159bd7f5411217f8548e30956e67`；210/210 驗證、GitHub CI 與主要 Product Owner Browser Acceptance 已確認，仍等待 Architecture／Code Review。
+M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案。TD-019 隨 M4-3 Formal Acceptance CLOSED；M4-3 的最新結案與 CI 基準見本節及 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
-## M4-3 Rule-based Tactical AI
+## M4-3 Rule-based Tactical AI — COMPLETED — FORMALLY ACCEPTED
 
-M4-3 目前為 IMPLEMENTED — PENDING FORMAL CLOSURE：
+Enemy AI 依下列優先順序決策；同一層內使用穩定的確定性比較：
 
-- Active Enemy Turn 由獨立 React Controller 自動觀察；Player Turn 不提交 AI Action。
+- Direct Attack。
+- Move-to-Attack。
+- Path-cost Approach。
+- Standby。
+
+Active Enemy Turn 由獨立 React Controller 自動觀察；Player Turn 不提交 AI Action。
 - `decideEnemyTurn()` 為純確定性函式；輸入不修改、不 Dispatch、不使用隨機數或真實時間。
-- Direct Attack 優先；目標依擊倒、Applied Damage、Initial Order、Unit ID 排序。
+- Direct Attack 目標依擊倒、Applied Damage、Initial Order、Unit ID 排序。
 - 無直接攻擊時枚舉合法可達格，產生 Move-to-Attack；依擊倒、Damage、Move Cost、Initial Order、目的地 Row／Column、Unit ID 排序。
 - 無本回合攻擊時，從所有合法 Grid Cell 計算未來攻擊位置的 Terrain／Obstacle／Occupancy Path Cost，只在剩餘成本嚴格改善時 Approach。
 - AI Move 使用既有 Motion；AI Attack 使用相同 Attack Pattern、Damage、Reservation、Impact、Confirmed Impact、Abort、Death Motion 與 Turn Completion。
@@ -313,7 +318,24 @@ M4-3 目前為 IMPLEMENTED — PENDING FORMAL CLOSURE：
 - Enemy Pre-impact Abort 釋放 Reservation 並 queue Turn Completion；Post-impact Abort 保留傷害與消耗狀態。一般玩家 Pre-impact Abort 仍保留 Turn。
 - 沒有存活玩家時 Controller 安全停止，不建立勝敗結果，不連續推進 PAS。
 
-正式 AI 已移除 `simulate-enemy-standby` UI／Reducer 入口。M4-3 Patch 3 已提交於 `6052c6197588b00c8732f34b7dbda0a3dc696a25`，CI Run `44496931887` SUCCESS；Product Owner Browser Acceptance 於 2026-11-19 PASS。TEST-M4-3-01 已以 ReactDOM／StrictMode 真正掛載 Attack Controller，並透過受控 Frame 驗證 Effect／Clock、Impact／Complete／Abort 與 Reducer 更新；死亡阻擋及玩家／敵方 Abort 整合案例通過。Architecture／Code Review 維持 CONDITIONAL PASS；CR-M4-3-03 新測試證據待獨立審查後才能 Formal Closure。TD-019 維持 APPROVED FOR CLOSURE — PENDING FORMAL CLOSURE。
+### Combat Lifecycle
+
+正式流程為 Attack Reservation → Animation Windup → Impact → Damage Application → Complete → Turn Completion。致命 Impact 建立 DeathMotion；Death Barrier 阻止 Pending Turn Completion 越過尚未完成的阻擋性死亡動畫。
+
+### Abort Contract
+
+- **Player Pre-impact Abort**：不造成傷害；釋放 Combat Reservation；維持既有玩家 Combat Action 恢復行為，不強制結束玩家回合。
+- **Enemy Pre-impact Abort**：不造成傷害；清除 Reservation、不自動重試攻擊，並安全排入敵方 Turn Completion；仍遵守 Death Barrier。
+- **Post-impact Abort**：保留已確認傷害，不重複扣血；照常完成 Turn Completion，並等待阻擋性 Death Motion。
+
+### TEST-M4-3-01 Evidence and Formal Closure
+
+- **PASS**：10 項 React Controller Integration Tests，真正掛載 React Controller 並涵蓋 StrictMode Effect Replay、Frame Clock／delta、Impact／Complete／Abort dispatch、HP／Turn 與 Death Barrier。
+- Lifecycle Runtime 與正式 `battleReducer` 不被 Mock；Frame Scheduler 為受控測試替身，Visual Components 以 Stub 隔離。Node + jsdom 測試不代表 WebGL 或完整 Browser E2E。
+- **223/223 Automated Tests PASS**；ESLint PASS；Production Build PASS（既有 >500 kB Battle Chunk warning 保留）。
+- Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED；CR-M4-3-01／02／03 與 TEST-M4-3-01 CLOSED。
+- Repository Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9` 的 GitHub Actions Run `44500720991` SUCCESS；M4-3 Gameplay Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25` 的 Run `44496931887` SUCCESS。
+- M4-3 **COMPLETED — FORMALLY ACCEPTED**；勝敗系統仍屬 M4-4，該階段 NEXT — PENDING DEVELOPMENT。
 
 ### M4-3 Patch 1：Move-to-Attack Phase Integrity
 
@@ -326,6 +348,8 @@ M4-3 目前為 IMPLEMENTED — PENDING FORMAL CLOSURE：
 ### M4-3 Patch 2：Impact Clock Race
 
 Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `useFrame` 觀察，`useEffect` 尚未建立 Animation Clock。既有 Controller 將 null Clock 視為錯誤並在 Impact 前 Abort，因此動畫曾短暫顯示但 HP 不變。
+
+> Patch 2 驗證快照：210/210 與 CI Run `44489947675` 是 Patch 2 當時基準；目前 223/223、最終 Review 與結案狀態見本節的 TEST-M4-3-01 Formal Closure。
 
 有效 Attack 的首個 Frame 現在建立與 Attack ID 相符的 0ms Clock；非法 Delta、錯誤 Attack ID 與過期 Clock 仍保留 Abort。正常流程為 Callback → `attack-impact` → Reducer Guard → HP／Confirmed Impact → Complete。此修正不在 Confirm、AI Controller 或 Renderer 預先扣血。Patch 2 已納入 M4-3 Git Baseline `a912457`；210/210 Automated Verification、Lint、Production Build、GitHub CI `44489947675` 及主要 Product Owner Browser Acceptance 均已確認。特殊未完成的 Browser Scenario 保持個別 NOT VERIFIED。
 
@@ -346,7 +370,7 @@ Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `u
 
 ## 已知限制
 
-- M4-3 敵方 AI 尚待正式驗收；無勝敗、技能或 M7 效果。
+- M4-3 敵方 AI 已正式驗收；勝敗系統尚未實作，屬 M4-4；技能或 M7 效果亦尚未實作。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
 - 尚未導入攻擊音效、正式骨架動畫或 Physics；目前的死亡演出使用 Placeholder 模型。
 - UI 目前要求選取目標後再確認攻擊。

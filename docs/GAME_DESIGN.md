@@ -32,12 +32,12 @@
 - 最終設計為每回合一次移動加一次戰鬥行動；M4-1 僅具最小 Turn-scoped Movement Commitment，不代表完整 Action Economy 已完成。
 - M4-1 已實作最小 Turn-scoped 移動限制：每個個體 Turn 最多移動一次；合法 Undo 可解除限制。完整 Action Economy 仍由 M4-2 處理。
 - M4-2 已實作完整個體 Action Economy：每個 Turn 最多一次有效移動及一次成功結算的普通攻擊；允許先移動再攻擊，不允許先確認攻擊再移動。
-- M4-2 與 Patch 1 已正式驗收；M4-3 Enemy AI、Patch 1 與 Patch 2 已實作、推送並取得主要 Product Owner Browser Acceptance，目前為 IMPLEMENTED — PENDING FORMAL REVIEW，M4-4 勝敗仍為後續規劃。
+- M4-2 與 Patch 1 已正式驗收；M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 COMPLETED — FORMALLY ACCEPTED。M4-4 勝敗仍為下一階段，尚未開始。
 - 合法 Undo 只可在攻擊確認前復原移動並恢復 Movement Action。確認攻擊會清除 Undo、鎖定後續移動，系統 Impact 才消耗 Combat Action。
 - Pre-impact Abort 是系統異常復原：不扣血、不完成 Turn，Combat Action 回到 AVAILABLE，但既有移動不恢復、Movement Initiation Lock 不解除。玩家沒有主動 Abort 入口。
 - 合法 Impact、攻擊完成或待命後完成目前 Turn；單純移動、Undo、Cancel Mode 或 Pre-impact Abort 不推進 PAS。新 Turn 依 `turnId/unitId` 重新初始化全部行動權。
 - 拉條、推條、加速及緩速留待 M7 規劃；PAS 不引入物理加速度。
-- M4-3 Rule-based Tactical AI 已實作：敵人可直接攻擊、移動後攻擊、以路徑成本接近或安全待命。M4-3 目前維持 50% 里程碑進度，Development-only Standby 已移除，下一步為 Architecture Review、Code Review 與 Formal Closure。
+- M4-3 Rule-based Tactical AI 已正式驗收：敵人可直接攻擊、移動後攻擊、以路徑成本接近或安全待命；Development-only Standby 已移除。M4 目前進度為 75%，下一階段 M4-4 勝敗系統仍為 PENDING DEVELOPMENT。
 - Action Advance、Action Delay、Speed Up／Down 屬 M7 規劃，M4-1 不提供這些效果 API。
 
 ## 規劃中：未來系統

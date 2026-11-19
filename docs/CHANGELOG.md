@@ -2,7 +2,21 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-19 — M4-3 Formal Closure
+
+- **Milestone**：M4-3 Enemy AI 正式驗收完成，狀態 **COMPLETED — FORMALLY ACCEPTED**。
+- **Implementation**：Patch 1 修正 Direct Attack Intent 與 `MOVE_COMPLETED`／Move-to-Attack；Patch 2 修正 Attack Animation Clock Initialization Race；Patch 3 完成 AI Gateway／Capability、Enemy Pre-impact Abort Contract 與 Animation Lifecycle Hardening。
+- **TEST-M4-3-01**：10 項 React Controller Integration Tests PASS；ReactDOM／StrictMode 掛載真實 Controller，受控 Frame 驅動正式 Lifecycle Runtime，callbacks 派送至正式 Reducer。測試不是 WebGL 或完整 E2E；細節見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+- **Automated Verification**：223/223 Tests PASS、ESLint PASS、Production Build PASS；保留既有 >500 kB Battle Chunk warning。
+- **Acceptance / Reviews**：Product Owner Browser Acceptance PASS（2026-11-19）；Architecture Review APPROVED；Code Review APPROVED；CR-M4-3-01／02／03 及 TEST-M4-3-01 CLOSED。
+- **Git / CI**：Repository Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9`；GitHub Actions Run [44500720991](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44500720991) SUCCESS，Head SHA 相符。M4-3 gameplay Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25` 的 Run `44496931887` SUCCESS。
+- **Technical Debt**：TD-019 **CLOSED — M4-3 FORMAL ACCEPTANCE**；其他既有技術債狀態不因本次結案而自動改變。
+- **Roadmap**：M4 75%；Overall 37.5%；下一階段 M4-4 **NEXT — PENDING DEVELOPMENT**，尚未開始。
+- **Scope**：僅同步文件；未修改 Production Code，未開始 M4-4，未 Commit／Push。
+
 ## 2026-11-19 — M4-3 TEST-M4-3-01 — React Controller Lifecycle Integration Evidence
+
+> 歷史快照：下列狀態記錄於 M4-3 Formal Closure 前；目前結案狀態以本文件最上方的 M4-3 Formal Closure 為準。
 
 - **Added**：10 個 ReactDOM 整合測試，真正掛載 `AttackAnimationController` 與 `useAttackAnimation`；React StrictMode 執行 Effect Replay，受控 `useFrame` harness 在 passive Effect 前推進正式 Lifecycle Runtime。
 - **Verified**：Impact／Complete／Abort callbacks 透過 React hook dispatch 至正式 `battleReducer`；涵蓋首幀 Clock 初始化、delta 邊界、同幀事件順序與 exactly-once、Attack ID 轉換／錯配、Player／Enemy Abort、HP、Turn 與 Death Motion Barrier。AC-01～AC-20 矩陣見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
@@ -13,7 +27,7 @@
 
 ## 2026-11-19 — M4-3 Patch 3 — Capability, Abort, and Animation Lifecycle Hardening
 
-> 歷史快照：下列實作驗證紀錄更新時 Patch 3 尚未提交；目前 Commit、CI、Browser Acceptance 與 Review 最新狀態請見下方 Review & Verification Status Update。
+> 歷史快照：下列實作驗證紀錄更新時 Patch 3 尚未提交；目前 Commit、CI、Browser Acceptance 與 Review 最新狀態請見本文件最上方的 M4-3 Formal Closure。
 
 - **Changed**：AI Action signer 從純 Decision Engine 移至 `battle.ai.gateway.ts`；Gateway 僅依目前 Battle State 導出的 Controller Intent 發行 frozen Action，使用私有 identity set 授權，Reducer 繼續完整重驗證。
 - **Fixed**：Enemy AI Pre-impact Abort 在清除 Reservation 後 queue 該 Turn Completion，並沿 Pending Resolver 等待阻擋 Motion；Player Pre-impact Abort 行為不變。
@@ -36,6 +50,8 @@
 - **Status**：M4-3 IMPLEMENTED — PENDING FORMAL CLOSURE；TD-019 APPROVED FOR CLOSURE、待 Formal Closure。M4-4 PENDING；M4 50%；Overall 35.0%。完成測試要求或取得正式豁免前不調整完成率。
 
 ## 2026-11-19 — DOC-M4-3-01 — M4-3 Git Baseline Synchronization
+
+> 歷史快照：以下記錄 M4-3 Patch 1／2 文件同步時尚待 Review 的狀態；後續 Patch 3、TEST-M4-3-01 與正式結案已更新其狀態。
 
 - **Baseline**：M4-3 Enemy AI、Patch 1 與 Patch 2 已納入 Git Commit `a912457ae7eb159bd7f5411217f8548e30956e67`，Commit 訊息為 `feat: Implement AI decision-making for battle actions`。
 - **Added**：純 AI 決策引擎、Capability Authorization、Reducer Revalidation、AI Controller、Direct Attack、Move-to-Attack 與 Movement Completion。
@@ -83,6 +99,8 @@
 - **Status**：M4-3 **IN DEVELOPMENT / PENDING ACCEPTANCE**；M4 50%、Overall 35.0%；TD-019 PENDING REVIEW；未 Commit／Push。
 
 ## 2026-11-19 — M4-2 Final Verification Addendum
+
+> 歷史快照：以下記錄 M4-2 完成時的 50%／35.0% 進度與 M4-3 尚未開始狀態；目前 Roadmap 與正式結案狀態以本文件最上方的 M4-3 Formal Closure 為準。
 
 - **Added / FV-01**：同一 Scheduler 連續排程 10,000 個 Near-tie Event，驗證 Turn ID、Battle Time、Round、Remaining Distance 及獨立 Arrival Queue Oracle；不重建 Turn State。
 - **Added / FV-02**：直接呼叫 `battleReducer()` 驗證缺少 Turn ID、缺少 Unit ID、過期 Turn ID、錯誤 Unit ID、舊 Standby Replay 及過期 Confirm Attack。
