@@ -181,7 +181,7 @@ HP / Attack Motion / Turn State
 
 此測試真實掛載 React Controller；Frame Scheduler 使用可控制時序與 delta 的測試替身；Lifecycle Runtime 與 Reducer 不被 Mock，Visual Components 以 Stub 隔離。這是 Node + jsdom 的 Controller／Reducer 整合測試，不涵蓋 WebGL Rendering、視覺驗收或完整 E2E。
 
-M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。TEST-M4-3-01 與 M4-3 自動化基準為 223/223；M4-3 已正式驗收。M4-4A Patch 1 已納入 Commit `1cce94613791548cc1717942b72d1513487db857`；GitHub Actions Run `44592995763`（Deploy to GitHub Pages）SUCCESS，Head SHA 相符。Patch 1 的 246/246、Lint、Build 為本機驗證基準；Final Review Correction 僅補測試 Assertion 與文件，目前修正未提交且無 Runtime Source Code 異動。Patch 前 Product Owner BV-A01～A05 為 5/5 PASS；Patch 後 Agent Browser Regression 為 BV-A01 PARTIAL、BV-A02～A05 NOT VERIFIED，Product Owner Acceptance PENDING。獨立 Review 結果為 Architecture APPROVED、Code Review APPROVED WITH MINOR CORRECTIONS；不代表 M4-4A Formal Acceptance。M4-4B／C 尚未開始。M4 75%、Overall 37.5%。
+M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，最新已驗證 Repository Commit `5048fea90ae7f81e2367e23ab42485d176fe8483` 的 GitHub Actions Run `44595045755` SUCCESS（Deploy to GitHub Pages，Head SHA 相符）。正式結案基準為 246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 原始 Test Traceability、9/9 Patch Traceability PASS；Architecture、Independent Code Review 與 Product Owner Acceptance 均 APPROVED，Browser BV-A01～A05 5/5 PASS（2026-11-20）。Patch 前 Product Owner Acceptance 與 Agent 原始 PARTIAL／NOT VERIFIED Browser 結果仍分開保留。M4-4B／C 尚未開始；M4 75%、Overall 37.5%。
 
 ## Battle State 與 Reducer
 
@@ -272,3 +272,5 @@ Battle Core 只依賴 Condition Manager／Context／Resolver Contract，不 impo
 4. 若需新的領域資料，先擴充唯讀 Context／Battle State 的正式契約；不可在 Strategy 私下累積跨 Turn 進度。
 
 未來可新增 `GoToDestination`、`BossDead`、`NpcDead` 或 `OverRounds` 類型的策略，但這些僅為架構例，不代表已實作或已確認其遊戲語意。
+
+M4-4A 於 2026-11-20 正式結案；Strategy、Dependency Injection、Configuration Immutability、Battle Session、Outcome Trigger Boundary 與終局生命週期契約如上。Overlay、Restart Session Isolation、Save／Load Serialization 與 Round Limit Semantics 仍屬未完成的未來範圍，不因本次 M4-4A Acceptance 標記為已實作。

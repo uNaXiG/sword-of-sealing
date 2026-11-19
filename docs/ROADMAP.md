@@ -61,11 +61,11 @@ M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./D
 | M4-2 Patch 1 | Code Review Hardening & Verification | COMPLETED |
 | M4-3 | 敵方移動與攻擊決策 | COMPLETED — FORMALLY ACCEPTED |
 | M4-4 | 勝利、失敗與戰鬥結束 | IN PROGRESS |
-| M4-4A | Extensible End Condition Architecture & Battle Resolution | PATCH 1 IMPLEMENTED — FINAL REVIEW CORRECTIONS VERIFIED; FORMAL ACCEPTANCE PENDING |
-| M4-4B | Overlay、Restart 與 Session Isolation | PENDING DEVELOPMENT |
+| M4-4A | Extensible End Condition Architecture & Battle Resolution | COMPLETED — FORMALLY ACCEPTED |
+| M4-4B | Overlay、Restart 與 Session Isolation | NEXT — PENDING DEVELOPMENT |
 | M4-4C | Final Regression、Browser Verification、Independent Review 與 Formal Acceptance | PENDING DEVELOPMENT |
 
-M4-1 與 M4-2 均已完成。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收結案：223/223 Automated Tests、ESLint、Production Build PASS。M4-4A Patch 1 已納入 Commit `1cce94613791548cc1717942b72d1513487db857`；GitHub Actions Run `44592995763` SUCCESS 且 Head SHA 相符（Deploy to GitHub Pages）。Patch 1 本機基準為 246/246 Automated Tests、ESLint、Production Build PASS。Final Review Correction 本次僅補測試 Assertion 與文件；目前修正尚未提交，無 Runtime Source Code 異動。Patch 前 Product Owner Browser Acceptance 為 5/5 PASS；Patch 後 Agent BV-A01 為 PARTIAL、BV-A02～A05 為 NOT VERIFIED，Product Owner Acceptance PENDING。Architecture Review APPROVED、Code Review APPROVED WITH MINOR CORRECTIONS；不代表 M4-4A Formal Acceptance。M4-4B／C 尚未開始。M4 完成度仍為 75%；Overall 為 37.5%。詳見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+M4-1 與 M4-2 均已完成。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收結案。M4-4A End Condition Framework & Battle Outcome 已於 2026-11-20 完成正式結案：Patch 1 **COMPLETED — ACCEPTED**，Final Review Correction **COMPLETED — VERIFIED**；Architecture Review、Independent Code Review、Product Owner Acceptance 與 Formal Closure 均 APPROVED。Repository Commit `5048fea90ae7f81e2367e23ab42485d176fe8483` 的 GitHub Actions Run `44595045755` SUCCESS 且 Head SHA 相符（Deploy to GitHub Pages）；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。Automated Tests 246/246、React Integration 12/12、AC 32/32、原始 Test Traceability 28/28、Patch Traceability 9/9 PASS；Lint、Build 與 Product Owner Post-Patch Browser Acceptance 5/5 PASS。Agent 原有 Browser PARTIAL／NOT VERIFIED 紀錄維持不變。M4-4B 為下一項；M4-4C 尚未開始，M4-4 整體仍 IN PROGRESS。M4 維持 75%；Overall 維持 37.5%。詳見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
 ## M5：戰鬥 UI／UX — PENDING
 

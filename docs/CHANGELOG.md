@@ -2,7 +2,20 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M4-4A Formal Closure
+
+- **Formal Acceptance**：M4-4A End Condition Framework & Battle Outcome **COMPLETED — FORMALLY ACCEPTED**；Patch 1 **COMPLETED — ACCEPTED**；Final Review Correction **COMPLETED — VERIFIED**。Architecture Review、Independent Code Review、Product Owner Acceptance 與 Formal Closure 均 APPROVED。
+- **Review Findings**：CR-M4-4A-01～05 全數 CLOSED。保留各 Finding 原始 Resolution、測試證據，以及 Final Review／Final Correction 階段的歷史狀態，見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+- **Product Owner Browser Acceptance**：2026-11-20 Patch 1 Post-Patch Browser Regression：BV-A01～A05 5/5 PASS — ACCEPTED。2026-11-19 Patch 前 Product Owner Acceptance 與 Agent 原始 PARTIAL／NOT VERIFIED 紀錄仍分開保留。
+- **Verification Baseline**：246/246 Automated Tests、12/12 React Integration Tests、AC 32/32、原始 Test Traceability 28/28、Patch Test Traceability 9/9 PASS；Lint、Build、Diff Check PASS。Build 保留既有 >500 kB Battle Chunk warning。
+- **Verified Repository / CI**：Branch `main`；Commit `5048fea90ae7f81e2367e23ab42485d176fe8483`；GitHub Actions Run [44595045755](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44595045755) SUCCESS，Head SHA 相符（Deploy to GitHub Pages）。M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。本次 Closure Documentation 尚未提交；不宣稱新的 Closure Commit 或 CI。
+- **Architecture / Roadmap**：Strategy／DI、Configuration Immutability、Battle Session、Outcome Trigger Boundary、Motion／Reservation Barriers、DEFEAT Priority、Pre-PAS Resolution 與 Terminal Guards 保持不變。Restart Session Isolation、Save／Load Serialization 與 Round Limit Semantics 未實作。M4-4B 為 NEXT — PENDING DEVELOPMENT；M4-4C PENDING DEVELOPMENT；M4-4 整體仍 IN PROGRESS。M4 75%、Overall 37.5%。
+- **Technical Debt / UX Backlog**：未修改；TD-018、TD-021 維持 OPEN，TD-019 維持 CLOSED — M4-3 FORMAL ACCEPTANCE。
+- **Scope**：僅同步文件，無 Runtime Source Code 或 Test Source Code 異動；不 Commit／Push。
+
 ## 2026-11-20 — M4-4A Final Review Correction
+
+> 歷史快照：以下記錄 Final Review Correction 完成後、Formal Closure 前的狀態；目前核准狀態見本文件上方「M4-4A Formal Closure」。
 
 - **Test Correction**：在既有 `Win and loss managers cover single, ANY, ALL, and default ANY truth tables` 測試中補上 WinCondition ALL 與 LossCondition ALL 的 all-false assertions；未新增測試案例、未修改 Runtime Source Code。
 - **Traceability**：依 M4-4 Revision 2 原始規格建立 T-01～T-28 逐項追溯；Patch 1 額外情境另列 P-T01～P-T09。既有 TEST-M4-3-01 的 10 項 React Integration Tests 保留，並與 configured Victory／Defeat Lifecycle tests 分開列證。
@@ -22,6 +35,8 @@
 - **Review / Git（Patch 1 當時快照）**：CR-M4-4A-01～05 已實作處理；當時尚待獨立 Final Review，未宣告 Formal Acceptance，且未 Commit／Push。其後 Patch 1 已納入 Commit `1cce94613791548cc1717942b72d1513487db857`，GitHub Actions Run `44592995763` SUCCESS。Final Review Correction 的目前工作樹狀態見本文件最上方；M4 仍 75%，Overall 37.5%。
 
 ## 2026-11-19 — M4-4A End Condition Architecture & Battle Resolution
+
+> 歷史快照：以下記錄 M4-4A 原始實作階段的驗證與 Review 狀態；目前正式結案狀態見本文件上方「M4-4A Formal Closure」。
 
 - **Implemented locally**：新增 EndCondition Strategy、唯讀 BattleConditionContext、ANY／ALL Win／Loss Manager、共用 AllDead 查詢、Outcome Resolver、Battle Session／Reducer Injection，以及 Production Scenario 明確配置。Outcome 只在 Motion／Death／Combat Reservation 安全結束後解析；DEFEAT 優先，終局後 Reducer 與 AI Gateway 阻擋新指令及晚到 Callback。
 - **Tests**：新增 16 項 `tests/end-conditions.test.mjs`；`npm test` 239/239 PASS，原 223 個測試案例保留。另測試有效 Move Motion 完成前不提交 Outcome。既有 AI 測試斷言由欄位不存在更新為 `outcome === null`，以符合新增 ACTIVE Outcome Contract，保留原本「不自主宣告終局」的測試意圖。

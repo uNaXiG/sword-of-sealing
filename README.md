@@ -2,7 +2,7 @@
 
 使用 React、TypeScript、Vite 和 React Three Fiber 製作的奇幻 RPG 原型。
 
-目前 M1–M3 已完成；M4-1 與 Patch 1 已條件式結案並通過使用者驗收。M4-2：Individual Action Economy & Turn State Reset 與 Patch 1 已正式驗收。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 **COMPLETED — FORMALLY ACCEPTED**。M4-4A Patch 1 已納入 `main` Commit `1cce94613791548cc1717942b72d1513487db857`；GitHub Actions Run `44592995763`（Deploy to GitHub Pages）SUCCESS，Head SHA 相符。Patch 1 本機 Automated Tests 為 246/246 PASS、ESLint PASS、Production Build PASS（既有 >500 kB Battle Chunk warning 保留）。Final Review Correction 本次只補既有 ALL truth-table assertions 與同步文件；目前修正工作樹尚未提交，未修改 Runtime Source Code。Patch 後 Agent Browser Regression 為 BV-A01 PARTIAL、BV-A02～A05 NOT VERIFIED；Patch 後 Product Owner Acceptance 維持 PENDING。Product Owner BV-A01～A05 5/5 PASS 為 2026-11-19 Patch 前驗收，不代表 Patch 後重驗或 Formal Acceptance。M4 仍為 75%；M4-4B／C 尚未開始。
+目前 M1–M3 已完成；M4-1、M4-2 與 M4-3 已依各自驗收狀態結案。M4-4A End Condition Framework & Battle Outcome 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Patch 1 為 **COMPLETED — ACCEPTED**，Final Review Correction 為 **COMPLETED — VERIFIED**。最新已驗證 Repository Commit 為 `5048fea90ae7f81e2367e23ab42485d176fe8483`，GitHub Actions Run `44595045755` SUCCESS（Deploy to GitHub Pages，Head SHA 相符）；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。Acceptance baseline 為 246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 原始 Test Traceability 與 9/9 Patch Traceability PASS；Lint、Build 及 Product Owner Post-Patch Browser Acceptance BV-A01～A05 5/5 PASS。Build 保留既有 >500 kB Battle Chunk warning。Agent 先前的 Browser PARTIAL／NOT VERIFIED 結果仍保留為獨立歷史紀錄。此次 Closure Documentation 尚未提交；無 Runtime Source Code 或 Test Source Code 異動。M4 維持 75%、Overall 37.5%；M4-4B 為下一項，M4-4C 仍待開發，M4-4 整體尚未完成。
 
 ## Project Documentation
 
@@ -58,7 +58,7 @@ npm run dev
 
 ## PAS 個體回合
 
-PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Scheduler 先選取真正最小 Action Value，再依 Time Epsilon 建立 Tie Candidate；Preview 共用相同規則。M4-3 已以受控 Capability Action 連接正式 Enemy AI Controller，並已通過 Product Owner Browser Acceptance、Architecture Review 與 Code Review。M4-4A Patch 1 等待獨立 Final Review；M4-4B 負責 Overlay、Restart 與 Session Isolation，M4-4C 負責 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance。
+PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Scheduler 先選取真正最小 Action Value，再依 Time Epsilon 建立 Tie Candidate；Preview 共用相同規則。M4-3 已以受控 Capability Action 連接正式 Enemy AI Controller，並已通過 Product Owner Browser Acceptance、Architecture Review 與 Code Review。M4-4A 已正式結案；M4-4B 負責尚未實作的 Overlay、Restart 與 Session Isolation，M4-4C 負責整體 M4-4 的 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance。
 
 若要調整職業平衡，請修改 `CLASS_DEFINITIONS`；若要新增測試角色，使用 `createBattleUnit()` 並指定 ID、職業、陣營與座標，可選擇覆寫顯示名稱。初始戰場包含五名我方職業與三隻各自擁有獨立 HP／SP 的哥布林。死亡佔位與移除規則見 [Combat System](docs/COMBAT_SYSTEM.md)。
 
