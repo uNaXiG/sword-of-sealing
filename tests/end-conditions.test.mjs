@@ -88,11 +88,13 @@ test('Win and loss managers cover single, ANY, ALL, and default ANY truth tables
   assert.equal(new WinCondition([winFalse, new ConstantCondition('VICTORY', false)]).evaluate(context), false)
   assert.equal(new WinCondition([winTrue, winFalse]).evaluate(context), true)
   assert.equal(new WinCondition([winFalse, winTrue], 'ALL').evaluate(context), false)
+  assert.equal(new WinCondition([winFalse, new ConstantCondition('VICTORY', false)], 'ALL').evaluate(context), false)
   assert.equal(new WinCondition([winTrue, new ConstantCondition('VICTORY', true)], 'ALL').evaluate(context), true)
   assert.equal(new LossCondition([lossTrue, new ConstantCondition('DEFEAT', true)]).evaluate(context), true)
   assert.equal(new LossCondition([lossFalse, new ConstantCondition('DEFEAT', false)]).evaluate(context), false)
   assert.equal(new LossCondition([lossFalse, lossTrue]).evaluate(context), true)
   assert.equal(new LossCondition([lossTrue, lossFalse], 'ALL').evaluate(context), false)
+  assert.equal(new LossCondition([lossFalse, new ConstantCondition('DEFEAT', false)], 'ALL').evaluate(context), false)
   assert.equal(new LossCondition([lossTrue, new ConstantCondition('DEFEAT', true)], 'ALL').evaluate(context), true)
 })
 

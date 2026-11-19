@@ -2,7 +2,7 @@
 
 使用 React、TypeScript、Vite 和 React Three Fiber 製作的奇幻 RPG 原型。
 
-目前 M1–M3 已完成；M4-1 與 Patch 1 已條件式結案並通過使用者驗收。M4-2：Individual Action Economy & Turn State Reset 與 Patch 1 已正式驗收。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 **COMPLETED — FORMALLY ACCEPTED**；最新 CI 驗證的 Repository Commit 為 `4043459cfa3cb884aa9d9a6653ed646ef59975a9`，GitHub Actions Run `44500720991` SUCCESS，當時 223/223 Tests、Lint、Production Build PASS。M4-4A Patch 1 已在本機實作，`npm test` 246/246 PASS、ESLint PASS、Production Build PASS（既有 >500 kB Battle Chunk warning 保留）。Patch 後 Browser Regression 僅 BV-A01 部分驗證，BV-A02～A05 尚未驗證；獨立 Final Review 尚未完成。Product Owner 的 BV-A01～A05 5/5 PASS 是 2026-11-19 Patch 前驗收，不代表 Patch 後重驗或 Formal Acceptance。此異動尚未提交或納入 CI。M4 仍為 75%；M4-4B／C 尚未開始。
+目前 M1–M3 已完成；M4-1 與 Patch 1 已條件式結案並通過使用者驗收。M4-2：Individual Action Economy & Turn State Reset 與 Patch 1 已正式驗收。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 **COMPLETED — FORMALLY ACCEPTED**。M4-4A Patch 1 已納入 `main` Commit `1cce94613791548cc1717942b72d1513487db857`；GitHub Actions Run `44592995763`（Deploy to GitHub Pages）SUCCESS，Head SHA 相符。Patch 1 本機 Automated Tests 為 246/246 PASS、ESLint PASS、Production Build PASS（既有 >500 kB Battle Chunk warning 保留）。Final Review Correction 本次只補既有 ALL truth-table assertions 與同步文件；目前修正工作樹尚未提交，未修改 Runtime Source Code。Patch 後 Agent Browser Regression 為 BV-A01 PARTIAL、BV-A02～A05 NOT VERIFIED；Patch 後 Product Owner Acceptance 維持 PENDING。Product Owner BV-A01～A05 5/5 PASS 為 2026-11-19 Patch 前驗收，不代表 Patch 後重驗或 Formal Acceptance。M4 仍為 75%；M4-4B／C 尚未開始。
 
 ## Project Documentation
 

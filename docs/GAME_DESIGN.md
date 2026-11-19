@@ -32,7 +32,7 @@
 - 最終設計為每回合一次移動加一次戰鬥行動；M4-1 僅具最小 Turn-scoped Movement Commitment，不代表完整 Action Economy 已完成。
 - M4-1 已實作最小 Turn-scoped 移動限制：每個個體 Turn 最多移動一次；合法 Undo 可解除限制。完整 Action Economy 仍由 M4-2 處理。
 - M4-2 已實作完整個體 Action Economy：每個 Turn 最多一次有效移動及一次成功結算的普通攻擊；允許先移動再攻擊，不允許先確認攻擊再移動。
-- M4-2 與 Patch 1 已正式驗收；M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 COMPLETED — FORMALLY ACCEPTED。M4-4A 與 Patch 1 已實作並等待獨立 Final Review；使用者提供的 Product Owner Browser Acceptance（2026-11-19）為 Patch 前 BV-A01～A05 PASS，不代表 Patch 後重驗或 M4-4A Formal Acceptance。
+- M4-2 與 Patch 1 已正式驗收；M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 COMPLETED — FORMALLY ACCEPTED。M4-4A Patch 1 已納入 Commit `1cce94613791548cc1717942b72d1513487db857`，GitHub Actions Run `44592995763` SUCCESS。Final Review Correction 只補測試 Assertion 與文件；Patch 後 Product Owner Acceptance PENDING。Product Owner BV-A01～A05 5/5 PASS（2026-11-19）為 Patch 前驗收，不代表 Patch 後重驗或 M4-4A Formal Acceptance。
 - 合法 Undo 只可在攻擊確認前復原移動並恢復 Movement Action。確認攻擊會清除 Undo、鎖定後續移動，系統 Impact 才消耗 Combat Action。
 - Pre-impact Abort 是系統異常復原：不扣血、不完成 Turn，Combat Action 回到 AVAILABLE，但既有移動不恢復、Movement Initiation Lock 不解除。玩家沒有主動 Abort 入口。
 - 合法 Impact、攻擊完成或待命後完成目前 Turn；單純移動、Undo、Cancel Mode 或 Pre-impact Abort 不推進 PAS。新 Turn 依 `turnId/unitId` 重新初始化全部行動權。
@@ -47,7 +47,7 @@
 - AllDead 依初始參戰名冊及正式 DefeatedUnitRecord 判定；HP 歸零或死亡動畫尚未結束不算正式全滅。
 - Outcome 僅於阻擋 Motion 結束後結算，並在 PAS 下一回合排程前處理。終局後戰鬥與 AI 指令不再生效。
 - 新 Condition 可透過獨立策略類別及 Scenario Configuration 擴充；逃生、指定角色死亡及回合限制尚未實作。
-- M4-4A Patch 1 尚待獨立 Final Review；Patch 後 BV-A01 為 PARTIAL，BV-A02～A05 尚未驗證。M4-4B Overlay／Restart／Session Isolation 與 M4-4C Final Regression／Browser Verification／Independent Review／Formal Acceptance 均尚未開始。
+- M4-4A Patch 1 已提交至 `1cce946`，GitHub Actions Run `44592995763` SUCCESS；Final Review Correction 僅修改測試與文件，Runtime Source Code 未異動。Patch 前 Product Owner Acceptance 為 5/5 PASS；Patch 後 Agent Browser Regression 的 BV-A01 為 PARTIAL、BV-A02～A05 為 NOT VERIFIED，Patch 後 Product Owner Acceptance 維持 PENDING。M4-4B Overlay／Restart／Session Isolation 與 M4-4C Final Regression／Browser Verification／Independent Review／Formal Acceptance 均尚未開始。
 
 ## 規劃中：未來系統
 

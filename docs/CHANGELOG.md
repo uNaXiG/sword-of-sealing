@@ -2,6 +2,15 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M4-4A Final Review Correction
+
+- **Test Correction**：在既有 `Win and loss managers cover single, ANY, ALL, and default ANY truth tables` 測試中補上 WinCondition ALL 與 LossCondition ALL 的 all-false assertions；未新增測試案例、未修改 Runtime Source Code。
+- **Traceability**：依 M4-4 Revision 2 原始規格建立 T-01～T-28 逐項追溯；Patch 1 額外情境另列 P-T01～P-T09。既有 TEST-M4-3-01 的 10 項 React Integration Tests 保留，並與 configured Victory／Defeat Lifecycle tests 分開列證。
+- **Automated Verification**：`npm test` 246/246 PASS；`npm run lint` PASS；`npm run build` PASS，保留既有 >500 kB Battle Chunk warning；`git -c core.whitespace=cr-at-eol diff --check` PASS。
+- **Verified Repository / CI Baseline**：本機 `main` HEAD 為 `1cce94613791548cc1717942b72d1513487db857`；GitHub Commit 查詢確認 SHA 相符。[GitHub Actions Run 44592995763](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44592995763) — SUCCESS（Deploy to GitHub Pages，Head SHA 相符）。該 Run 僅代表已提交 Commit，不涵蓋本次未提交 correction。
+- **Review / Acceptance**：Architecture Review APPROVED；Code Review APPROVED WITH MINOR CORRECTIONS。CR-M4-4A-01／02／04 標記 APPROVED；CR-03／05 本次修正已完成並通過本機驗證。Patch 前 Product Owner Browser Acceptance 仍為 5/5 PASS；Patch 後 Agent BV-A01 PARTIAL、BV-A02～A05 NOT VERIFIED；Patch 後 Product Owner Acceptance PENDING。未宣告 M4-4A Formal Acceptance。
+- **Git / Scope / Roadmap**：僅變更既有測試 Assertion 與七份文件；工作樹尚未提交／推送，無 Runtime Source Code 異動。M4 75%、Overall 37.5%；M4-4B／C 尚未開始。
+
 ## 2026-11-19 — M4-4A Patch 1 — End Condition Hardening & Verification
 
 - **CR-M4-4A-01 — Configuration Immutability**：補充 Concrete Strategy 作者契約；新增 Test-only nested configuration Strategy，以明確欄位快照證明外部修改不影響設定。未新增通用任意物件遞迴 Freeze，也未替既有 AllDead 加入無意義設定。
@@ -10,7 +19,7 @@
 - **Automated Verification**：`npm test` 246/246 PASS（相較 Patch 起始基準 239 項新增 7 個測試案例）；`npm run lint` PASS；`npm run build` PASS，既有 >500 kB Battle Chunk warning 保留；`git -c core.whitespace=cr-at-eol diff --check` PASS，另檢查未追蹤檔案 whitespace。
 - **Browser**：Product Owner 已提供 2026-11-19 的 Patch 前 BV-A01～A05 5/5 PASS；此證據與 Agent 原先 PARTIAL／NOT VERIFIED 歷史分開保存。Patch 後 BV-A01 PARTIAL（成功移動、攻擊模式顯示 0 個合法目標、待命推進至 Player Turn 2）；BV-A02～A05 NOT VERIFIED，尚未取得 Patch 後 Product Owner Acceptance。
 - **Documentation / Stage Scope**：同步 README、Development Status、Architecture、Combat System、Game Design、Roadmap、Changelog；M4-4B 為 Overlay／Restart／Session Isolation，M4-4C 為 Final Regression／Browser Verification／Independent Review／Formal Acceptance。TD-018、TD-019、TD-021 與 UX Backlog 狀態未調整。
-- **Review / Git**：CR-M4-4A-01～05 已實作處理；M4-4A 尚待獨立 Final Review，未宣告 Formal Acceptance。未 Commit／Push；M4 仍 75%，Overall 37.5%。
+- **Review / Git（Patch 1 當時快照）**：CR-M4-4A-01～05 已實作處理；當時尚待獨立 Final Review，未宣告 Formal Acceptance，且未 Commit／Push。其後 Patch 1 已納入 Commit `1cce94613791548cc1717942b72d1513487db857`，GitHub Actions Run `44592995763` SUCCESS。Final Review Correction 的目前工作樹狀態見本文件最上方；M4 仍 75%，Overall 37.5%。
 
 ## 2026-11-19 — M4-4A End Condition Architecture & Battle Resolution
 
@@ -19,7 +28,7 @@
 - **Verification**：`npm run lint` PASS；`npm run build` PASS，既有 >500 kB Battle Chunk warning 保留；`git -c core.whitespace=cr-at-eol diff --check` PASS（保留 Windows CRLF 行尾）。
 - **Browser**：BV-A01 PARTIAL（載入場景、操作模式／待命及多輪 AI 回合流程；未確認成功移動／攻擊）；BV-A02～A05 NOT VERIFIED。未以自動化測試代替瀏覽器證據；無 Overlay 屬 M4-4A 預期範圍。
 - **Reviews / Acceptance**：M4-4A 尚待獨立 Architecture／Code Review 及 Product Owner Acceptance；不得標記為正式結案。
-- **Git / Scope**：Session Start HEAD／本機 `origin/main` tracking ref 為 `11b1652d1702376d703da8eed4cb83586e23401e`；本次程式、測試與文件異動未提交／推送。M4 維持 75%，Overall 37.5%；M4-4B／C 尚未開始。
+- **Git / Scope（初始 M4-4A 實作快照）**：Session Start HEAD／本機 `origin/main` tracking ref 為 `11b1652d1702376d703da8eed4cb83586e23401e`；該次程式、測試與文件異動當時未提交／推送。後續 M4-4A Patch 1 已納入 Commit `1cce94613791548cc1717942b72d1513487db857`，Run `44592995763` SUCCESS。M4 維持 75%，Overall 37.5%；M4-4B／C 尚未開始。
 
 ## 2026-11-19 — M4-3 Formal Closure
 

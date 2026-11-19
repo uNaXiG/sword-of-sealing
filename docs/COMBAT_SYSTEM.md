@@ -295,7 +295,7 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 正式初始戰場前 17 次順序與 Round 邊界由 [battle.turn.test.mjs](../tests/battle.turn.test.mjs) 驗證。
 
-M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 Enemy AI 已實作並提交。M4-4A Patch 1 已本機實作；Overlay、Restart 與 Session Isolation 屬 M4-4B，Final Regression、Browser Verification、Independent Review 與 Formal Acceptance 屬 M4-4C；M7 效果尚未實作。
+M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 Enemy AI 已實作並提交。M4-4A Patch 1 已納入 Commit `1cce94613791548cc1717942b72d1513487db857`，GitHub Actions Run `44592995763` SUCCESS；Final Review Correction 只修改測試與文件且目前未提交，Runtime Source Code 未變。M4-4B 負責 Overlay、Restart 與 Session Isolation；M4-4C 負責 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance；M7 效果尚未實作。
 
 M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案。TD-019 隨 M4-3 Formal Acceptance CLOSED；M4-3 的最新結案與 CI 基準見本節及 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
@@ -335,7 +335,7 @@ Active Enemy Turn 由獨立 React Controller 自動觀察；Player Turn 不提�
 - **223/223 Automated Tests PASS**；ESLint PASS；Production Build PASS（既有 >500 kB Battle Chunk warning 保留）。
 - Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED；CR-M4-3-01／02／03 與 TEST-M4-3-01 CLOSED。
 - Repository Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9` 的 GitHub Actions Run `44500720991` SUCCESS；M4-3 Gameplay Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25` 的 Run `44496931887` SUCCESS。
-- M4-3 **COMPLETED — FORMALLY ACCEPTED**；M4-4A Patch 1 已實作，待獨立 Final Review 與 Patch 後 Browser Regression；M4-4B／C 尚未開始。
+- M4-3 **COMPLETED — FORMALLY ACCEPTED**；M4-4A Patch 1 已提交至 `1cce946`，Commit 對應的 GitHub Actions Run `44592995763` SUCCESS。Final Review Correction 的測試與文件已通過本機驗證；Patch 後 Product Owner Acceptance PENDING。M4-4B／C 尚未開始。
 
 ### M4-3 Patch 1：Move-to-Attack Phase Integrity
 
@@ -393,7 +393,7 @@ Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `u
 
 ## 已知限制
 
-- M4-4A Patch 1 已本機實作、尚待獨立 Final Review 與 Patch 後 Browser Regression；M4-4B 的 Overlay／Restart／Session Isolation、M4-4C 的 Final Regression／Browser Verification／Independent Review／Formal Acceptance、技能與 M7 效果尚未實作。
+- M4-4A Patch 1 已納入 Commit `1cce946`，GitHub Actions Run `44592995763` SUCCESS。Patch 後 Product Owner Acceptance 維持 PENDING；此 Final Review Correction 不修改 Runtime Source Code。M4-4B 的 Overlay／Restart／Session Isolation、M4-4C 的 Final Regression／Browser Verification／Independent Review／Formal Acceptance、技能與 M7 效果尚未實作。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
 - 尚未導入攻擊音效、正式骨架動畫或 Physics；目前的死亡演出使用 Placeholder 模型。
 - UI 目前要求選取目標後再確認攻擊。
