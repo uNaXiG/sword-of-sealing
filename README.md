@@ -2,7 +2,7 @@
 
 使用 React、TypeScript、Vite 和 React Three Fiber 製作的奇幻 RPG 原型。
 
-目前 M1–M3 已完成；M4-1 與 Patch 1 已條件式結案並通過使用者驗收。M4-2：Individual Action Economy & Turn State Reset 與 Patch 1 已通過 Architecture Review、Code Review、Final Verification 及 Product Owner Browser Acceptance，狀態為 **COMPLETED — Formal Acceptance Approved**。M4-3 Rule-based Tactical AI 已進入 Implementation／Verification，尚待正式驗收；完整勝敗及技能系統尚未完成。
+目前 M1–M3 已完成；M4-1 與 Patch 1 已條件式結案並通過使用者驗收。M4-2：Individual Action Economy & Turn State Reset 與 Patch 1 已通過 Architecture Review、Code Review、Final Verification 及 Product Owner Browser Acceptance，狀態為 **COMPLETED — Formal Acceptance Approved**。M4-3 Enemy AI、Patch 1 與 Patch 2 已實作並推送至 Commit `a912457ae7eb159bd7f5411217f8548e30956e67`，210/210 Tests、Lint、Production Build、GitHub CI 與主要 Product Owner Browser Acceptance 已確認；狀態為 **IMPLEMENTED — PENDING FORMAL REVIEW**。完整勝敗及技能系統尚未完成。
 
 ## Project Documentation
 
@@ -58,7 +58,7 @@ npm run dev
 
 ## PAS 個體回合
 
-PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Scheduler 先選取真正最小 Action Value，再依 Time Epsilon 建立 Tie Candidate；Preview 共用相同規則。M4-3 已以受控 Capability Action 連接正式 Enemy AI Controller；AI 實作仍待 Product Owner Browser Acceptance。
+PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Scheduler 先選取真正最小 Action Value，再依 Time Epsilon 建立 Tie Candidate；Preview 共用相同規則。M4-3 已以受控 Capability Action 連接正式 Enemy AI Controller；主要 Product Owner Browser Acceptance 已通過，特殊未完成 Browser Scenarios 仍不視為 PASS，Architecture／Code Review 尚待完成。
 
 若要調整職業平衡，請修改 `CLASS_DEFINITIONS`；若要新增測試角色，使用 `createBattleUnit()` 並指定 ID、職業、陣營與座標，可選擇覆寫顯示名稱。初始戰場包含五名我方職業與三隻各自擁有獨立 HP／SP 的哥布林。死亡佔位與移除規則見 [Combat System](docs/COMBAT_SYSTEM.md)。
 

@@ -59,10 +59,10 @@ M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./D
 | M4-1 Patch 1 | 移動確認與指令流程修正 | COMPLETED |
 | M4-2 | Individual Action Economy & Turn State Reset | COMPLETED — Formal Acceptance Approved |
 | M4-2 Patch 1 | Code Review Hardening & Verification | COMPLETED |
-| M4-3 | 敵方移動與攻擊決策 | IN DEVELOPMENT / PENDING ACCEPTANCE |
+| M4-3 | 敵方移動與攻擊決策 | IMPLEMENTED — PENDING FORMAL REVIEW |
 | M4-4 | 勝利、失敗與戰鬥結束 | PENDING |
 
-M4-1 與 M4-2 均已完成。M4-2 包含完整 Action Economy、Turn Context、Combat Reservation、Turn Reset、PAS Precision、10,000 Continuous Near-tie、Direct Reducer Context Tests、Architecture／Code Review 及 Product Owner Browser Acceptance。M4-2 與 Patch 1 均為 **COMPLETED**。M4-3 Rule-based Tactical AI 已進入 Implementation／Verification，但尚待完整 Automated／Browser Verification、Architecture Review、Code Review 及 Product Owner Acceptance；M4 整體完成度維持 50%。
+M4-1 與 M4-2 均已完成。M4-2 包含完整 Action Economy、Turn Context、Combat Reservation、Turn Reset、PAS Precision、10,000 Continuous Near-tie、Direct Reducer Context Tests、Architecture／Code Review 及 Product Owner Browser Acceptance。M4-2 與 Patch 1 均為 **COMPLETED**。M4-3 Enemy AI、Patch 1 與 Patch 2 已實作並推送至 `a912457ae7eb159bd7f5411217f8548e30956e67`；210/210 Tests、Lint、Production Build、GitHub CI 與主要 Product Owner Browser Acceptance 均已確認。M4-3 目前為 **IMPLEMENTED — PENDING FORMAL REVIEW**，下一個工作項目為 **Architecture Review → Code Review → Formal Closure**；M4 整體完成度維持 50%，M4-4 仍為 PENDING。
 
 ## M5：戰鬥 UI／UX — PENDING
 

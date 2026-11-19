@@ -12,11 +12,11 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `f18f7aab2768e6fa5fcb1620243bf61c3a1779cf` — `feat(battle): complete M4-2 action economy and turn lifecycle` |
-| Latest Verified Repository CI Run | [44472015253](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44472015253) — SUCCESS（`main` / `f18f7aa`） |
-| Latest Verified Gameplay Commit | `main` @ `f18f7aab2768e6fa5fcb1620243bf61c3a1779cf`（M4-2、Patch 1 及 Final Verification Addendum） |
-| Gameplay CI Run | [44472015253](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44472015253) — SUCCESS（`main` / `f18f7aa`） |
-| 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `a912457ae7eb159bd7f5411217f8548e30956e67` — `feat: Implement AI decision-making for battle actions` |
+| Latest Verified Repository CI Run | [44489947675](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44489947675) — SUCCESS（`main` / `a912457`） |
+| Latest Verified Gameplay Commit | `main` @ `a912457ae7eb159bd7f5411217f8548e30956e67`（M4-3 Enemy AI、Patch 1、Patch 2） |
+| Gameplay CI Run | [44489947675](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44489947675) — SUCCESS（`main` / `a912457`） |
+| 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved；M4-3：IMPLEMENTED — PENDING FORMAL REVIEW |
 | 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（50%）**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
@@ -25,7 +25,7 @@
 | 整體里程碑等權重進度 | 35.0%（Roadmap Completion Percentage，不代表實際工時比例） |
 | M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED** |
 | M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
-| M4-3 狀態 | **IN DEVELOPMENT / PENDING ACCEPTANCE**；Rule-based Tactical AI 已實作於未提交工作樹，尚待完整驗證與 Review |
+| M4-3 狀態 | **IMPLEMENTED — PENDING FORMAL REVIEW**；Enemy AI、Patch 1 與 Patch 2 已實作並推送；210/210 測試、Lint、Build、GitHub CI 與主要 Product Owner Browser Acceptance 已確認；Architecture Review、Code Review 與 Formal Closure 仍待完成 |
 | Code Review Findings | CR-01 至 CR-05 已登錄為 TD-016 至 TD-020；TD-016／017／020 CLOSED、TD-018 OPEN、TD-019 PENDING REVIEW |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
@@ -41,11 +41,13 @@
 | Markdown 相對連結與文件一致性 | PASS | DOC-01 Patch 1 本次檢查 |
 | 使用者瀏覽器驗收 | M4-1 24/24 PASS；M4-1 Patch 1 10/10 PASS | 使用者後續正式驗收；不回溯改寫 Agent 原始 PARTIAL Browser Report |
 | Acceptance Criteria | M3-3 40/40 PASS；M3-4 52/52 PASS；M3-4 Patch 1 Revision 2 12/12 PASS；M4-1 Patch 1 24/24 PASS | Agent Implementation Report 與既有驗收證據。M4-1 原始 AC 不因此無條件標記為 70/70 PASS |
-| M4-3 Implementation | IN DEVELOPMENT | 已加入純決策、Capability Intent、Reducer AI 授權及 React Controller；尚未正式標示完成 |
-| M4-3 Automated Verification | 208/208 PASS；ESLint PASS；Build PASS | Node 原生測試含 27 項 AI Decision／Reducer／Lifecycle／Controller Fixtures；Build 僅保留既有 Battle Chunk > 500 kB warning |
-| M4-3 Browser Verification | PARTIAL — Agent Browser Evidence | 已實際確認 Enemy Batch Turn 6–8 自動執行、Turn 9 回到玩家、敵方回合無玩家控制按鈕、Scene Unmount／Remount 回到乾淨 Turn 1；特殊戰術與 Console Abort Fixture 未完整 Product Owner 驗收 |
-| M4-3 Patch 1 | IMPLEMENTED / PENDING REVIEW | 修正 BUG-M4-3-001／002 的 Controller Phase Ambiguity；新增 MOVE_COMPLETED、Controller Intent 與失效目標重新驗證；203→208 tests、Lint、Build PASS，Browser Move-to-Attack／Direct cycles 與 HP Impact 已驗證 |
-| M4-3 Patch 2 | IMPLEMENTED / PENDING REVIEW | 修正 BUG-M4-3-003 Animation Clock Race；AttackMotion 可在 Effect 前先進入 Frame，缺少 Clock 時不得視為 Abort；210/210 tests、Lint、Build PASS，Attack ID Trace 已確認 Reducer Impact ACCEPTED 與 HP 80→70 |
+| M4-3 Implementation | IMPLEMENTED | 已加入純決策、Capability Intent、Reducer AI 授權及 React Controller；正式結案尚待 Architecture / Code Review |
+| M4-3 Automated Verification | 210/210 PASS；ESLint PASS；Production Build PASS | 已完成 Automated Verification；包含 AI Decision、Reducer、Lifecycle、Controller 與 Patch 2 Clock Initialization／ID Regression；Build 保留既有 Battle Chunk > 500 kB warning |
+| M4-3 Browser Verification | PASS — Product Owner Acceptance | Product Owner 已確認主要敵方瀏覽器功能驗收通過；Agent 仍未完成的特殊戰術、Console Abort Fixture、長時間／特殊 Death Scenario 保持個別 NOT VERIFIED，不得視為全部 PASS |
+| M4-3 Patch 1 | IMPLEMENTED — FUNCTIONALLY VERIFIED | 修正 BUG-M4-3-001／002 的 Controller Phase Ambiguity；新增 MOVE_COMPLETED、Controller Intent 與失效目標重新驗證；Direct／Move-to-Attack 與 HP Impact 已由功能驗證確認 |
+| M4-3 Patch 2 | IMPLEMENTED — FUNCTIONALLY VERIFIED | 修正 BUG-M4-3-003 Animation Clock Race；有效 Attack 不再因 Effect 尚未初始化 Clock 而誤 Abort；已確認 Impact、Applied Damage 與 HP 更新 |
+| M4-3 Git / CI | Git Push SUCCESS；GitHub CI SUCCESS | Commit `a912457ae7eb159bd7f5411217f8548e30956e67`；GitHub Actions Run `44489947675` SUCCESS |
+| M4-3 Formal Review | Architecture Review PENDING；Code Review PENDING；Formal Closure PENDING | 自動化、Build、Git／CI 與主要 Product Owner Acceptance 不取代正式審查 |
 
 ## M4-3 Patch 2
 
@@ -64,7 +66,7 @@
 - **Fix**：Movement Finish 原子寫入 `MOVE_COMPLETED`；Controller 只在此 Phase 提交後續 Attack，同一 Turn 允許 Move→Attack，並禁止在 MOVING 時發送 Attack。原目標失效後在最新 State 重新決定合法 Direct Target，否則有限 Standby。
 - **Guard Integrity**：Capability、Turn Context、Combat Availability、Busy、Destination 與 `canAttackTarget()` 均保留；`movementInitiationLocked` 只禁止再移動，不禁止 Move→Attack。
 - **Automated**：208/208 PASS；新增 5 項 Patch 1 Controller／Lifecycle Regression，原有 203 項全部保留。
-- **Browser Agent Evidence**：Turn 6 Goblin A 移動至 Ranger 附近後攻擊，Ranger HP 80→70；後續多個 Enemy Direct／Move Attack Cycle 持續 Impact 至 40，Turn 能正常回到玩家，無 Blocking Console Error。Product Owner Acceptance 尚未完成。
+- **Browser Evidence**：Turn 6 Goblin A 移動至 Ranger 附近後攻擊，Ranger HP 80→70；後續多個 Enemy Direct／Move Attack Cycle 持續 Impact 至 40，Turn 能正常回到玩家，無 Blocking Console Error。Patch 1 的主要功能後續已納入 Product Owner Browser Acceptance；特殊未完成 Browser Scenarios 不得補寫為 PASS。
 
 ## DOC-01 狀態
 
@@ -144,11 +146,11 @@
 - 已加入 Turn Action State、Movement／Combat Action Lifecycle、Turn-bound Command Context、Combat Reservation／Consumption、Movement Initiation Lock、Pre-/Post-impact Abort Integration 與 Turn Reset。
 - TD-016 已分離全域最小事件時間與 Tie-break，並加入 Near-tie／Round Boundary／Preview 與 10,000 次獨立 Oracle；TD-017 已完成 Command Context Audit；TD-020 具備長期理論抵達時間與行動次數驗證。
 - 以上修復已通過 M4-2 Formal Acceptance；對應 TD-016、TD-017 與 TD-020 已 CLOSED。
-- TD-018 留待 M7；TD-019 已由 M4-3 實作取代入口並進入 PENDING REVIEW。
+- TD-018 留待 M7；TD-019 已由 M4-3 實作取代入口並維持 PENDING REVIEW。
 - 技術債統計：20 項；CLOSED 11、OPEN 7、PENDING REVIEW 1、PARTIALLY RESOLVED 1。
 - TD-016、TD-017、TD-020：CLOSED。
 - CR-01 至 CR-05：RESOLVED。
-- M4-3：**IN DEVELOPMENT / PENDING ACCEPTANCE**；M4-4：PENDING。
+- M4-3：**IMPLEMENTED — PENDING FORMAL REVIEW**；M4-4：PENDING。
 
 ### M4-2 Test Coverage Mapping（32 Planned Scenarios）
 

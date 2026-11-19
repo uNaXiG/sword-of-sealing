@@ -139,7 +139,7 @@ M4-3 Patch 1 將 Phase 改為 Durable Contract：Reducer 的 Movement Finish 由
 
 M4-3 Patch 2 補足 Rendering / Effect 競態邊界。有效 AttackMotion 可能先被 `useFrame` 觀察到，再由 `useEffect` 初始化 `clockRef`；Frame 必須以純 Helper 為該 Attack 建立 0ms Clock，而非視為異常 Abort。Clock ID 必須吻合；非法 Delta 或已有不同 Attack ID 的 Clock 仍走 Abort／Stale Guard。Damage 仍只在 Reducer `attack-impact` 成功接受後更新。
 
-沒有存活玩家與敵人的對戰時，Controller 進入穩定非執行狀態，不建立 M4-4 Outcome 或重複排程。M4-3 程式已進入 Implementation／Verification，尚未正式驗收，M4 完成度仍為 50%。
+沒有存活玩家與敵人的對戰時，Controller 進入穩定非執行狀態，不建立 M4-4 Outcome 或重複排程。M4-3 已實作並納入 Commit `a912457ae7eb159bd7f5411217f8548e30956e67`，210/210 Automated Verification、Lint、Production Build、GitHub CI 與主要 Product Owner Browser Acceptance 已確認；Architecture Review、Code Review 與 Formal Closure 仍為 PENDING，M4 完成度維持 50%。Patch 2 已修正 AttackMotion 先進入 Frame、`useEffect` 尚未初始化 Clock 的競態；只有合法 Impact 可更新 HP。
 
 ## Battle State 與 Reducer
 

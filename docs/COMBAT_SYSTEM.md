@@ -293,13 +293,13 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 正式初始戰場前 17 次順序與 Round 邊界由 [battle.turn.test.mjs](../tests/battle.turn.test.mjs) 驗證。
 
-M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 AI 已進入 Implementation／Verification；勝敗或 M7 效果仍未實作。
+M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 Enemy AI 已實作並提交；勝敗或 M7 效果仍未實作。
 
-M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案；TD-019 的正式 AI 入口已實作，等待 M4-3 Verification、Architecture Review 與 Product Owner Acceptance。
+M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案；TD-019 的正式 AI 入口已實作並納入 `a912457ae7eb159bd7f5411217f8548e30956e67`；210/210 驗證、GitHub CI 與主要 Product Owner Browser Acceptance 已確認，仍等待 Architecture／Code Review。
 
 ## M4-3 Rule-based Tactical AI
 
-M4-3 目前為 IN DEVELOPMENT / PENDING ACCEPTANCE：
+M4-3 目前為 IMPLEMENTED — PENDING FORMAL REVIEW：
 
 - Active Enemy Turn 由獨立 React Controller 自動觀察；Player Turn 不提交 AI Action。
 - `decideEnemyTurn()` 為純確定性函式；輸入不修改、不 Dispatch、不使用隨機數或真實時間。
@@ -325,7 +325,7 @@ M4-3 目前為 IN DEVELOPMENT / PENDING ACCEPTANCE：
 
 Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `useFrame` 觀察，`useEffect` 尚未建立 Animation Clock。既有 Controller 將 null Clock 視為錯誤並在 Impact 前 Abort，因此動畫曾短暫顯示但 HP 不變。
 
-有效 Attack 的首個 Frame 現在建立與 Attack ID 相符的 0ms Clock；非法 Delta、錯誤 Attack ID 與過期 Clock 仍保留 Abort。正常流程為 Callback → `attack-impact` → Reducer Guard → HP／Confirmed Impact → Complete。此修正不在 Confirm、AI Controller 或 Renderer 預先扣血。
+有效 Attack 的首個 Frame 現在建立與 Attack ID 相符的 0ms Clock；非法 Delta、錯誤 Attack ID 與過期 Clock 仍保留 Abort。正常流程為 Callback → `attack-impact` → Reducer Guard → HP／Confirmed Impact → Complete。此修正不在 Confirm、AI Controller 或 Renderer 預先扣血。Patch 2 已納入 M4-3 Git Baseline `a912457`；210/210 Automated Verification、Lint、Production Build、GitHub CI `44489947675` 及主要 Product Owner Browser Acceptance 均已確認。特殊未完成的 Browser Scenario 保持個別 NOT VERIFIED。
 
 ## 初始測試戰場
 

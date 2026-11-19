@@ -2,7 +2,20 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-19 — DOC-M4-3-01 — M4-3 Git Baseline Synchronization
+
+- **Baseline**：M4-3 Enemy AI、Patch 1 與 Patch 2 已納入 Git Commit `a912457ae7eb159bd7f5411217f8548e30956e67`，Commit 訊息為 `feat: Implement AI decision-making for battle actions`。
+- **Added**：純 AI 決策引擎、Capability Authorization、Reducer Revalidation、AI Controller、Direct Attack、Move-to-Attack 與 Movement Completion。
+- **Fixed / Patch 1**：修正 BUG-M4-3-001 Direct Attack Intent 與 BUG-M4-3-002 `MOVE_COMPLETED`／Move-to-Attack 銜接。
+- **Fixed / Patch 2**：修正 BUG-M4-3-003 Attack Animation Clock Initialization Race；有效首個 Frame 建立相符 0ms Clock，不再於 Impact 前誤派 Pre-impact Abort。
+- **Verification**：`npm test` 210/210 PASS；`npm run lint` PASS；`npm run build` PASS；GitHub Actions Run `44489947675` SUCCESS。
+- **Acceptance**：Product Owner 已確認主要 M4-3 Browser Acceptance PASS；特殊未完成的戰術、Console Abort、長時間或特殊 Death Browser Scenarios 保持個別 NOT VERIFIED。
+- **Review**：Architecture Review／Code Review PENDING；M4-3 尚未正式結案；TD-019 維持 PENDING REVIEW；M4 50%、Overall 35.0%、M4-4 PENDING。
+- **Scope**：本紀錄同步持久化文件，不取代正式審查，也未變更來源程式或測試。
+
 ## 2026-11-19 — M4-3 Enemy AI — IN DEVELOPMENT / PENDING ACCEPTANCE
+
+> 歷史快照：以下狀態為實作與初次驗證當時的紀錄；最新 Git／CI／Acceptance 基準請見本文件最上方的 DOC-M4-3-01。
 
 - **Added**：純 Rule-based Tactical AI，依 Direct Attack、Kill／Applied Damage、Move-to-Attack、Path-cost Approach、No-oscillation Standby 產生確定性 Decision。
 - **Added**：私有 Capability AI Action、Faction-neutral Combat Revalidation、Turn-scoped AI Progress 與 StrictMode-safe React Controller。
@@ -15,6 +28,8 @@
 
 ## 2026-11-19 — M4-3 Patch 2 — Enemy Impact Regression Fix
 
+> 歷史快照：以下驗證與當時 Product Owner Acceptance 狀態已由最上方 DOC-M4-3-01 的最新基準同步。
+
 - **Fixed / BUG-M4-3-003**：AttackMotion 先被 `useFrame` 觀察、Clock 仍未由 Effect 初始化時，不再誤派 Pre-impact Abort。
 - **Root Cause**：Patch 1 Effect-driven AI Attack 暴露既有 Animation Controller 的 Clock Initialization Race；不是 Impact Guard、Damage Formula 或 UI State mismatch。
 - **Changed**：首個合法 Frame 以 Attack ID 建立 0ms Clock；非法 Delta／錯誤 Attack ID 仍 Abort。
@@ -23,6 +38,8 @@
 - **Status**：M4-3 **IN DEVELOPMENT / PENDING ACCEPTANCE**；TD-019 PENDING REVIEW；Product Owner Acceptance 未完成。
 
 ## 2026-11-19 — M4-3 Patch 1 — Enemy Attack Lifecycle Fix
+
+> 歷史快照：以下「未 Commit／未 Push」與當時 Acceptance 狀態僅描述 Patch 1 的驗證階段；最新提交基準見最上方 DOC-M4-3-01。
 
 - **Fixed / BUG-M4-3-001**：Direct Attack Controller Intent 可獨立驗證，合法 Active Enemy 不落入 Standby。
 - **Fixed / BUG-M4-3-002**：Movement Finish 明確轉換 `MOVING → MOVE_COMPLETED`；Controller 使用最新 State 提交同 Turn Attack。

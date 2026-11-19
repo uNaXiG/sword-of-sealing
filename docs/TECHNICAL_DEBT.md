@@ -24,7 +24,7 @@
 | TD-016 | PAS Floating-point Arrival Tolerance | 舊 Scheduler 以 Tie Candidate 的 AV 推進，近似同時抵達可能過度推進 | Medium | CLOSED | M4-2 分離最小事件時間與 Tie Selection；Exact-tie、Near-tie、Round Boundary、10,000 Continuous Events 均通過 | M4-2 |
 | TD-017 | Player Standby Turn Context Integrity | 玩家 `standby` 舊缺少 Turn／Unit Context，重複事件可能污染下一 Turn | High | CLOSED | M4-2 玩家指令攜帶 Context；Reducer Guard 與 Direct Context Replay Tests 通過 | M4-2 |
 | TD-018 | AGI Validation Consistency | Class Registry 接受 finite positive number，Battle State 要求 non-negative safe integer，PAS 又要求正速度；資料契約不一致 | Low | OPEN | 統一 Base AGI 合法值；未來明確分離 Base AGI 與 Effective Velocity；不為 M7 Buff 提前放寬所有基礎屬性 | M7 |
-| TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | PENDING REVIEW | M4-3 已以私有 Capability Action、Reducer 重驗證及 StrictMode-safe Controller 取代 Development Standby；等待 Architecture Review、Lifecycle Verification 與 Product Owner Acceptance | M4-3 |
+| TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | PENDING REVIEW | M4-3 已移除 Development Enemy Standby，並以私有 Capability Action、AI Controller 與 Reducer 重驗證取代；已完成 Automated Verification、主要 Product Owner Browser Acceptance，Git Commit `a912457` 與 CI Run `44489947675` SUCCESS；等待 Architecture／Code Review 後才可 CLOSED | M4-3 |
 | TD-020 | Extended Scheduling Verification Coverage | 舊 10,000 次測試缺少獨立 Oracle 與長期數值誤差證據 | Medium | CLOSED | M4-2 加入固定速度 Oracle、Continuous Near-tie、Round Boundary、Preview 一致性、長期誤差與非負距離驗證 | M4-2 |
 
 ## 已結案 Bug
@@ -76,24 +76,24 @@ TD-019 的 `simulate-enemy-standby` UI／Reducer 入口已移除，並由以下�
 - AI Progress 由 State 管理，StrictMode 重送、過期 Context、重複 Attack／Move 及 Pre-impact Abort 具有冪等與有限後續流程。
 - Terminal State 只停止 AI Controller，不建立 M4-4 Victory／Defeat Outcome。
 
-TD-019 目前為 **PENDING REVIEW**，不得在完整 Automated／Browser Verification、Architecture Review 與 Product Owner Acceptance 前改為 CLOSED。
+TD-019 目前為 **PENDING REVIEW**；Automated Verification、主要 Product Owner Browser Acceptance、Git Commit 與 CI 已完成，但 Architecture／Code Review 仍待完成，因此不得改為 CLOSED。
 
 ## BUG-M4-3-003 — Enemy Animation Impact Regression
 
-- **Status**：FIXED — PENDING PRODUCT OWNER ACCEPTANCE。
+- **Status**：FIXED — Patch 2；主要 Product Owner Browser Acceptance 已 PASS。
 - **Root Cause**：AttackAnimationController 的 passive Effect 尚未初始化 Clock 時，`useFrame` 將 null Clock 當成可中止異常，造成 Pre-impact Abort。
 - **Trigger**：Patch 1 的 Controller 於 MOVE_COMPLETED Effect 提交 AI Attack，使有效 AttackMotion 與 Clock Initialization 的 Render／Frame Ordering 更容易形成競態。
 - **Fix**：首個有效 Frame 建立 matching Attack ID 的 0ms Clock；不變更 Impact Guard、Damage Formula、Capability 或 Turn Completion。
 - **Evidence**：Before trace 無 Impact Callback 且無 HP Change；After trace 取得 Reducer IMPACT ACCEPTED，Applied Damage 10，Ranger HP 80→70；210/210 automated tests。
-- **Remaining**：Product Owner Browser Acceptance 尚未完成；TD-019 維持 PENDING REVIEW。
+- **Remaining**：特殊長時間、Console Abort 與其他未完成特殊 Browser Scenarios 保持個別 NOT VERIFIED；TD-019 維持 PENDING REVIEW。
 
 ## M4-3 Patch 1 — AI Attack Lifecycle
 
-- **BUG-M4-3-001**：Direct Attack 決策可被 Controller 純 Intent 函式獨立驗證，不會因 Controller 分支落入 Standby。
-- **BUG-M4-3-002**：Move-to-Attack 不再用 `MOVING + movementUsed` 隱含推斷完成；Reducer 的 Finish Transition 明確建立 `MOVE_COMPLETED`。
+- **BUG-M4-3-001 — FIXED — Patch 1**：Direct Attack 決策可被 Controller 純 Intent 函式獨立驗證，不會因 Controller 分支落入 Standby。
+- **BUG-M4-3-002 — FIXED — Patch 1**：Move-to-Attack 不再用 `MOVING + movementUsed` 隱含推斷完成；Reducer 的 Finish Transition 明確建立 `MOVE_COMPLETED`。
 - **Root Cause**：Phase 語意重疊使 Controller 第二階段缺乏 Durable Contract；此外原目標失效時沒有以最新 State 重新尋找合法目標。
 - **Fix Evidence**：同一 Turn Move→Attack、Movement Initiation Lock、失效目標 retarget、Direct Intent、Impact／Complete Turn、Abort／Replay Regression 均為 PASS。
-- **Status**：Patch 1 已實作且通過 Automated／Agent Browser；正式結案仍等待 Product Owner Acceptance。TD-019 維持 PENDING REVIEW。
+- **Status**：FIXED — Patch 1；Automated Verification、功能瀏覽器驗證與主要 Product Owner Browser Acceptance 已完成。特殊未完成 Browser Scenarios 不得補寫為 PASS；TD-019 維持 PENDING REVIEW。
 
 ## M4-1 階段性限制
 
