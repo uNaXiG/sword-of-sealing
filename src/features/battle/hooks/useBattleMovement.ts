@@ -10,9 +10,11 @@ import type { Cell } from '../../../game/grid/grid.types'
 import type { ReachableTile } from '../../../game/grid/movement'
 import { predictUpcomingTurns } from '../../../game/battle/battle.turn'
 import { canConfirmAttack, canEnterAttackMode, canStandby } from '../../../game/battle/battle.action'
+import { useBattleAI } from './useBattleAI'
 
 export function useBattleMovement() {
   const [state, dispatch] = useReducer(battleReducer, undefined, () => createBattleState(INITIAL_UNITS, INITIAL_OBSTACLES))
+  useBattleAI(state, dispatch)
   const selectedUnit = state.units.find((unit) => unit.id === state.selectedUnitId) ?? null
   const reachable = useMemo(
     () => selectedUnit ? reachableForUnit(state.units, selectedUnit.id, state.obstacles.map(obstacleCell)) : new Map<string, ReachableTile>(),
@@ -87,9 +89,18 @@ export function useBattleMovement() {
     () => dispatch({ type: 'confirm-attack', turnId, unitId: activeUnitId }),
     [turnId, activeUnitId],
   )
-  const impactAttack = useCallback((attackId: number) => dispatch({ type: 'attack-impact', attackId }), [])
-  const completeAttack = useCallback((attackId: number) => dispatch({ type: 'attack-complete', attackId }), [])
-  const abortAttack = useCallback((attackId: number) => dispatch({ type: 'attack-abort', attackId }), [])
+  const impactAttack = useCallback((attackId: number) => {
+    if (import.meta.env?.DEV) console.debug('[ATTACK DISPATCH]', { event: 'attack-impact', attackId })
+    dispatch({ type: 'attack-impact', attackId })
+  }, [])
+  const completeAttack = useCallback((attackId: number) => {
+    if (import.meta.env?.DEV) console.debug('[ATTACK DISPATCH]', { event: 'attack-complete', attackId })
+    dispatch({ type: 'attack-complete', attackId })
+  }, [])
+  const abortAttack = useCallback((attackId: number) => {
+    if (import.meta.env?.DEV) console.debug('[ATTACK DISPATCH]', { event: 'attack-abort', attackId })
+    dispatch({ type: 'attack-abort', attackId })
+  }, [])
   const consumeImpact = useCallback((impactId: number) => dispatch({ type: 'consume-impact', impactId }), [])
   const completeDeath = useCallback(
     (deathId: number, unitId: string) => dispatch({ type: 'death-complete', deathId, unitId }),
@@ -145,10 +156,5 @@ export function useBattleMovement() {
     consumeImpact,
     completeDeath,
     abortDeath,
-    simulateEnemyStandby: () => dispatch({
-      type: 'simulate-enemy-standby',
-      turnId: state.turn.turnId,
-      unitId: state.turn.activeUnitId ?? '',
-    }),
   }
 }

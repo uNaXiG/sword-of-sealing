@@ -33,7 +33,7 @@ export default function BattleScene() {
     finishMove, cancelMove, undoMove, setInteractionMode, cancelMoveMode, cancelAttack, confirmAttack,
     impactAttack, completeAttack, abortAttack, attackMotion, confirmedImpacts, deathMotions, defeatedUnits,
     consumeImpact, completeDeath, abortDeath,
-    turn, activeUnit, upcomingTurns, simulateEnemyStandby,
+    turn, activeUnit, upcomingTurns,
     pendingTurnCompletion,
   } = useBattleMovement()
   const { clockRef, onImpact, onComplete, onAbort } = useAttackAnimation(impactAttack, completeAttack, abortAttack)
@@ -171,14 +171,6 @@ export default function BattleScene() {
       <TurnOrderTimeline turn={turn} units={units} upcomingTurns={upcomingTurns} />
       <aside className="battle-info" aria-live="polite">
         <div className="battle-info-title">✦ 戰場資訊</div>
-        {activeUnit?.faction === 'enemy' && !battleBusy && import.meta.env.DEV && (
-          <div className="battle-development-control">
-            <p>開發控制：正式敵方 AI 尚未實作。</p>
-            <button className="battle-deselect" type="button" onClick={simulateEnemyStandby}>
-              模擬敵方待命
-            </button>
-          </div>
-        )}
         {selectedUnit && (
           <div className="battle-selection">
             <p>{selectedUnit.name} · {CLASS_DEFINITIONS[selectedUnit.class].name}</p>

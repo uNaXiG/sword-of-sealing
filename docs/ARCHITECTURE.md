@@ -47,6 +47,8 @@ sword-of-sealing/
 flowchart LR
     UI[BattleScene / UI Controls] --> Hook[useBattleMovement]
     Hook -->|dispatch action| Reducer[battleReducer]
+    AIHook[useBattleAI] -->|authorized intent| Reducer
+    AIEngine[battle.ai Pure Decision] --> AIHook
     Hook --> Rules[Movement / Attack / Damage]
     Hook --> Animation[Attack Controller / Profiles]
     Reducer --> State[BattleState]
@@ -75,6 +77,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/battle/battle.turn.types.ts` | Turn Timeline、Pending Completion 與 Preview 型別 |
 | `game/battle/battle.turn.constants.ts` | 1000 BU、200 BTU／Round、預覽數量與容差 |
 | `game/battle/battle.action.ts` | Turn Action State 初始化、Turn Context 比對與 Combat／Attack 可用性 |
+| `game/battle/battle.ai.ts` | 純 Rule-based Tactical AI、穩定 Comparator、Movement／Attack Decision 與 AI Capability Action |
 | `game/battle/battle.movement.ts` | 單位移動預算與完成前驗證 |
 | `game/battle/occupancy.ts` | 棋格佔位唯一性 |
 | `game/battle/obstacles.ts` | 障礙配置與驗證 |
@@ -82,6 +85,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/grid/terrain.*.ts` | 地形資料、型別、成本與顏色 |
 | `game/classes/` | 職業型別、Registry、驗證與 Factory |
 | `features/battle/hooks/useBattleMovement.ts` | State Hook、Derived State 與 Action 介面 |
+| `features/battle/hooks/useBattleAI.ts` | Enemy Active Turn Controller、受控 Intent 提交、Move／Attack Lifecycle 進階與有限 Recovery |
 | `features/battle/components/BattleTurnHUD.tsx` | Round、Battle Time、Turn ID 與 Active Unit HUD |
 | `features/battle/components/TurnOrderTimeline.tsx` | Active Unit 與未來 10 次唯讀行動預覽 |
 | `features/battle/hooks/useAttackAnimation.ts` | 單一動畫時鐘介面 |
@@ -121,9 +125,21 @@ M4-2 以 `TurnActionState` 取代 M4-1 的 `movementUsedTurnId`，集中保存 M
 
 Patch 1 對 Guard 邊界做兩項硬化：`canUndoLastMove()` 顯式拒絕已建立 Movement Initiation Lock，即使異常狀態仍保留 `lastMove`；Reducer 的 Confirm Attack 採用與 UI 相同的 `canConfirmAttack()` Domain Guard，再建立 Reservation 與 Damage Snapshot。UI 不授權操作，Reducer 仍以相同 Pure Guard 作最終裁決。
 
-Development Build 的「模擬敵方待命」只經明確 Development Control Action 驅動；Production UI 不呈現玩家敵方操作，未來 M4-3 將以 AI Lifecycle 替換。
-
 M4-2 已將 TD-017 的 Context Integrity 整合至玩家指令產生與 Reducer Guard。Hook 在指令建立時捕捉 `turnId/unitId`，Animation Lifecycle 仍以不可變 Motion／Attack／Death ID 驗證；延遲 Callback 不會重新讀取下一個 Active Unit。TD-016 的 Scheduler 先計算全域最小 AV，再選擇 Time Epsilon 內候選；Time Epsilon（BTU）與 Distance Epsilon（BU）分開使用。所有 Tie Candidate 的微量距離被歸零，但 Time Epsilon 外的候選保留正距離；非有限值與超出容差的負距離仍明確拋錯。M4-2 已完成 Formal Acceptance；Review 修復、181/181 自動化驗證及 Product Owner Browser Acceptance 證據見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) 與 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)。
+
+## M4-3 Enemy AI
+
+`battle.ai.ts` 提供不 Dispatch、不修改 State、不使用隨機或真實時間的 `decideEnemyTurn()`。決策優先直接攻擊，再建立 Move-to-Attack；兩者都不可行時，以可通行路徑至未來攻擊位置的剩餘地形成本判斷 Approach；沒有嚴格改善則 Standby。擊倒、Applied Damage、Initial Order、移動成本、Row／Column 與 Unit ID 的比較順序均由穩定 Comparator 明確定義。
+
+AI Controller 只可透過 `createAIAction()` 建立具有模組私有 Capability 的 Intent。單純的 `source: 'ai'` 字串不具授權。Reducer 仍重新驗證 Active Enemy、Faction、Turn／Unit Context、Action State、Busy／Pending、目的地、射程、目標與 Idempotency。玩家 Guard 與敵方 Guard 不共用入口；底層移動、戰鬥及傷害規則共用。
+
+`useBattleAI` 觀察 Active Enemy Turn，呼叫純決策後提交唯一階段 Intent。`BattleState.aiProgress` 保存 Turn-scoped `MOVING`／`ATTACKING` Phase，使 StrictMode 重複 Effect、Movement Finish／Cancel、Pre-/Post-impact Abort 均經 Reducer 狀態機有限推進。AI 移動仍使用既有 Motion ID；攻擊仍使用相同 Attack Reservation、Impact、Confirmed Event 與 Death Barrier。Controller 不直接推進 PAS；Standby 或 Attack Complete 使用既有 Turn Completion Gateway。
+
+M4-3 Patch 1 將 Phase 改為 Durable Contract：Reducer 的 Movement Finish 由 `MOVING` 原子轉為 `MOVE_COMPLETED`；Controller 的純 Next-intent 函式只在後者提交 Attack。此設計允許同一 Turn 多個不同合法 Phase Action，但同一 Phase 的重播仍由 Reducer no-op。Move 完成後以最新位置檢查原目標；失效時可做一次 Direct-target Re-decision，否則有限 Standby。
+
+M4-3 Patch 2 補足 Rendering / Effect 競態邊界。有效 AttackMotion 可能先被 `useFrame` 觀察到，再由 `useEffect` 初始化 `clockRef`；Frame 必須以純 Helper 為該 Attack 建立 0ms Clock，而非視為異常 Abort。Clock ID 必須吻合；非法 Delta 或已有不同 Attack ID 的 Clock 仍走 Abort／Stale Guard。Damage 仍只在 Reducer `attack-impact` 成功接受後更新。
+
+沒有存活玩家與敵人的對戰時，Controller 進入穩定非執行狀態，不建立 M4-4 Outcome 或重複排程。M4-3 程式已進入 Implementation／Verification，尚未正式驗收，M4 完成度仍為 50%。
 
 ## Battle State 與 Reducer
 
@@ -170,6 +186,7 @@ Rendering 座標由 `column/row` 透過 `cellPosition()` 轉換為 Three.js 世�
 - Dijkstra、地形成本、障礙與佔位。
 - Individual Action Economy、Turn Context、Reservation、Abort Recovery 與 Turn Reset。
 - PAS Exact-tie、Near-tie、Round Boundary、Preview 一致性及獨立理論 Oracle 長跑。
+- Enemy AI 決策排序、Move-to-Attack、Path-cost Approach、Capability Authorization、Replay、Abort Recovery 與 Death Barrier。
 
 ## 部署架構
 

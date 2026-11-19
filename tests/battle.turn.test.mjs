@@ -11,6 +11,7 @@ import {
 import { ACTION_DISTANCE } from '../src/game/battle/battle.turn.constants.ts'
 import { createBattleState } from '../src/game/battle/battle.state.ts'
 import { createBattleUnit } from '../src/game/classes/class.factory.ts'
+import { createAIAction } from '../src/game/battle/battle.ai.ts'
 import { activateUnitFixture, battleReducerFixture as battleReducer } from './turn.fixture.mjs'
 
 const closeTo = (actual, expected, tolerance = 1e-7) => {
@@ -74,11 +75,11 @@ test('RS-02 正式初始戰場 17 次順序與 Round 正確', () => {
   }]
   for (let index = 1; index < 17; index += 1) {
     state = state.units.find((unit) => unit.id === state.turn.activeUnitId)?.faction === 'enemy'
-      ? battleReducer(state, {
-        type: 'simulate-enemy-standby',
+      ? battleReducer(state, createAIAction({
+        type: 'ai-standby',
         turnId: state.turn.turnId,
         unitId: state.turn.activeUnitId,
-      })
+      }))
       : battleReducer(state, { type: 'standby' })
     actual.push({
       turnId: state.turn.turnId,
@@ -137,11 +138,11 @@ test('10,000 次 DES 排程維持有限、單調及合法距離', () => {
   for (let index = 0; index < 10_000; index += 1) {
     const previousTime = state.turn.battleTime
     state = state.units.find((unit) => unit.id === state.turn.activeUnitId)?.faction === 'enemy'
-      ? battleReducer(state, {
-        type: 'simulate-enemy-standby',
+      ? battleReducer(state, createAIAction({
+        type: 'ai-standby',
         turnId: state.turn.turnId,
         unitId: state.turn.activeUnitId,
-      })
+      }))
       : battleReducer(state, { type: 'standby' })
     assert.ok(state.turn.battleTime >= previousTime)
     assert.ok(Number.isFinite(state.turn.battleTime))
@@ -156,11 +157,11 @@ test('10,000 次 DES 排程維持有限、單調及合法距離', () => {
 test('Turn 權限、過期完成及空 Timeline 安全停止', () => {
   const state = createBattleState(INITIAL_UNITS)
   assert.equal(battleReducer(state, { type: 'select', unitId: 'knight' }), state)
-  assert.equal(battleReducer(state, {
-    type: 'simulate-enemy-standby',
+  assert.equal(battleReducer(state, createAIAction({
+    type: 'ai-standby',
     turnId: state.turn.turnId,
     unitId: 'goblin',
-  }), state)
+  })), state)
 
   const stale = { ...state, turn: { ...state.turn, turnId: state.turn.turnId + 1 } }
   assert.equal(battleReducer(stale, { type: 'standby' }), stale)

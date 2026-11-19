@@ -5,6 +5,11 @@ import { createBattleState } from '../src/game/battle/battle.state.ts'
 import { battleReducerFixture as battleReducer } from './turn.fixture.mjs'
 import { getOccupancy } from '../src/game/battle/occupancy.ts'
 import { activateUnitFixture } from './turn.fixture.mjs'
+import { ensureAttackAnimationClock } from '../src/features/battle/hooks/attackAnimationClock.ts'
+import {
+  ATTACK_ANIMATION_PROFILES,
+  getAttackTimelineFrame,
+} from '../src/game/battle/battle.animation.ts'
 
 const knight = createBattleUnit({
   id: 'knight',
@@ -41,6 +46,37 @@ function resolveAttack(state) {
   state = battleReducer(state, { type: 'attack-impact', attackId })
   return battleReducer(state, { type: 'attack-complete', attackId })
 }
+
+test('新 Attack 在首個 Frame 若 Clock 未初始化，建立 0ms Clock', () => {
+  const clock = ensureAttackAnimationClock(
+    null,
+    7,
+    ATTACK_ANIMATION_PROFILES.MELEE_BASH,
+  )
+  assert.equal(clock.attackId, 7)
+  assert.equal(clock.elapsedMs, 0)
+  assert.equal(clock.frame.stage, 'WINDUP')
+  assert.equal(clock.frame.elapsedMs, 0)
+})
+
+test('Clock Helper 保留同 Attack ID 進度並替換不同 Attack ID Clock', () => {
+  const existing = {
+    attackId: 7,
+    elapsedMs: 123,
+    frame: getAttackTimelineFrame(123, ATTACK_ANIMATION_PROFILES.MELEE_BASH),
+  }
+  assert.equal(
+    ensureAttackAnimationClock(existing, 7, ATTACK_ANIMATION_PROFILES.MELEE_BASH),
+    existing,
+  )
+  const mismatch = ensureAttackAnimationClock(
+    existing,
+    8,
+    ATTACK_ANIMATION_PROFILES.MELEE_BASH,
+  )
+  assert.equal(mismatch.attackId, 8)
+  assert.equal(mismatch.elapsedMs, 0)
+})
 
 test('Battle State 初始化 AttackMotion 並從 Attack ID 1 開始', () => {
   const state = createBattleState([knight, goblin])

@@ -1,6 +1,7 @@
 import type { BattleState } from './battle.types.ts'
 import type { BattleTurnState, TurnActionState, TurnContext } from './battle.turn.types.ts'
 import { canAttackTarget } from './battle.attack.ts'
+import { isUnitAlive } from './battle.unit.ts'
 
 export function createTurnActionState(turn: BattleTurnState): TurnActionState | null {
   return turn.activeUnitId
@@ -47,16 +48,13 @@ export function canEnterAttackMode(state: BattleState): boolean {
 
 export function canConfirmAttack(state: BattleState): boolean {
   return Boolean(
-    canUseCombatAction(state) &&
+    canUseCombatAttack(state, state.selectedUnitId, state.selectedAttackTargetId) &&
     state.interactionMode === 'ATTACK' &&
-    state.turnAction?.combatAction === 'AVAILABLE' &&
-    state.turnAction.turnId === state.turn.turnId &&
-    state.turnAction.unitId === state.turn.activeUnitId &&
-    state.turnAction.reservedAttackId === null &&
-    state.selectedAttackTargetId &&
-    state.selectedUnitId &&
     state.selectedUnitId === state.turn.activeUnitId &&
-    canAttackTarget(state.units, state.selectedUnitId, state.selectedAttackTargetId),
+    state.units.some((unit) =>
+      unit.id === state.selectedUnitId &&
+      unit.faction === 'player' &&
+      isUnitAlive(unit)),
   )
 }
 
@@ -71,6 +69,27 @@ export function canStandby(state: BattleState): boolean {
     unit.faction === 'player' &&
     unit.hp > 0 &&
     unit.id === state.turn.activeUnitId,
+  )
+}
+
+export function canUseCombatAttack(
+  state: BattleState,
+  attackerId: string | null,
+  targetId: string | null,
+): boolean {
+  return Boolean(
+    !state.pendingTurnCompletion &&
+    state.motion === null &&
+    state.attackMotion === null &&
+    state.deathMotions.length === 0 &&
+    state.turnAction?.combatAction === 'AVAILABLE' &&
+    state.turnAction.turnId === state.turn.turnId &&
+    state.turnAction.unitId === state.turn.activeUnitId &&
+    state.turnAction.reservedAttackId === null &&
+    attackerId &&
+    targetId &&
+    attackerId === state.turn.activeUnitId &&
+    canAttackTarget(state.units, attackerId, targetId),
   )
 }
 

@@ -25,7 +25,8 @@
 | 整體里程碑等權重進度 | 35.0%（Roadmap Completion Percentage，不代表實際工時比例） |
 | M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED** |
 | M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
-| Code Review Findings | CR-01 至 CR-05 已登錄為 TD-016 至 TD-020；全部 OPEN，使用者已核准延後處理 |
+| M4-3 狀態 | **IN DEVELOPMENT / PENDING ACCEPTANCE**；Rule-based Tactical AI 已實作於未提交工作樹，尚待完整驗證與 Review |
+| Code Review Findings | CR-01 至 CR-05 已登錄為 TD-016 至 TD-020；TD-016／017／020 CLOSED、TD-018 OPEN、TD-019 PENDING REVIEW |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
 ## 驗證結果
@@ -40,6 +41,30 @@
 | Markdown 相對連結與文件一致性 | PASS | DOC-01 Patch 1 本次檢查 |
 | 使用者瀏覽器驗收 | M4-1 24/24 PASS；M4-1 Patch 1 10/10 PASS | 使用者後續正式驗收；不回溯改寫 Agent 原始 PARTIAL Browser Report |
 | Acceptance Criteria | M3-3 40/40 PASS；M3-4 52/52 PASS；M3-4 Patch 1 Revision 2 12/12 PASS；M4-1 Patch 1 24/24 PASS | Agent Implementation Report 與既有驗收證據。M4-1 原始 AC 不因此無條件標記為 70/70 PASS |
+| M4-3 Implementation | IN DEVELOPMENT | 已加入純決策、Capability Intent、Reducer AI 授權及 React Controller；尚未正式標示完成 |
+| M4-3 Automated Verification | 208/208 PASS；ESLint PASS；Build PASS | Node 原生測試含 27 項 AI Decision／Reducer／Lifecycle／Controller Fixtures；Build 僅保留既有 Battle Chunk > 500 kB warning |
+| M4-3 Browser Verification | PARTIAL — Agent Browser Evidence | 已實際確認 Enemy Batch Turn 6–8 自動執行、Turn 9 回到玩家、敵方回合無玩家控制按鈕、Scene Unmount／Remount 回到乾淨 Turn 1；特殊戰術與 Console Abort Fixture 未完整 Product Owner 驗收 |
+| M4-3 Patch 1 | IMPLEMENTED / PENDING REVIEW | 修正 BUG-M4-3-001／002 的 Controller Phase Ambiguity；新增 MOVE_COMPLETED、Controller Intent 與失效目標重新驗證；203→208 tests、Lint、Build PASS，Browser Move-to-Attack／Direct cycles 與 HP Impact 已驗證 |
+| M4-3 Patch 2 | IMPLEMENTED / PENDING REVIEW | 修正 BUG-M4-3-003 Animation Clock Race；AttackMotion 可在 Effect 前先進入 Frame，缺少 Clock 時不得視為 Abort；210/210 tests、Lint、Build PASS，Attack ID Trace 已確認 Reducer Impact ACCEPTED 與 HP 80→70 |
+
+## M4-3 Patch 2
+
+- **BUG-M4-3-003 Root Cause**：`AttackAnimationController` 將「clockRef 尚未由 passive Effect 初始化」當作異常並 dispatch Pre-impact Abort。Patch 1 使 AI Attack 由 Controller Effect Phase Transition 提交，穩定暴露此 race。
+- **Patch 1 Differential**：Patch 1 只增加 AI Progress／MOVE_COMPLETED 與 Controller second-phase dispatch，未修改 damage、attack-impact Guard 或 Animation Profile；現象因此發生在新增 AI Attack 提交時序與既有 Animation Controller 的邊界。
+- **Attack ID Evidence**：
+  - Before：Attack `1` → `ANIMATION START` → `attack-abort` → no Impact、no HP change。
+  - After：Attack `1` → Clock initialized in frame → Impact Callback → Reducer Impact ACCEPTED → HP 80→70 / Applied 10 → Complete。
+- **Fix**：首個 Frame 若有效 `attackMotion` 的 Clock 尚未初始化，建立 0ms Clock；只對非法 Delta 或錯誤 Attack ID Abort。尚無權繞過 Impact Guard。
+- **Verification**：210/210 PASS（新增 2 項 Clock 初始化／ID tests），ESLint、Build、Diff Check PASS。Browser Ranger HP 70/80 與 Confirmed Attack Result 已確認。
+
+## M4-3 Patch 1
+
+- **BUG-M4-3-001 / Direct Attack Missing**：Decision Engine 與 Combat Reducer 可直接選取合法 ATTACK；原缺口是 Controller 中沒有可獨立驗證的 Direct Intent Layer，導致視覺缺失無法在 Controller Level 被精確重現。Patch 1 將 Controller next-intent 提取為純函式並加入 Regression。
+- **BUG-M4-3-002 / Move-to-Attack Missing**：`MOVING` 同時代表動畫進行與動畫完成後待攻擊，Controller 依 `movementUsed` 隱含推斷第二階段；原目標失效時只走 Standby，未以最新 Battle State retarget。
+- **Fix**：Movement Finish 原子寫入 `MOVE_COMPLETED`；Controller 只在此 Phase 提交後續 Attack，同一 Turn 允許 Move→Attack，並禁止在 MOVING 時發送 Attack。原目標失效後在最新 State 重新決定合法 Direct Target，否則有限 Standby。
+- **Guard Integrity**：Capability、Turn Context、Combat Availability、Busy、Destination 與 `canAttackTarget()` 均保留；`movementInitiationLocked` 只禁止再移動，不禁止 Move→Attack。
+- **Automated**：208/208 PASS；新增 5 項 Patch 1 Controller／Lifecycle Regression，原有 203 項全部保留。
+- **Browser Agent Evidence**：Turn 6 Goblin A 移動至 Ranger 附近後攻擊，Ranger HP 80→70；後續多個 Enemy Direct／Move Attack Cycle 持續 Impact 至 40，Turn 能正常回到玩家，無 Blocking Console Error。Product Owner Acceptance 尚未完成。
 
 ## DOC-01 狀態
 
@@ -89,12 +114,12 @@
 
 ## 尚未完成／已知限制
 
-- 正式敵方 AI、完整個體 Action Economy、技能、成長、劇情、存檔與 PWA。
+- M4-3 正式敵方 AI 尚待驗收；技能、成長、劇情、存檔、PWA 與勝敗尚未完成。
 - 技術債及 UX 項目詳見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) 與 [UX_BACKLOG.md](./UX_BACKLOG.md)。
 
 ## 已知阻擋問題
 
-目前無已知 M3 或 M4-1 驗收阻擋。M4-1 採條件式結案，未修復風險由 TD-016 至 TD-020 追蹤。
+目前無已知 M3、M4-1 或 M4-2 驗收阻擋。M4-3 尚有正式 Review／Acceptance 與完整 Browser Verification 待完成。
 
 ## M4-1 狀態
 
@@ -103,7 +128,7 @@
 - AGI 已更新為劍士 10、刺客 15、法師 10、牧師 12、遊俠 12、哥布林 10。
 - 玩家指令僅允許 Active Unit；待命及攻擊合法完成後自動排程下一位。致死攻擊等待所有阻擋性 Motion 結束。
 - 正式敵方 AI、個體 Action Economy、勝敗及 M7 效果尚未實作。
-- Development Build 提供「模擬敵方待命」；Production Build 不顯示該控制。
+- M4-1 當時的「模擬敵方待命」已由目前 M4-3 Capability AI Controller 取代。
 - Patch 1 移除「確認移動」，加入最小 Turn-scoped Movement Commitment；攻擊與待命維持隱式確認，Undo 是唯一解除未確認移動限制的操作。
 - Agent 原始 Browser Verification 保留其 PARTIAL 歷史；使用者後續已確認 M4-1 24/24、Patch 1 10/10 PASS。
 - User Acceptance：M4-1 與 Patch 1 均為 PASS。
@@ -118,12 +143,12 @@
 - Starting HEAD：`818cc6634bce89eaeffb4de13c98e9c9c05737fa`。
 - 已加入 Turn Action State、Movement／Combat Action Lifecycle、Turn-bound Command Context、Combat Reservation／Consumption、Movement Initiation Lock、Pre-/Post-impact Abort Integration 與 Turn Reset。
 - TD-016 已分離全域最小事件時間與 Tie-break，並加入 Near-tie／Round Boundary／Preview 與 10,000 次獨立 Oracle；TD-017 已完成 Command Context Audit；TD-020 具備長期理論抵達時間與行動次數驗證。
-- 以上修復仍保留 OPEN，等待 Review、正式驗收及 Git／CI Closure。
-- TD-018 留待 M7；TD-019 留待 M4-3。
-- 技術債統計：20 項；CLOSED 11、OPEN 8、PARTIALLY RESOLVED 1。
+- 以上修復已通過 M4-2 Formal Acceptance；對應 TD-016、TD-017 與 TD-020 已 CLOSED。
+- TD-018 留待 M7；TD-019 已由 M4-3 實作取代入口並進入 PENDING REVIEW。
+- 技術債統計：20 項；CLOSED 11、OPEN 7、PENDING REVIEW 1、PARTIALLY RESOLVED 1。
 - TD-016、TD-017、TD-020：CLOSED。
 - CR-01 至 CR-05：RESOLVED。
-- M4-3：UP NEXT — Enemy AI；M4-4：PENDING。本次未開始 M4-3。
+- M4-3：**IN DEVELOPMENT / PENDING ACCEPTANCE**；M4-4：PENDING。
 
 ### M4-2 Test Coverage Mapping（32 Planned Scenarios）
 
@@ -171,4 +196,4 @@ Final Addendum 額外證據：
 
 ## 下一步
 
-M4-2 Formal Closure 已納入 `f18f7aab2768e6fa5fcb1620243bf61c3a1779cf`；GitHub Actions Run `44472015253` SUCCESS。下一階段為 M4-3 Enemy AI，仍等待獨立開發規劃與授權。
+M4-2 Formal Closure 已納入 `f18f7aab2768e6fa5fcb1620243bf61c3a1779cf`；GitHub Actions Run `44472015253` SUCCESS。M4-3 已獲正式授權並進入 Implementation／Verification；正式驗收前不得升格 Completed、調整 Roadmap 百分比、開始 M4-4 或 Commit／Push。

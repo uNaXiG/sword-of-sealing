@@ -8,6 +8,7 @@ import {
   canConfirmAttack,
   canEnterAttackMode,
   canStandby,
+  canUseCombatAttack,
   createTurnActionState,
   matchesTurnContext,
 } from './battle.action.ts'
@@ -19,6 +20,8 @@ import { calculatePhysicalDamage } from './battle.damage.ts'
 import { isUnitAlive } from './battle.unit.ts'
 import { isUnitClass, validateAttackProperties } from '../classes/class.data.ts'
 import { getAttackProfile } from './battle.animation.ts'
+import type { AIAction } from './battle.ai.ts'
+import { isAuthorizedAIAction } from './battle.ai.ts'
 import {
   completeIndividualTurn,
   initializeTurnState,
@@ -46,7 +49,7 @@ export type BattleAction =
   | { type: 'consume-impact'; impactId: number }
   | { type: 'death-complete'; deathId: number; unitId: string }
   | { type: 'death-abort'; deathId: number; unitId: string }
-  | { type: 'simulate-enemy-standby'; turnId: number; unitId: string }
+  | AIAction
 
 export function createBattleState(units: readonly BattleUnit[], obstacles: readonly BattleObstacle[] = []): BattleState {
   for (const unit of units) {
@@ -98,6 +101,7 @@ export function createBattleState(units: readonly BattleUnit[], obstacles: reado
     nextDeathId: 1,
     defeatedUnits: [],
     confirmedImpacts: [],
+    aiProgress: null,
     turn,
     pendingTurnCompletion: null,
   }
@@ -236,6 +240,49 @@ function clearTurnContext(state: BattleState): BattleState {
     selectedAttackTargetId: null,
     lastAttackCommand: null,
     attackMotion: null,
+    aiProgress: null,
+  }
+}
+
+function reserveAttack(
+  state: BattleState,
+  attackerId: string,
+  targetId: string,
+): BattleState {
+  const attacker = state.units.find((unit) => unit.id === attackerId)
+  const target = state.units.find((unit) => unit.id === targetId)
+  const turnAction = state.turnAction
+  if (!attacker || !target || !turnAction) return state
+  const result = {
+    attackerId,
+    targetId,
+    ...calculatePhysicalDamage(attacker, target),
+  }
+  return {
+    ...state,
+    interactionMode: 'COMMAND',
+    selectedAttackTargetId: null,
+    lastAttackCommand: { attackerId, targetId },
+    lastAttackResult: null,
+    attackMotion: {
+      attackId: state.nextAttackId,
+      turnId: state.turn.turnId,
+      attackerId,
+      targetId,
+      from: { ...attacker.position },
+      to: { ...target.position },
+      animationType: getAttackProfile(attacker.class).type,
+      phase: 'PENDING_IMPACT',
+      result,
+    },
+    turnAction: {
+      ...turnAction,
+      movementInitiationLocked: true,
+      combatAction: 'RESERVED',
+      reservedAttackId: state.nextAttackId,
+    },
+    nextAttackId: state.nextAttackId + 1,
+    lastMove: null,
   }
 }
 
@@ -286,7 +333,8 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     if (!matchesTurnContext(state, action) || state.pendingTurnCompletion) return state
   }
 
-  if (action.type === 'simulate-enemy-standby') {
+  if (action.type.startsWith('ai-')) {
+    if (!isAuthorizedAIAction(action)) return state
     const activeUnit = state.units.find((unit) => unit.id === state.turn.activeUnitId)
     if (
       !activeUnit ||
@@ -297,7 +345,93 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       isBattleBusy(state) ||
       state.pendingTurnCompletion
     ) return state
+  }
+
+  if (action.type === 'ai-standby') {
+    const progress = state.aiProgress
+    if (progress && (
+      progress.turnId !== action.turnId ||
+      progress.unitId !== action.unitId
+    )) return state
     return advanceIndividualTurn(state, action)
+  }
+
+  if (action.type === 'ai-move') {
+    const turnAction = state.turnAction
+    if (
+      !turnAction ||
+      state.aiProgress ||
+      turnAction.movementUsed ||
+      turnAction.movementInitiationLocked ||
+      turnAction.combatAction !== 'AVAILABLE' ||
+      turnAction.turnId !== action.turnId ||
+      turnAction.unitId !== action.unitId
+    ) return state
+    const activeUnit = state.units.find((unit) => unit.id === action.unitId)
+    if (!activeUnit || activeUnit.faction !== 'enemy' || !isUnitAlive(activeUnit)) return state
+    if (action.targetId && !state.units.some((unit) =>
+      unit.id === action.targetId &&
+      unit.faction !== activeUnit.faction &&
+      isUnitAlive(unit),
+    )) return state
+    const destination = reachableForUnit(
+      state.units,
+      activeUnit.id,
+      state.obstacles.map(obstacleCell),
+    ).get(cellKey(action.destination))
+    if (!destination) return state
+    if (action.targetId) {
+      const hypotheticalUnits = state.units.map((unit) => unit.id === activeUnit.id
+        ? { ...unit, position: { ...action.destination } }
+        : unit)
+      if (!canAttackTarget(hypotheticalUnits, activeUnit.id, action.targetId)) return state
+    }
+    return {
+      ...state,
+      motion: {
+        motionId: state.nextMotionId,
+        turnId: action.turnId,
+        unitId: action.unitId,
+        path: destination.path.map((cell) => ({ ...cell })),
+        cost: destination.cost,
+      },
+      nextMotionId: state.nextMotionId + 1,
+      aiProgress: {
+        turnId: action.turnId,
+        unitId: action.unitId,
+        phase: 'MOVING',
+        targetId: action.targetId,
+      },
+      interactionMode: 'COMMAND',
+      selectedUnitId: null,
+      selectedAttackTargetId: null,
+      lastMove: null,
+    }
+  }
+
+  if (action.type === 'ai-attack') {
+    const progress = state.aiProgress
+    if (
+      (progress && (
+        progress.turnId !== action.turnId ||
+        progress.unitId !== action.unitId ||
+        progress.phase !== 'MOVE_COMPLETED' ||
+        !state.turnAction?.movementUsed
+      )) ||
+      (!progress && state.turnAction?.movementUsed)
+    ) return state
+    if (!canUseCombatAttack(state, action.unitId, action.targetId)) return state
+    const reserved = reserveAttack(state, action.unitId, action.targetId)
+    return reserved === state
+      ? state
+      : {
+        ...reserved,
+        aiProgress: {
+          turnId: action.turnId,
+          unitId: action.unitId,
+          phase: 'ATTACKING',
+        },
+      }
   }
 
   if (action.type === 'consume-impact') {
@@ -331,6 +465,17 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
 
   if (action.type === 'attack-impact') {
     const attack = state.attackMotion
+    if (import.meta.env?.DEV && attack) {
+      console.debug('[REDUCER IMPACT]', {
+        attackId: action.attackId,
+        motionAttackId: attack.attackId,
+        phase: attack.phase,
+        turnId: state.turn.turnId,
+        motionTurnId: attack.turnId,
+        combatAction: state.turnAction?.combatAction,
+        reservedAttackId: state.turnAction?.reservedAttackId,
+      })
+    }
     if (
       !attack ||
       attack.attackId !== action.attackId ||
@@ -340,7 +485,13 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       state.turnAction.unitId !== attack.attackerId ||
       state.turnAction.combatAction !== 'RESERVED' ||
       state.turnAction.reservedAttackId !== attack.attackId
-    ) return state
+    ) {
+      if (import.meta.env?.DEV) console.debug('[REDUCER IMPACT REJECTED]', {
+        attackId: action.attackId,
+        reason: 'guard-mismatch',
+      })
+      return state
+    }
     const attacker = state.units.find((unit) => unit.id === attack.attackerId)
     const target = state.units.find((unit) => unit.id === attack.targetId)
     if (
@@ -352,7 +503,13 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       cellKey(target.position) !== cellKey(attack.to) ||
       target.hp !== attack.result.previousHp ||
       !canAttackTarget(state.units, attack.attackerId, attack.targetId)
-    ) return abortAttack(state)
+    ) {
+      if (import.meta.env?.DEV) console.debug('[REDUCER IMPACT REJECTED]', {
+        attackId: action.attackId,
+        reason: 'snapshot-or-eligibility',
+      })
+      return abortAttack(state)
+    }
 
     const expected = calculatePhysicalDamage(attacker, target)
     if (
@@ -361,7 +518,20 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
       expected.previousHp !== attack.result.previousHp ||
       expected.remainingHp !== attack.result.remainingHp ||
       expected.isDefeated !== attack.result.isDefeated
-    ) return abortAttack(state)
+    ) {
+      if (import.meta.env?.DEV) console.debug('[REDUCER IMPACT REJECTED]', {
+        attackId: action.attackId,
+        reason: 'damage-snapshot',
+      })
+      return abortAttack(state)
+    }
+    if (import.meta.env?.DEV) console.debug('[REDUCER IMPACT ACCEPTED]', {
+      attackId: action.attackId,
+      targetId: target.id,
+      hpBefore: target.hp,
+      hpAfter: attack.result.remainingHp,
+      appliedDamage: attack.result.appliedDamage,
+    })
 
     const becomesDefeated = target.hp > 0 && attack.result.remainingHp === 0
     const deathMotion: DeathMotion | null = becomesDefeated
@@ -501,6 +671,11 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
         ...state.turnAction,
         movementUsed: true,
       },
+      aiProgress: state.aiProgress?.turnId === motion.turnId &&
+        state.aiProgress.unitId === motion.unitId &&
+        state.aiProgress.phase === 'MOVING'
+        ? { ...state.aiProgress, phase: 'MOVE_COMPLETED' }
+        : state.aiProgress,
       lastMove: {
         motionId: motion.motionId,
         turnId: motion.turnId,
@@ -590,40 +765,7 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     const targetId = state.selectedAttackTargetId
     const turnAction = state.turnAction
     if (!attackerId || !targetId || !turnAction) return state
-    const attacker = state.units.find((unit) => unit.id === attackerId)
-    const target = state.units.find((unit) => unit.id === targetId)
-    if (!attacker || !target) return state
-    const result = {
-      attackerId,
-      targetId,
-      ...calculatePhysicalDamage(attacker, target),
-    }
-    return {
-      ...state,
-      interactionMode: 'COMMAND',
-      selectedAttackTargetId: null,
-      lastAttackCommand: { attackerId, targetId },
-      lastAttackResult: null,
-      attackMotion: {
-        attackId: state.nextAttackId,
-        turnId: state.turn.turnId,
-        attackerId,
-        targetId,
-        from: { ...attacker.position },
-        to: { ...target.position },
-        animationType: getAttackProfile(attacker.class).type,
-        phase: 'PENDING_IMPACT',
-        result,
-      },
-      turnAction: {
-        ...turnAction,
-        movementInitiationLocked: true,
-        combatAction: 'RESERVED',
-        reservedAttackId: state.nextAttackId,
-      },
-      nextAttackId: state.nextAttackId + 1,
-      lastMove: null,
-    }
+    return reserveAttack(state, attackerId, targetId)
   }
 
   if (isBattleBusy(state)) {

@@ -6,6 +6,11 @@ import type { AttackAnimationClockRef } from '../hooks/useAttackAnimation'
 import AttackProjectile from './AttackProjectile'
 import HitEffect from './HitEffect'
 import FloatingDamage from './FloatingDamage'
+import { ensureAttackAnimationClock } from '../hooks/attackAnimationClock'
+
+function traceAttack(event: string, attackId: number, data: Record<string, unknown> = {}): void {
+  if (import.meta.env?.DEV) console.debug('[ATTACK EVENT]', { event, attackId, ...data })
+}
 
 export default function AttackAnimationController({
   attackMotion,
@@ -38,6 +43,10 @@ export default function AttackAnimationController({
         clockRef.current = { attackId: attackMotion.attackId, elapsedMs: 0, frame: getAttackTimelineFrame(0, profile) }
       }
       latestAttackId.current = attackId
+      traceAttack('ANIMATION START', attackMotion.attackId, {
+        animationType: attackMotion.animationType,
+        phase: attackMotion.phase,
+      })
     } else {
       clockRef.current = null
       latestAttackId.current = null
@@ -47,6 +56,7 @@ export default function AttackAnimationController({
       queueMicrotask(() => {
         if (isCurrentGeneration(generationRef, generation) && latestAttackId.current === attackId && attackId !== null) {
           onAbort(attackId)
+          traceAttack('ANIMATION CLEANUP ABORT', attackId)
         }
       })
     }
@@ -59,8 +69,12 @@ export default function AttackAnimationController({
       return
     }
     const profile = getAttackProfileFromMotion(attackMotion)
+    if (!clockRef.current) {
+      clockRef.current = ensureAttackAnimationClock(clockRef.current, attackMotion.attackId, profile)
+      traceAttack('CLOCK INITIALIZED IN FRAME', attackMotion.attackId)
+    }
     const clock = clockRef.current
-    if (!clock || clock.attackId !== attackMotion.attackId) {
+    if (clock.attackId !== attackMotion.attackId) {
       onAbort(attackMotion.attackId)
       return
     }
@@ -72,10 +86,12 @@ export default function AttackAnimationController({
 
     if (events.impact && !emittedImpacts.current.has(attackMotion.attackId)) {
       emittedImpacts.current.add(attackMotion.attackId)
+      traceAttack('IMPACT CALLBACK', attackMotion.attackId)
       onImpact(attackMotion.attackId)
     }
     if (events.complete && !emittedCompletions.current.has(attackMotion.attackId)) {
       emittedCompletions.current.add(attackMotion.attackId)
+      traceAttack('COMPLETE CALLBACK', attackMotion.attackId)
       onComplete(attackMotion.attackId)
     }
   })

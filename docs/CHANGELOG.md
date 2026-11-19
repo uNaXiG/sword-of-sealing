@@ -2,6 +2,36 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-19 — M4-3 Enemy AI — IN DEVELOPMENT / PENDING ACCEPTANCE
+
+- **Added**：純 Rule-based Tactical AI，依 Direct Attack、Kill／Applied Damage、Move-to-Attack、Path-cost Approach、No-oscillation Standby 產生確定性 Decision。
+- **Added**：私有 Capability AI Action、Faction-neutral Combat Revalidation、Turn-scoped AI Progress 與 StrictMode-safe React Controller。
+- **Changed**：敵方移動重用 Movement Motion；敵方攻擊重用 Attack Reservation、Impact、Confirmed Impact、Death Barrier 與 Turn Completion。
+- **Removed**：Development-only `simulate-enemy-standby` UI／Reducer 入口。
+- **Verification**：`npm test` 203/203 PASS（新增 22 項 AI Decision／Reducer／Lifecycle Tests）；`npm run lint` PASS；`npm run build` PASS，保留既有 Battle Chunk > 500 kB warning。
+- **Browser**：Agent 實測 Enemy Batch 自動由 Turn 6–8 推進至玩家 Turn 9、敵方回合無玩家控制按鈕，並驗證離開／重入後乾淨初始化。特殊戰術、Abort 與 Death Browser Scenarios 尚待 Product Owner Acceptance；對應 Node Deterministic Fixtures 已覆蓋。
+- **Status**：M4-3 **IN DEVELOPMENT / PENDING ACCEPTANCE**；M4 維持 50%、Overall 35.0%；M4-4 PENDING；TD-019 PENDING REVIEW。
+- **Git / Scope**：未 Commit、未 Push、未開始 M4-4。
+
+## 2026-11-19 — M4-3 Patch 2 — Enemy Impact Regression Fix
+
+- **Fixed / BUG-M4-3-003**：AttackMotion 先被 `useFrame` 觀察、Clock 仍未由 Effect 初始化時，不再誤派 Pre-impact Abort。
+- **Root Cause**：Patch 1 Effect-driven AI Attack 暴露既有 Animation Controller 的 Clock Initialization Race；不是 Impact Guard、Damage Formula 或 UI State mismatch。
+- **Changed**：首個合法 Frame 以 Attack ID 建立 0ms Clock；非法 Delta／錯誤 Attack ID 仍 Abort。
+- **Verification**：`npm test` 210/210 PASS；`npm run lint` PASS；`npm run build` PASS；Diff Check PASS。
+- **Trace / Browser**：Attack 1 依序產生 Impact Callback、Reducer ACCEPTED、Applied Damage 10；Ranger HP 80→70，Confirmed Impact 與 Floating Damage 顯示一致，無新增 Blocking Error。
+- **Status**：M4-3 **IN DEVELOPMENT / PENDING ACCEPTANCE**；TD-019 PENDING REVIEW；Product Owner Acceptance 未完成。
+
+## 2026-11-19 — M4-3 Patch 1 — Enemy Attack Lifecycle Fix
+
+- **Fixed / BUG-M4-3-001**：Direct Attack Controller Intent 可獨立驗證，合法 Active Enemy 不落入 Standby。
+- **Fixed / BUG-M4-3-002**：Movement Finish 明確轉換 `MOVING → MOVE_COMPLETED`；Controller 使用最新 State 提交同 Turn Attack。
+- **Fixed**：Move 後原目標失效時執行一次合法 Direct Target Re-decision，無目標則安全 Standby。
+- **Preserved**：Capability、Turn Context、Movement Initiation Lock、Action Economy、Reservation、Impact、Death Barrier、PAS 與 Replay Guard。
+- **Verification**：`npm test` 208/208 PASS；`npm run lint` PASS；`npm run build` PASS；`git -c core.whitespace=cr-at-eol diff --check` PASS。Build 保留既有 Battle Chunk warning。
+- **Browser**：Ranger 於 Goblin Move-to-Attack 後 HP 80→70；多敵人後續 Direct／Move Attack 循環持續正確扣血，Turn 無重複／卡死，無新增 Blocking Console Error。
+- **Status**：M4-3 **IN DEVELOPMENT / PENDING ACCEPTANCE**；M4 50%、Overall 35.0%；TD-019 PENDING REVIEW；未 Commit／Push。
+
 ## 2026-11-19 — M4-2 Final Verification Addendum
 
 - **Added / FV-01**：同一 Scheduler 連續排程 10,000 個 Near-tie Event，驗證 Turn ID、Battle Time、Round、Remaining Distance 及獨立 Arrival Queue Oracle；不重建 Turn State。

@@ -293,9 +293,39 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 正式初始戰場前 17 次順序與 Round 邊界由 [battle.turn.test.mjs](../tests/battle.turn.test.mjs) 驗證。
 
-M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。正式敵方 AI、勝敗或 M7 效果仍未實作。Development Build 可使用「模擬敵方待命」；Production Build 不顯示此控制。
+M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 AI 已進入 Implementation／Verification；勝敗或 M7 效果仍未實作。
 
-M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案；TD-019 的敵方指令核心授權仍留待 M4-3。
+M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案；TD-019 的正式 AI 入口已實作，等待 M4-3 Verification、Architecture Review 與 Product Owner Acceptance。
+
+## M4-3 Rule-based Tactical AI
+
+M4-3 目前為 IN DEVELOPMENT / PENDING ACCEPTANCE：
+
+- Active Enemy Turn 由獨立 React Controller 自動觀察；Player Turn 不提交 AI Action。
+- `decideEnemyTurn()` 為純確定性函式；輸入不修改、不 Dispatch、不使用隨機數或真實時間。
+- Direct Attack 優先；目標依擊倒、Applied Damage、Initial Order、Unit ID 排序。
+- 無直接攻擊時枚舉合法可達格，產生 Move-to-Attack；依擊倒、Damage、Move Cost、Initial Order、目的地 Row／Column、Unit ID 排序。
+- 無本回合攻擊時，從所有合法 Grid Cell 計算未來攻擊位置的 Terrain／Obstacle／Occupancy Path Cost，只在剩餘成本嚴格改善時 Approach。
+- AI Move 使用既有 Motion；AI Attack 使用相同 Attack Pattern、Damage、Reservation、Impact、Confirmed Impact、Abort、Death Motion 與 Turn Completion。
+- AI Action 需具有模組私有 Capability；Reducer 重新驗證 Context、Faction、Alive、Action State、Busy、Destination、Target 與 Lifecycle Phase。
+- Pre-impact Abort 由有限 Standby Recovery 收尾；Post-impact Abort 保留傷害與消耗狀態。
+- 沒有存活玩家時 Controller 安全停止，不建立勝敗結果，不連續推進 PAS。
+
+正式 AI 已移除 `simulate-enemy-standby` UI／Reducer 入口；TD-019 等待 Architecture Review。
+
+### M4-3 Patch 1：Move-to-Attack Phase Integrity
+
+- Enemy Move 的 Reducer Finish 事件將 AI Progress 從 `MOVING` 原子切為 `MOVE_COMPLETED`。
+- Controller 只在 `MOVE_COMPLETED` 且已消耗 Movement Action 時提交後續 AI Attack。
+- Attack 使用最新 Unit Position／Turn State 重新驗證。若原目標失效，Controller 最多以同一 State 重新決定一次合法 Direct Target；否則有限 Standby。
+- `movementInitiationLocked` 只阻擋再度 Move，不阻擋已完成 Move 後 Attack。
+- Direct Attack、Move-to-Attack、Attack Retry、Abort Recovery 均保持 Capability、Turn Context、Reservation、Impact 與 Death Barrier。
+
+### M4-3 Patch 2：Impact Clock Race
+
+Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `useFrame` 觀察，`useEffect` 尚未建立 Animation Clock。既有 Controller 將 null Clock 視為錯誤並在 Impact 前 Abort，因此動畫曾短暫顯示但 HP 不變。
+
+有效 Attack 的首個 Frame 現在建立與 Attack ID 相符的 0ms Clock；非法 Delta、錯誤 Attack ID 與過期 Clock 仍保留 Abort。正常流程為 Callback → `attack-impact` → Reducer Guard → HP／Confirmed Impact → Complete。此修正不在 Confirm、AI Controller 或 Renderer 預先扣血。
 
 ## 初始測試戰場
 
@@ -314,7 +344,7 @@ M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、18
 
 ## 已知限制
 
-- 無正式敵方 AI、勝敗、技能或 M7 效果。
+- M4-3 敵方 AI 尚待正式驗收；無勝敗、技能或 M7 效果。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
 - 尚未導入攻擊音效、正式骨架動畫或 Physics；目前的死亡演出使用 Placeholder 模型。
 - UI 目前要求選取目標後再確認攻擊。

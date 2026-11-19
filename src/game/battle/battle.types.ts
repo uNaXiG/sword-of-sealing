@@ -102,6 +102,25 @@ export type BattleMoveRecord = {
   cost: number
 }
 
+export type AIProgress =
+  | {
+    turnId: number
+    unitId: string
+    phase: 'MOVING'
+    targetId: string | null
+  }
+  | {
+    turnId: number
+    unitId: string
+    phase: 'MOVE_COMPLETED'
+    targetId: string | null
+  }
+  | {
+    turnId: number
+    unitId: string
+    phase: 'ATTACKING'
+  }
+
 export type BattleState = {
   units: BattleUnit[]
   obstacles: BattleObstacle[]
@@ -120,6 +139,7 @@ export type BattleState = {
   nextDeathId: number
   defeatedUnits: DefeatedUnitRecord[]
   confirmedImpacts: ConfirmedImpactEvent[]
+  aiProgress: AIProgress | null
   turn: BattleTurnState
   pendingTurnCompletion: PendingTurnCompletion | null
 }
