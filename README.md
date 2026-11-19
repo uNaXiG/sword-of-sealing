@@ -2,7 +2,7 @@
 
 使用 React、TypeScript、Vite 和 React Three Fiber 製作的奇幻 RPG 原型。
 
-目前 M1–M3 已完成；M4-1、M4-2 與 M4-3 已依各自驗收狀態結案。M4-4A End Condition Framework & Battle Outcome 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Patch 1 為 **COMPLETED — ACCEPTED**，Final Review Correction 為 **COMPLETED — VERIFIED**。M4-4B Overlay、Restart 與 Keyed Session Isolation 已 **COMPLETED — CONDITIONALLY ACCEPTED**：Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance 10/10 PASS、Conditional Closure APPROVED。M4-4B Verified Repository Commit 為 `e299fa48e28d16e24aadba9cc7925bedf4d53895`；GitHub Actions Run [44605672030](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44605672030) SUCCESS，Branch 與 Head SHA 相符。驗證基準為 265/265 Automated Tests、29/29 React Integration、2/2 Session Tests、Lint、Build PASS；Build 保留既有 >500 kB Battle Chunk warning。Agent 原始 WebGL fallback 與 PARTIAL／NOT VERIFIED 紀錄仍保留；Product Owner 另完成 BV-B01～B10 10/10 PASS。RC-M4-4B-07 與 RV-M4-4B-01～03 移交 M4-4C；自動化追溯仍為 28 PASS／2 PARTIAL，AC 綜合結果為 36 PASS／1 PARTIAL。M4-4 Formal Acceptance 仍 PENDING；M4 維持 75%、Overall 37.5%，M4-4C 為下一階段。
+M1–M3 已完成。M4 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；M4-4A 正式通過，M4-4B 與 M4-4C 為 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**，VA1 **COMPLETED — ACCEPTED**。Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance APPROVED。Repository Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b` 的 GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS，GitHub Pages Deployment SUCCESS；該基準為 271/271 Automated Tests、6/6 Production Route Integration、Lint 與 Build PASS。Product Owner BV-C01～C14 14/14 PASS 是 VA1 前取得並由正式結案採認的功能驗收，不是 VA1 後重測。GPU 資源限制保留為 TD-010：AC-C25～C28 延後驗證，未宣稱 GPU Disposal 已完整驗證。M4 進度 100%、Overall 40%（4/10 milestones）；M5 戰鬥 UI／UX 為 **NEXT — PENDING DEVELOPMENT**。
 
 ## Project Documentation
 
@@ -58,9 +58,9 @@ npm run dev
 
 ## PAS 個體回合
 
-PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Scheduler 先選取真正最小 Action Value，再依 Time Epsilon 建立 Tie Candidate；Preview 共用相同規則。M4-3 已以受控 Capability Action 連接正式 Enemy AI Controller，並已通過 Product Owner Browser Acceptance、Architecture Review 與 Code Review。M4-4A 已正式結案；M4-4B 已條件式驗收，M4-4C 負責整體 M4-4 的 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance。
+PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Scheduler 先選取真正最小 Action Value，再依 Time Epsilon 建立 Tie Candidate；Preview 共用相同規則。M4-3 已以受控 Capability Action 連接正式 Enemy AI Controller，並通過 Product Owner Browser Acceptance、Architecture Review 與 Code Review。M4 的 Reducer、PAS、AI、End Condition、Outcome、Result Dialog、Restart 與 Session Isolation 均已正式結案；M4-4C 的 GPU Resource Verification 保留核准延後限制，詳見 [Development Status](docs/DEVELOPMENT_STATUS.md) 與 [Technical Debt](docs/TECHNICAL_DEBT.md)。
 
-戰鬥的正式 `BattleState.outcome` 提交為 VICTORY 或 DEFEAT 後，會顯示對應的模態結果 Overlay；Restart 會在相同 Battle Route 以新 Session 重建正式 Scenario，不重新載入頁面。結果介面不新增戰利品、經驗值或成長結算。M4-4B 已完成條件式驗收；M4-4C 已完成部分 Production Route／Session Isolation／Outcome 整合驗證，仍有 GPU 資源量測與終局 Browser 情境待驗證並等待 Independent Review。M4-4 Formal Acceptance 尚未完成；逐項證據見 [Development Status](docs/DEVELOPMENT_STATUS.md)。
+戰鬥的正式 `BattleState.outcome` 提交為 VICTORY 或 DEFEAT 後，會顯示對應的模態結果 Overlay；Restart 會在相同 Battle Route 以新 Session 重建正式 Scenario，不重新載入頁面。結果介面不新增戰利品、經驗值或成長結算。M4-4B／M4-4C 與 M4 均已正式結案；Product Owner BV-C01～C14 14/14 PASS 由正式結案採認，但不是 VA1 後重測。WebGL 的 `renderer.info.memory`、GPU Disposal 及長時間資源穩定性仍未驗證，AC-C25～C28 依核准決議延後至 TD-010；不因此宣稱無資源洩漏。M5 尚未開始，逐項基準見 [Development Status](docs/DEVELOPMENT_STATUS.md)。
 
 若要調整職業平衡，請修改 `CLASS_DEFINITIONS`；若要新增測試角色，使用 `createBattleUnit()` 並指定 ID、職業、陣營與座標，可選擇覆寫顯示名稱。初始戰場包含五名我方職業與三隻各自擁有獨立 HP／SP 的哥布林。死亡佔位與移除規則見 [Combat System](docs/COMBAT_SYSTEM.md)。
 

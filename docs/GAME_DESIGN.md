@@ -32,7 +32,7 @@
 - 最終設計為每回合一次移動加一次戰鬥行動；M4-1 僅具最小 Turn-scoped Movement Commitment，不代表完整 Action Economy 已完成。
 - M4-1 已實作最小 Turn-scoped 移動限制：每個個體 Turn 最多移動一次；合法 Undo 可解除限制。完整 Action Economy 仍由 M4-2 處理。
 - M4-2 已實作完整個體 Action Economy：每個 Turn 最多一次有效移動及一次成功結算的普通攻擊；允許先移動再攻擊，不允許先確認攻擊再移動。
-- M4-2 與 Patch 1 已正式驗收；M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 COMPLETED — FORMALLY ACCEPTED。M4-4A End Condition Framework & Battle Outcome 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Patch 後 Product Owner Browser Acceptance BV-A01～A05 5/5 PASS。Patch 前 Product Owner Acceptance 與 Agent 原始 Browser PARTIAL／NOT VERIFIED 紀錄均保留為獨立歷史證據。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**：Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895`／GitHub Actions Run [44605672030](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44605672030) SUCCESS；Product Owner BV-B01～B10 10/10 PASS、Independent Code Review APPROVED WITH LIMITATIONS。M4-4B 自動化追溯仍為 28 PASS／2 PARTIAL，AC 為 36 PASS／1 PARTIAL；M4-4 Formal Acceptance 尚待 M4-4C。
+- M4-2 與 Patch 1 已正式驗收；M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 COMPLETED — FORMALLY ACCEPTED。M4-4A End Condition Framework & Battle Outcome 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Patch 後 Product Owner Browser Acceptance BV-A01～A05 5/5 PASS。Patch 前 Product Owner Acceptance 與 Agent 原始 Browser PARTIAL／NOT VERIFIED 紀錄均保留為獨立歷史證據。M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4 Formal Closure Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`／GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS。PO BV-C01～C14 為 VA1 前取得的 14/14 PASS 功能驗收，不是 VA1 後重測；Agent 原始 Browser PARTIAL／NOT VERIFIED 紀錄分開保留。GPU disposal、`renderer.info.memory` 與長時間資源穩定性核准延後至 TD-010。
 - 合法 Undo 只可在攻擊確認前復原移動並恢復 Movement Action。確認攻擊會清除 Undo、鎖定後續移動，系統 Impact 才消耗 Combat Action。
 - Pre-impact Abort 是系統異常復原：不扣血、不完成 Turn，Combat Action 回到 AVAILABLE，但既有移動不恢復、Movement Initiation Lock 不解除。玩家沒有主動 Abort 入口。
 - 合法 Impact、攻擊完成或待命後完成目前 Turn；單純移動、Undo、Cancel Mode 或 Pre-impact Abort 不推進 PAS。新 Turn 依 `turnId/unitId` 重新初始化全部行動權。
@@ -47,18 +47,19 @@
 - AllDead 依初始參戰名冊及正式 DefeatedUnitRecord 判定；HP 歸零或死亡動畫尚未結束不算正式全滅。
 - Outcome 僅於阻擋 Motion 結束後結算，並在 PAS 下一回合排程前處理。終局後戰鬥與 AI 指令不再生效。
 - 新 Condition 可透過獨立策略類別及 Scenario Configuration 擴充；逃生、指定角色死亡及回合限制尚未實作。
-- M4-4A End Condition Framework & Battle Outcome、Patch 1 與 Final Review Correction 均已於 2026-11-20 正式結案。BV-A01～A05 Patch 後 Product Owner Acceptance 5/5 PASS；Agent 原始 Browser 驗證結果不改寫。M4-4B 的勝敗 Overlay、Restart 與 Session Isolation 已 **COMPLETED — CONDITIONALLY ACCEPTED**，Product Owner Browser Acceptance 10/10 PASS；Agent 原始 WebGL fallback／PARTIAL／NOT VERIFIED 結果仍分列保留。RC-M4-4B-07 與 RV-M4-4B-01～03 移交 M4-4C；M4-4 Formal Acceptance 仍 PENDING。
+- M4-4A、Patch 1 與 Final Review Correction 均已於 2026-11-20 正式結案。M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4 Formal Closure Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b` 的 GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS。Product Owner BV-C01～C14 為 14/14 PASS，屬 VA1 前取得的功能驗收；Agent 原始 Browser PARTIAL／NOT VERIFIED 結果另行保留。RV-M4-4B-02／GPU 資源驗證核准延後至 TD-010；不宣稱 GPU Disposal 已完整驗證。
 
 ## M4-4B：勝敗結果與重新挑戰
 
 - 只有正式 `BattleState.outcome` 為 `VICTORY` 或 `DEFEAT` 時才顯示結果介面；勝利文案為「戰鬥勝利／已成功殲滅敵方部隊」，失敗文案為「戰鬥失敗／我方部隊已全數陣亡」。Death Motion 或 HP 歸零本身不提前顯示結果。
 - 結果介面以原生 Modal Dialog 呈現；戰場仍作背景，但終局時不能操作背景。勝利使用金色強調，失敗使用低飽和紅色，並支援 `prefers-reduced-motion`。
 - 「重新挑戰」保留 Battle Route，依相同正式 Scenario 設定建立全新 Session，恢復單位、障礙、PAS／行動資源及 UI／動畫生命週期；不從終局 State 回推初始資料。
-- 不含 EXP、Gold、Loot、Battle Statistics、Level Up 或 Story Progression。M4-4B 狀態為 **COMPLETED — CONDITIONALLY ACCEPTED**；M4-4C 為下一階段，接續剩餘驗證及整體正式結案。
+- 不含 EXP、Gold、Loot、Battle Statistics、Level Up 或 Story Progression。M4-4B／M4-4C 已完成正式結案（含限制）；M4 整體 100%，Overall 40%。上述功能維持未實作範圍。
 
-## 規劃中：未來系統
+## M5 與規劃中：未來系統
 
-- M4-4C：Final Regression、Browser Verification、Independent Review 與 Formal Acceptance；目前已實作部分 Production Route Integration 驗證，但 GPU Resource Stats、終局 Browser 情境與若干驗收項目仍未驗證。M4-4C 維持 IN PROGRESS／REVIEW PENDING；M4-4 Formal Acceptance 尚未完成。詳見 [Development Status](./DEVELOPMENT_STATUS.md)。
+- M5 — 戰鬥 UI／UX：**NEXT — PENDING DEVELOPMENT**。本次 M4 結案文件同步不開始 M5 實作。
+- M4-4C 已 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**。GPU `renderer.info.memory`、GPU Disposal 與長時間資源穩定性仍 NOT VERIFIED，核准延後至 TD-010；不回溯改寫 Agent 原始驗證結果。詳見 [Development Status](./DEVELOPMENT_STATUS.md)。
 - 多角色完整行動限制。
 - 技能、裝備、經驗值、等級與成長。
 - 戰鬥勝負與關卡。

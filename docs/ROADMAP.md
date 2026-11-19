@@ -14,6 +14,7 @@
 | COMPLETED | 已實作、已驗收且已納入確認基準 |
 | COMPLETED — Conditional Closure | 功能、驗收、Git／CI 已確認；核准延後的風險已登錄且尚未修復 |
 | COMPLETED — CONDITIONALLY ACCEPTED | 已完成實作與 Product Owner 驗收；審查限制及延後驗證項目已記錄並移交後續階段 |
+| COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS | 正式結案核准；已驗證的限制與延後項目明確記錄，不代表相關延後驗證通過 |
 
 ## M1：基礎 3D 戰場 — COMPLETED
 
@@ -52,7 +53,7 @@
 
 M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
-## M4：動態回合制與敵方 AI — IN PROGRESS（75%）
+## M4：動態回合制與敵方 AI — COMPLETED（100%）
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
@@ -61,16 +62,16 @@ M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./D
 | M4-2 | Individual Action Economy & Turn State Reset | COMPLETED — Formal Acceptance Approved |
 | M4-2 Patch 1 | Code Review Hardening & Verification | COMPLETED |
 | M4-3 | 敵方移動與攻擊決策 | COMPLETED — FORMALLY ACCEPTED |
-| M4-4 | 勝利、失敗與戰鬥結束 | IN PROGRESS |
+| M4-4 | 勝利、失敗與戰鬥結束 | COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS |
 | M4-4A | Extensible End Condition Architecture & Battle Resolution | COMPLETED — FORMALLY ACCEPTED |
-| M4-4B | Overlay、Restart 與 Session Isolation | COMPLETED — CONDITIONALLY ACCEPTED |
-| M4-4C | Final Regression、Browser Verification、Independent Review 與 Formal Acceptance | IN PROGRESS — PARTIAL VERIFICATION; REVIEW PENDING |
+| M4-4B | Overlay、Restart 與 Session Isolation | COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS |
+| M4-4C | Final Regression、Browser Verification、Independent Review 與 Formal Acceptance | COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS |
 
-M4-1 與 M4-2 均已完成。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收結案。M4-4A End Condition Framework & Battle Outcome 已於 2026-11-20 完成正式結案：Patch 1 **COMPLETED — ACCEPTED**，Final Review Correction **COMPLETED — VERIFIED**；Architecture Review、Independent Code Review、Product Owner Acceptance 與 Formal Closure 均 APPROVED。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**：Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Browser Acceptance BV-B01～B10 10/10 PASS、Conditional Closure APPROVED。M4-4B Feature Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895` 對應 GitHub Actions Run [44605672030](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44605672030) SUCCESS。M4-4C 開始基準 `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9` 對應 Run [44607801214](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44607801214) SUCCESS；本次本機驗證為 270/270 Tests、Lint 與 Build PASS，Build 保留既有 >500 kB Battle Chunk warning。Production Route Integration 與部分 Browser Regression 已有證據，但 GPU Renderer Stats、終局 Browser 情境及其他未完成項目仍待驗證；M4-4C 維持 IN PROGRESS、等待 Independent Review 與 Product Owner Acceptance。M4-4B 原 Agent WebGL fallback 紀錄不回溯改寫。M4-4B 原始自動化 Test Traceability 為 28 PASS／2 PARTIAL，綜合 AC 為 36 PASS／1 PARTIAL；B-T06、B-T30 與 AC-B30 的原狀保留。RC-M4-4B-07 及 RV-M4-4B-01～03 的證據與限制見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)，未宣告正式關閉。M4-4B Patch 1 未啟動，M4-4 Formal Acceptance 仍 PENDING。M4 維持 75%；Overall 維持 37.5%。
+M4-1～M4-3 與 M4-4A 均已完成。M4-4 正式結案日期為 2026-11-20，Verified Repository Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b` 對應 GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS；271/271 Automated Tests、6/6 Production Route Integration、ESLint、Production Build 與 GitHub Pages Deployment PASS。Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance APPROVED。PO BV-C01～C14 為 14/14 PASS，於 VA1 前取得並由正式結案採認，並非 VA1 後重測。保留 Agent 原始 PARTIAL／NOT VERIFIED 紀錄。C-T01～C36 36/36 PASS（依各項範圍及限制）；AC-C01～C45 統計為 40 PASS、1 PASS WITH APPROVED LIMITATIONS、4 PARTIAL — APPROVED DEFERRAL。RV-M4-4B-01／03 CLOSED — VERIFIED；RV-M4-4B-02 PARTIAL — DEFERRED TO TD-010。`renderer.info.memory`、GPU Disposal 與長時間資源穩定性未驗證。M4 Progress 100%；M1–M4 100%，M5–M10 0%，Completed Milestones 4/10，Overall 40%。完整結案證據見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
-M4-4C Verification Addendum 1 已補足 Production Victory／Defeat Route unmount 測試、十次 Restart 的逐次 lifecycle assertion，以及 Timer／Listener／Deferred Work 證據；`npm test` 為 271/271，Production Route Integration 為 6/6。VA1 WebGL 量測完成 2 次 warm-up 與 10 次往返，14 個已觀察 Context 均有對應 Loss Event，惟 `renderer.info.memory` 仍不可用，因此 GPU Resource Lifecycle 維持 PARTIAL。M4-4C 仍 IN PROGRESS，Independent Review 與 Product Owner Acceptance PENDING；M4 維持 75%、Overall 37.5%，不開始 M5。
+M4-4C Verification Addendum 1 補足 Production Victory／Defeat Route unmount 測試、十次 Restart 的逐次 lifecycle assertion，以及 Timer／Listener／Deferred Work 證據；正式基準為 271/271 Automated Tests、6/6 Production Route Integration。VA1 WebGL 量測觀察 14/14 Context Loss identity matches，最後 Route exit 後 0 connected Canvas；`renderer.info.memory`、GPU Disposal 與長時間資源穩定性仍 NOT VERIFIED，已核准延後至 TD-010。此為正式結案限制，不代表 GPU Resource Lifecycle 完整通過。
 
-## M5：戰鬥 UI／UX — PENDING
+## M5：戰鬥 UI／UX — NEXT — PENDING DEVELOPMENT
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
@@ -126,4 +127,4 @@ M5-2 包含 [UX-001 至 UX-005](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV
 | M10-3 | 效能、手機及桌面適配 | PENDING |
 | M10-4 | GitHub Pages 正式發布 | PENDING |
 
-M5 完成後預計形成第一個可遊玩的戰鬥 Demo。主要里程碑完成度為 M1 100%、M2 100%、M3 100%、M4 75%、M5–M10 0%；完整結案主要里程碑仍為 3/10，M4 目前進行至 75%，等權重進度為 37.5%。此為 Roadmap Completion Percentage，不是實際工時比例。
+主要里程碑完成度為 M1–M4 100%、M5–M10 0%；完整結案主要里程碑為 4/10，等權重 Overall 40%。M5 完成後預計形成第一個可遊玩的戰鬥 Demo。此為 Roadmap Completion Percentage，不是實際工時比例。

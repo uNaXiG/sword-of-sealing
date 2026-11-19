@@ -2,7 +2,20 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
-## 2026-11-20 — M4-4C Verification Addendum 1 (Review Pending)
+## 2026-11-20 — M4 Formal Closure & Documentation Synchronization
+
+- **Formal Acceptance**：M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B、M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；VA1 **COMPLETED — ACCEPTED**；M4 Combat System 與 M4 **COMPLETED — FORMALLY ACCEPTED**。Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance APPROVED。
+- **Verified Repository / CI**：Branch `main`、Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`、GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS；GitHub Pages Deployment SUCCESS。CI log 確認 271/271 Automated Tests PASS；Production Route Integration 6/6、ESLint、Production Build 與 Agent Diff Check PASS。
+- **Product Owner Acceptance**：2026-11-20 BV-C01～C14 14/14 PASS。該功能驗收於 VA1 前取得並由正式結案採認，不是 VA1 後重新執行的 Browser Regression。Agent 原始 PARTIAL／NOT VERIFIED 紀錄維持原狀；PO BV-C13 PASS 不表示 GPU disposal 已完整驗證。
+- **VA1 Review / Traceability**：VA1-01 APPROVED；VA1-02 APPROVED WITH LIMITATIONS；VA1-03 APPROVED WITHIN REACT HARNESS SCOPE；VA1-04 PARTIAL — DEFERRED；VA1-05／06／07 APPROVED。C-T01～C-T36 36/36 PASS（依各項範圍與限制）；AC-C01～C45 統計為 40 PASS、1 PASS WITH APPROVED LIMITATIONS、4 PARTIAL — APPROVED DEFERRAL。
+- **Residual Verification**：RV-M4-4B-01／03 CLOSED — VERIFIED；RV-M4-4B-02 PARTIAL — DEFERRED TO TD-010；RC-M4-4B-07 ACCEPTED WITH LIMITATIONS；RC-M4-4B-08 CLOSED。B-T06 維持 Automated PARTIAL；B-T30／AC-B30 的 GPU Lifecycle 維持 PARTIAL 並核准延後。
+- **TD-010**：14/14 observed Context Loss identity matches、final Route exit 後 0 connected Canvas、JS Heap 約 93.02–110.18 MB、Final Menu Heap 107,159,387 bytes；`renderer.info.memory`、GPU Disposal 與長時間資源穩定性 NOT VERIFIED。沒有已確認可重現的 Resource Leak，但不宣稱不存在 Leak；建議於 M10 效能／穩定性窗口進一步量測。TD-010 維持 PARTIALLY RESOLVED；其他技術債與 UX Backlog 未變更。
+- **Roadmap**：M1–M4 100%；M5–M10 0%；Completed Milestones 4/10；Overall 40%。M5 — 戰鬥 UI／UX 為 NEXT — PENDING DEVELOPMENT。M4 Closure 不宣告所有 GPU 資源已完整驗證。
+- **Scope / Verification**：本紀錄依 2026-11-20 Formal Closure 決議同步；Verified Commit／CI 是已驗證基準，不是本次文件異動的提交或 CI。Closure documentation changes 尚未提交；不包含 Runtime、Test Source、Dependency 或 User-owned Asset 異動，不 Commit／Push。
+
+> 下列 VA1／M4-4B 記錄保留各階段當時狀態，是歷史快照；其 Review、Acceptance、M4／Roadmap 目前狀態由本 Formal Closure 記錄取代。Agent 原始驗證結果仍按原證據保留。
+
+## 2026-11-20 — M4-4C Verification Addendum 1 (Historical Snapshot — Review Pending)
 
 - **Baseline**：VA1 以 `main`／HEAD `5006b4bb618088d0d342a2313c1a4b60a526d7da` 為基準；GitHub Actions Run [44614674924](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44614674924) SUCCESS，該 CI 不涵蓋本次未提交 Test／Documentation changes。
 - **Production Lifecycle Tests**：原有 5 項 Route Integration Tests 保留；新增正式 Victory／Defeat Overlay Route unmount 測試，完整檢查離場 cleanup、新 ACTIVE Session 與舊 callback 隔離。十次有效 Restart 現逐次檢查 Generation、初始 State、Controller／Frame／Canvas cleanup 與穩定資源數量。
@@ -11,7 +24,7 @@
 - **Automated Verification**：`npm test` 271/271 PASS；Production Route Integration 6/6 PASS；`npm run lint` PASS；`npm run build` PASS，既有 >500 kB Battle Chunk warning 保留；CRLF-aware `git diff --check` PASS。
 - **Status／Scope**：RV-M4-4B-01／03 evidence collected、RV-M4-4B-02 PARTIAL，全部待 Independent Review；RC-M4-4B-07 維持 PARTIAL。Product Owner Acceptance 與 M4-4 Formal Acceptance PENDING；M4 為 75%、Overall 37.5%。只修改一個既有 Test Source 與必要文件；無 Runtime／Battle Core／`public/assets/` 異動，未 Commit／Push。
 
-## 2026-11-20 — M4-4C Lifecycle Verification (Pending Review)
+## 2026-11-20 — M4-4C Lifecycle Verification (Historical Snapshot — Pending Review)
 
 - **Baseline**：`main`／HEAD `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；GitHub Actions Run [44607801214](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44607801214) SUCCESS，對應開始驗證基準，不涵蓋本次未提交檔案。
 - **Production Integration**：新增 `tests/battle.route.lifecycle.integration.test.mjs` 與兩個 test-only R3F／Drei fixture。正式 App／BattleScene／Session Host／Runtime／Scenario／Reducer／Outcome／Restart wiring 未 Mock；視覺元件與 WebGL surface 替換為測試 Adapter。新增 5 項 Integration Tests，涵蓋 10 次 Route 重入、同 ID 的 Move／Player／Attack／AI／Death Callback 隔離、Victory／Defeat 與 10 次有效 Restart。
@@ -20,7 +33,7 @@
 - **Resource Measurements**：穩定 Route 有 1 個 Canvas；量測觀察 13 次 Canvas／WebGL 建立、11 次 Context Loss，最後一次未確認；JS Heap 約 91–113 MB 波動，未取得有效 `renderer.info`。不據此宣稱 GPU Resource Disposal 通過或存在 Resource Leak。
 - **Status / Limitations**：M4-4C 為 IN PROGRESS — PARTIAL VERIFICATION；RV-M4-4B-01～03 有部分證據但尚待 Independent Review，RC-M4-4B-07 維持 PARTIAL。M4 75%、Overall 37.5%；PO Acceptance 與 M4-4 Formal Acceptance PENDING。本次未修改 Production Runtime 或 Battle Core；僅新增 Test Source Code 與同步文件，未 Commit／Push。另有非本任務 `public/assets/` 二進位異動於工作樹中，未碰觸或回復；詳細矩陣與目前狀態見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
-## 2026-11-20 — M4-4B Conditional Closure & Documentation Synchronization
+## 2026-11-20 — M4-4B Conditional Closure & Documentation Synchronization (Historical Snapshot)
 
 - **Closure Decision**：M4-4B Implementation **COMPLETED**；Architecture Review **APPROVED**；Independent Code Review **APPROVED WITH LIMITATIONS**；Product Owner Acceptance **APPROVED**；Conditional Closure **APPROVED**。M4-4 Formal Acceptance 仍 **PENDING**；未啟動 M4-4B Patch 1。
 - **Verified Repository / CI**：Branch `main`、Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895`；GitHub Actions Run [44605672030](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44605672030) SUCCESS，Head SHA 相符。該實作提交包含 16 個異動檔案，Battle Core Modification 0。
@@ -31,7 +44,7 @@
 - **Historical Browser Record**：下方 M4-4B Implementation entry 保留 Agent 當時 WebGL fallback 與 PARTIAL／NOT VERIFIED 結果，不回溯改寫。Product Owner 10/10 Acceptance 為獨立後續證據。
 - **Roadmap / Scope**：M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**；M4-4C **NEXT — PENDING DEVELOPMENT**。M4 維持 75%、Overall 37.5%。本次僅同步文件，不修改 Runtime／Test Source Code，不開始 M4-4C，未 Commit／Push；TECHNICAL_DEBT 與 UX Backlog 未修改，既有狀態保留。
 
-## 2026-11-20 — M4-4B Implementation (Pending Review)
+## 2026-11-20 — M4-4B Implementation (Historical Snapshot — Pending Review)
 
 > 歷史快照：以下為 M4-4B 初始實作與 Agent Browser Verification 狀態；後續 PO Acceptance、Independent Review 及 Conditional Closure 見上方紀錄。Agent 原始 WebGL limitation 與 BV 結果不回溯改寫。
 

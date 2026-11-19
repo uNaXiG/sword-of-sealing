@@ -12,28 +12,79 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `5006b4bb618088d0d342a2313c1a4b60a526d7da` — M4-4C VA1 baseline |
-| Latest Verified Repository CI Run | [44614674924](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44614674924) — SUCCESS（`main` / `5006b4b`；基準 Commit 相符） |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `b21b36c8b8343865b8abd457cdd70c8b332dfc7b` — M4 Formal Closure baseline |
+| Latest Verified Repository CI Run | [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) — SUCCESS（`main` / `b21b36c`；Build、Test、Pages deploy jobs SUCCESS） |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Latest Verified Repository Commit | `main` @ `5006b4bb618088d0d342a2313c1a4b60a526d7da`；本機 HEAD 及 `origin/main` tracking ref 相符；本次未提交 Test／Documentation 異動不屬於此 Commit／CI |
+| Latest Verified Repository Commit | `main` @ `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`；本機 HEAD 及 `origin/main` tracking ref 相符；本次 Closure Documentation 不屬於此 Commit／CI |
+| Latest Verified GitHub Pages Deployment | [Run 44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) — Deploy job SUCCESS |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
 | M4-4B Conditional Closure Commit | `e299fa48e28d16e24aadba9cc7925bedf4d53895`；16 個異動檔案；Battle Core Modification 0 |
 | M4-4C Session Start Baseline | `main`／HEAD／`origin/main` `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；開始時工作樹乾淨 |
-| Current Working Tree | VA1 修改 `tests/battle.route.lifecycle.integration.test.mjs` 並同步文件；Runtime Source Code、Battle Core 與 `public/assets/` 均未修改；未 Commit／Push |
+| Current Working Tree | M4 Formal Closure 文件同步僅修改 README 與七份 `docs/` 文件；無 Runtime／Battle Core／Test／Dependency／Asset 異動；目前未提交，未 Commit／Push |
 | 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved；M4-3：COMPLETED — FORMALLY ACCEPTED |
-| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（75%）**，M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**；M4-4C **IN PROGRESS — PARTIAL VERIFICATION / REVIEW PENDING**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
+| 主要里程碑狀態 | M1–M4 **COMPLETED**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M5 **NEXT — PENDING DEVELOPMENT**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
-| M4 進度 | 75%（3/4） |
-| 完整結案主要里程碑 | 3/10 |
-| 整體里程碑等權重進度 | 37.5%（Roadmap Completion Percentage，不代表實際工時比例） |
-| M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED**；M4-3：**COMPLETED — FORMALLY ACCEPTED** |
+| M4 進度 | 100%（4/4） |
+| 完整結案主要里程碑 | 4/10 |
+| 整體里程碑等權重進度 | 40%（Roadmap Completion Percentage，不代表實際工時比例） |
+| M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED**；M4-3：**COMPLETED — FORMALLY ACCEPTED**；M4-4：**COMPLETED — FORMALLY ACCEPTED** |
 | M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
 | M4-3 狀態 | **COMPLETED — FORMALLY ACCEPTED**；Patch 1／2／3 與 TEST-M4-3-01 已完成；223/223 Automated Tests；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED |
 | Code Review Findings | CR-M4-3-01／02／03 CLOSED；TEST-M4-3-01 CLOSED — PASS；TD-019 CLOSED |
-| M4-4 狀態 | **IN PROGRESS**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**；M4-4C **IN PROGRESS — PARTIAL VERIFICATION / REVIEW PENDING** |
+| M4-4 狀態 | **COMPLETED — FORMALLY ACCEPTED**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B／4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；VA1 **COMPLETED — ACCEPTED** |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
+
+## M4 Formal Closure Record — 2026-11-20
+
+**Authorization：FORMAL CLOSURE APPROVED WITH RESIDUAL VERIFICATION LIMITATIONS。** M4-4A、M4-4B、M4-4C、M4-4C Verification Addendum 1 與 M4 Combat System 均已正式結案；M4 **COMPLETED — FORMALLY ACCEPTED**。M4-4B／M4-4C 的核准限制與 GPU 資源延後驗證均保留，不代表所有 GPU 資源已完整驗證。VA2 與 Runtime Patch 均未啟動。
+
+| Closure Item | Final Decision |
+|---|---|
+| M4-4A | COMPLETED — FORMALLY ACCEPTED |
+| M4-4B | COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS |
+| M4-4C | COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS |
+| M4-4C Verification Addendum 1 | COMPLETED — ACCEPTED |
+| M4 Combat System | COMPLETED — FORMALLY ACCEPTED |
+| Architecture Review | APPROVED |
+| Independent Code Review | APPROVED WITH LIMITATIONS |
+| Product Owner Acceptance | APPROVED |
+| Formal Closure | APPROVED |
+
+**Verified Repository Baseline：** Branch `main`、Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`、GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS、GitHub Pages Deployment SUCCESS。CI log 驗證 271/271 Tests；Production Route Integration 6/6、ESLint、Production Build 與 Agent 本機 Diff Check 均 PASS。該 Run／Commit 是結案驗證基準；目前文件異動尚未提交，不屬於此 CI。VA1 Commit 包含一份測試、五份文件及額外美術素材 [信念.png](../public/assets/images/skills/信念.png)；該素材不屬於 VA1 驗收範圍，本次未修改。
+
+**Product Owner Browser Acceptance：** 2026-11-20，BV-C01～BV-C14 **14/14 PASS — ACCEPTED**。此驗收取得於 VA1 前基準；VA1 沒有修改 Production Runtime，因此正式採認為功能驗收證據，但不得描述為 VA1 後重跑的 Browser Regression。Agent 原始 PARTIAL／NOT VERIFIED 紀錄另列於下方並保留；PO BV-C13 PASS 不等同 `renderer.info` 或 GPU disposal 已完整驗證。
+
+**VA1 Review Resolution：**
+
+| Item | Final Resolution |
+|---|---|
+| VA1-01 Terminal Route Unmount | APPROVED |
+| VA1-02 Timer／Listener／Deferred Work | APPROVED WITH LIMITATIONS |
+| VA1-03 Repeated Restart Lifecycle | APPROVED WITHIN REACT HARNESS SCOPE |
+| VA1-04 WebGL Diagnostics | PARTIAL — DEFERRED |
+| VA1-05 Production Integration | APPROVED |
+| VA1-06 Traceability | APPROVED |
+| VA1-07 Git Scope | APPROVED |
+
+Microtask instrumentation 僅涵蓋測試操作範圍；R3F／Drei adapter 與視覺替身不提供 GPU 診斷；AI instruction 未逐次獨立計數。這些限制仍列為核准限制。
+
+**Remaining Verification／Review Resolution：**
+
+| Item | Final Resolution |
+|---|---|
+| RV-M4-4B-01 Production Route Lifecycle Cleanup | CLOSED — VERIFIED |
+| RV-M4-4B-02 WebGL Resource Lifecycle | PARTIAL — DEFERRED TO TD-010 |
+| RV-M4-4B-03 Production Runtime Integration Coverage | CLOSED — VERIFIED |
+| RC-M4-4B-07 | ACCEPTED WITH LIMITATIONS |
+| RC-M4-4B-08 | CLOSED |
+| B-T06 | Automated PARTIAL remains; PO supplemental verification accepted |
+| B-T30／AC-B30 | GPU Lifecycle PARTIAL remains; deferral approved |
+
+AC-C25～C28 為 **PARTIAL — ACCEPTED / DEFERRED TO TD-010**；AC-C41、AC-C42 為 PASS；AC-C45 為 PASS WITH APPROVED LIMITATIONS。AC-C01～C45 綜合結果為 **40 PASS、1 PASS WITH APPROVED LIMITATIONS、4 PARTIAL — APPROVED DEFERRAL**；C-T01～C-T36 為 36/36 PASS，依各項既定測試範圍與限制。
+
+**Roadmap：** M1–M4 100%；M5–M10 0%；Completed Milestones 4/10；Overall 40%。M5 — 戰鬥 UI／UX 為 **NEXT — PENDING DEVELOPMENT**。TD-010 保持 PARTIALLY RESOLVED；資源量測與建議追蹤時程見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)。TD-006、TD-007、TD-014、TD-018、TD-019、TD-021 與 UX Backlog 維持原狀。
 
 ## 驗證結果
 
@@ -154,7 +205,7 @@ Product Owner 於 2026-11-20 完成 M4-4A Patch 1 Post-Patch Browser Regression�
 - **Technical Debt / UX Backlog**：本次不調整相關狀態；TD-018、TD-021 維持 OPEN，TD-019 維持 CLOSED — M4-3 FORMAL ACCEPTANCE；UX Backlog 未變更。
 - **Roadmap / Scope**：M4-4A 已完成；此 Formal Closure 的文件異動後續已納入 `41b43c7`。目前 M4-4B 為 IMPLEMENTED — PENDING REVIEW，M4-4C PENDING DEVELOPMENT；M4-4 整體仍 IN PROGRESS。M4 維持 75%、Overall 37.5%。
 
-## M4-4B Implementation & Conditional Closure — COMPLETED — CONDITIONALLY ACCEPTED
+## M4-4B Implementation & Conditional Closure — Historical Snapshot (Superseded by M4 Formal Closure)
 
 ### Environment / Baseline
 
@@ -220,7 +271,7 @@ Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.ani
 | B-T27 | 同 B-T26 | StrictMode 下 Attack ID／counter 與 Frame Subscription 均單一有效 | PASS |
 | B-T28 | Victory presentation test + Victory restart test | 正式 Reducer／AllDead Session 經 Attack／Death Barrier 進入 VICTORY、顯示 Overlay、Restart 到新 ACTIVE Session | PASS |
 | B-T29 | Defeat presentation test + Defeat restart test | AI 敵方 Attack／Death Barrier 進入 DEFEAT、顯示 Overlay、Restart 還原 roster | PASS |
-| B-T30 | 原 `Session remount and unmount clean old controller Frame subscriptions`；VA1 `Production Route unmounts terminal Victory and Defeat Overlays without leaking old Session callbacks` | 原測試仍只驗證 harness cleanup；VA1 補足正式 App／Session／Overlay Route cleanup、Frame／Canvas 計數與 stale callback isolation，但不測量 GPU disposal | PARTIAL |
+| B-T30 | 原 `Session remount and unmount clean old controller Frame subscriptions`；VA1 `Production Route unmounts terminal Victory and Defeat Overlays without leaking old Session callbacks` | 原測試仍只驗證 harness cleanup；VA1 補足正式 App／Session／Overlay Route cleanup、Frame／Canvas 計數與 stale callback isolation，但不測量 GPU disposal；GPU lifecycle limitation 核准延後至 TD-010 | PARTIAL — APPROVED DEFERRAL |
 
 ### AC-B01～AC-B37 Verification Matrix
 
@@ -255,7 +306,7 @@ Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.ani
 | AC-B27 Restart Idempotency | PASS | B-T13 |
 | AC-B28 Stale Restart Handler 拒絕 | PASS | B-T14 |
 | AC-B29 React StrictMode | PASS | B-T26～27 |
-| AC-B30 Controller／Effect Cleanup | PARTIAL | VA1 補足正式 Route／Session／Overlay unmount、Frame cleanup 與 stale callback evidence；WebGL／GPU disposal 仍未驗證，RV-M4-4B-02 保持 PARTIAL |
+| AC-B30 Controller／Effect Cleanup | PARTIAL — APPROVED DEFERRAL | VA1 補足正式 Route／Session／Overlay unmount、Frame cleanup 與 stale callback evidence；WebGL／GPU disposal 仍未驗證，核准移交 TD-010 |
 | AC-B31 原有 246 測試無退化 | PASS | Full suite 265/265；原有 integration assertions 保留 |
 | AC-B32 新增測試全部 PASS | PASS | Full suite 265/265；Session／React focused 31/31 |
 | AC-B33 ESLint | PASS | `npm run lint` |
@@ -310,20 +361,20 @@ Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.ani
 | RC-M4-4B-04 | APPROVED | Independent review result recorded |
 | RC-M4-4B-05 | APPROVED | Independent review result recorded |
 | RC-M4-4B-06 | APPROVED | Independent review result recorded |
-| RC-M4-4B-07 | PARTIAL — DEFERRED TO M4-4C | VA1 adds terminal Route／Restart／WebGL sampling evidence for RV-M4-4B-01～03; finding remains pending Independent Review and is not represented as a confirmed defect |
-| RC-M4-4B-08 | RESOLVED — DOCUMENTATION UPDATED | This closure synchronization records the corrected baseline, acceptance, review limitations, traceability, architecture boundary, and deferred verification; no new independent review approval is claimed |
+| RC-M4-4B-07 | ACCEPTED WITH LIMITATIONS | Independent review accepted the residual WebGL Resource Lifecycle limitation and its deferral to TD-010 |
+| RC-M4-4B-08 | CLOSED | Documentation correction and final disposition recorded by Formal Closure |
 
 ### M4-4C Remaining Verification — RV-M4-4B-01～03
 
-These were deferred verification items, not confirmed defects. M4-4C collected the following evidence; RV closure remains subject to Independent Review:
+These originated as deferred verification items, not confirmed defects. The Formal Closure disposition below supersedes the earlier pending-review state; RV-M4-4B-02 remains deferred to TD-010:
 
 | ID | Evidence Collected | Current Status |
 |---|---|---|
-| RV-M4-4B-01 | Six Production Route Integration Tests include Victory／Defeat Overlay unmount, Runtime／Frame／Canvas cleanup, fresh Session and stale callback isolation; Agent Browser completed 2 warm-ups + 10 measured idle Route round trips. Mid-motion and terminal Browser exits remain unverified. | EVIDENCE COLLECTED — REVIEW PENDING |
-| RV-M4-4B-02 | Read-only Browser identity sampling mapped C1/G1 through C14/G14 and observed matching Context Loss events; final Menu had 0 connected Canvas after 1.5 seconds. `renderer.info.memory` unavailable; no GPU disposal conclusion. | PARTIAL — REVIEW PENDING |
-| RV-M4-4B-03 | Six Production Route Integration Tests use real App／Scene／Session Host／Scenario／Reducer／Runtime callback wiring, including ID collisions, AI／Death isolation, terminal Outcomes／Overlay unmount and Restart. WebGL／visual leaves remain test adapters. | EVIDENCE COLLECTED — REVIEW PENDING |
+| RV-M4-4B-01 | Six Production Route Integration Tests include Victory／Defeat Overlay unmount, Runtime／Frame／Canvas cleanup, fresh Session and stale callback isolation; Agent Browser completed 2 warm-ups + 10 measured idle Route round trips. | CLOSED — VERIFIED |
+| RV-M4-4B-02 | Read-only Browser identity sampling mapped C1/G1 through C14/G14 and observed matching Context Loss events; final Menu had 0 connected Canvas after 1.5 seconds. `renderer.info.memory` unavailable; disposal／long-duration stability deferred. | PARTIAL — DEFERRED TO TD-010 |
+| RV-M4-4B-03 | Six Production Route Integration Tests use real App／Scene／Session Host／Scenario／Reducer／Runtime callback wiring, including ID collisions, AI／Death isolation, terminal Outcomes／Overlay unmount and Restart. WebGL／visual leaves remain test adapters. | CLOSED — VERIFIED |
 
-### Conditional Closure Decision
+### M4-4B Conditional Closure Decision — Historical (Superseded by M4 Formal Closure)
 
 - M4-4B Implementation **COMPLETED**；Architecture Review **APPROVED**；Independent Code Review **APPROVED WITH LIMITATIONS**；Product Owner Acceptance **APPROVED**；Conditional Closure **APPROVED**。
 - Automated Test Traceability remains **28 PASS / 2 PARTIAL**: B-T06 and B-T30 remain partial automated coverage. PO BV-B06 supplements Browser Acceptance for terminal input protection but does not upgrade B-T06 automated coverage.
@@ -331,7 +382,7 @@ These were deferred verification items, not confirmed defects. M4-4C collected t
 - Architecture contract remains Keyed Session Remount, Session-owned Reducer Dispatch, Scenario Factory Initialization, Generation-based Restart Idempotency, Native Modal Dialog, and Outcome Single Source of Truth. AI Capability Isolation is based on Runtime Dispatch ownership, not underlying Capability Session Binding; the latter is not claimed as implemented.
 - M4-4B Patch 1 is not started. M4-4 Formal Acceptance remains PENDING. M4 remains 75%; Overall remains 37.5%.
 
-## M4-4C Verification Record — Pending Independent Review
+## M4-4C Verification Record — COMPLETED WITH APPROVED LIMITATIONS
 
 ### C-T01～C-T36 Automated Test Traceability
 
@@ -404,10 +455,10 @@ These were deferred verification items, not confirmed defects. M4-4C collected t
 | AC-C22 | PASS | StrictMode Route mount／unmount, controller Frame cleanup, and deferred-work completion are asserted. |
 | AC-C23 | PASS | Ten effective integration Restarts each restore initial Session State and verify Generation, stale callback rejection, one active Runtime／Canvas, and balanced stable Frame／Canvas counts; Node harness, not Browser stress. |
 | AC-C24 | PASS | Ten automated Route re-entry cycles plus two Browser warm-ups and ten measured Menu／Battle round trips. |
-| AC-C25 | PARTIAL | Source lifecycle and Browser Canvas／Context identities are observed; final Menu has zero connected Canvas, but renderer ownership／`renderer.info.memory` is unavailable. |
-| AC-C26 | PARTIAL | VA1 maps each observed Context Loss to its Canvas／Context identity (including the initial Context); no valid Renderer memory statistics, so GPU disposal remains unverified. |
-| AC-C27 | PARTIAL | Owned Geometry／Texture／OrbitControls cleanup inspected; no full shared asset／GPU disposal measurement. |
-| AC-C28 | PARTIAL | No reproducible leak observed in available counts; insufficient GPU telemetry to conclude no Resource Leak. |
+| AC-C25 | PARTIAL — ACCEPTED / DEFERRED TO TD-010 | Source lifecycle and Browser Canvas／Context identities are observed; final Menu has zero connected Canvas, but renderer ownership／`renderer.info.memory` is unavailable. |
+| AC-C26 | PARTIAL — ACCEPTED / DEFERRED TO TD-010 | VA1 maps each observed Context Loss to its Canvas／Context identity (including the initial Context); no valid Renderer memory statistics, so GPU disposal remains unverified. |
+| AC-C27 | PARTIAL — ACCEPTED / DEFERRED TO TD-010 | Owned Geometry／Texture／OrbitControls cleanup inspected; no full shared asset／GPU disposal measurement. |
+| AC-C28 | PARTIAL — ACCEPTED / DEFERRED TO TD-010 | No reproducible leak observed in available counts; insufficient GPU telemetry to conclude no Resource Leak. |
 | AC-C29 | PASS | Existing Movement／Obstacle／Occupancy／Attack tests pass; no Runtime Source Code change. |
 | AC-C30 | PASS | Existing Action Economy／PAS tests pass; browser standby advances turns. |
 | AC-C31 | PASS | Existing AI Authorization／Decision tests pass; browser observed enemy movement. |
@@ -420,11 +471,11 @@ These were deferred verification items, not confirmed defects. M4-4C collected t
 | AC-C38 | PASS | `npm run lint` exit code 0. |
 | AC-C39 | PASS | `npm run build` exit code 0; existing Battle chunk warning remains. |
 | AC-C40 | PASS | CRLF-aware `git diff --check` and new-file whitespace scan pass. |
-| AC-C41 | PARTIAL | RV evidence and limitations are documented; GPU and terminal Browser evidence remain incomplete. |
-| AC-C42 | PARTIAL | RC-M4-4B-07 remains PARTIAL; no new confirmed code defect; Independent Review is pending. |
-| AC-C43 | PASS | README／Development Status／Architecture／Combat／Game Design／Roadmap／Changelog synchronized. |
-| AC-C44 | PASS | No Production Runtime／Battle Core change, feature, dependency, Commit or Push; no VA1 `public/assets/` change. |
-| AC-C45 | PARTIAL | Verification report is prepared, but Browser items, Independent Review, and Product Owner Acceptance remain pending. |
+| AC-C41 | PASS | RV evidence, residual limitations and approved TD-010 deferral are documented. |
+| AC-C42 | PASS | Independent Review and RC-M4-4B-07／08 dispositions are recorded. |
+| AC-C43 | PASS | README and all seven requested documentation files synchronized; UX Backlog unchanged. |
+| AC-C44 | PASS | No Runtime／Battle Core／Test／Dependency changes in this closure; VA1's out-of-scope asset is present in the verified baseline and was not modified. No Commit／Push. |
+| AC-C45 | PASS WITH APPROVED LIMITATIONS | Closure evidence and residual GPU verification deferral are approved and recorded; no unconditional GPU PASS is claimed. |
 
 ### BV-C01～BV-C14 Agent Browser Verification
 
@@ -446,6 +497,29 @@ Browser verification below is Agent-observed evidence, not Product Owner Accepta
 | BV-C12 | PARTIAL | Two warm-up and ten measured idle Menu／Battle round trips completed; each measured Battle mount had one connected Canvas. Route observation does not prove GPU disposal or terminal／in-motion Browser behavior. |
 | BV-C13 | PARTIAL | VA1 identity-mapped the initial Context and 13 new Canvas／WebGL2 Contexts; all 14 observed contexts emitted a matching Context Loss on exit, with no restore events. After final Menu cleanup delay: 0 connected Canvas; `renderer.info.memory` unavailable, so GPU disposal remains NOT VERIFIED. Full samples follow. |
 | BV-C14 | PARTIAL | Desktop gameplay and no page-level unhandled exception observed; Mobile not tested. Console included Three.js `THREE.Clock`／`PCFSoftShadowMap` warnings and Main Menu image `ERR_CONNECTION_REFUSED`; cause of image failure is environment-dependent and unclassified. |
+
+> The following is the separate Product Owner acceptance record. It does not rewrite the Agent results above and was obtained before VA1; it is not a post-VA1 Browser regression.
+
+### Product Owner Browser Acceptance — 2026-11-20 (Pre-VA1 Baseline)
+
+| BV | Product Owner Result |
+|---|---|
+| BV-C01 Normal Combat Regression | PASS |
+| BV-C02 PAS & Action Economy | PASS |
+| BV-C03 Enemy AI | PASS |
+| BV-C04 Victory Lifecycle | PASS |
+| BV-C05 Defeat Lifecycle | PASS |
+| BV-C06 Victory／Defeat Restart | PASS |
+| BV-C07 Modal Interaction | PASS |
+| BV-C08 Idle Route Transition | PASS |
+| BV-C09 Active Route Transition | PASS |
+| BV-C10 Terminal Route Transition | PASS |
+| BV-C11 Repeated Restart Stress | PASS |
+| BV-C12 Repeated Route Transition Stress | PASS |
+| BV-C13 Resource Diagnostics | PASS |
+| BV-C14 Responsive & Runtime Regression | PASS |
+
+**Final Result：14/14 PASS — ACCEPTED。** VA1 did not modify Production Runtime; this pre-VA1 PO acceptance is adopted as functional acceptance evidence. PO BV-C13 does not establish `renderer.info.memory`, complete GPU disposal, or long-duration resource stability. The Agent's earlier BV-C13 PARTIAL and other PARTIAL／NOT VERIFIED records remain unchanged.
 
 ### VA1 WebGL Sample Record
 
@@ -673,7 +747,7 @@ T-28 保留的 10 個 TEST-M4-3-01 Test Names（對照 `tests/battle.animation.r
 
 ## 已知阻擋問題
 
-M3、M4-1、M4-2、M4-3 與 M4-4A 無已知正式驗收阻擋。M4-4B 已取得 Product Owner BV-B01～B10 10/10 PASS；Agent 原始 WebGL fallback limitation 及 PARTIAL／NOT VERIFIED 紀錄仍保留。RC-M4-4B-07 與 RV-M4-4B-01～03 是 M4-4C 的剩餘驗證項目，不代表已確認程式缺陷或已完成驗證。
+M4 已正式結案。剩餘明確驗證限制為 TD-010：`renderer.info.memory`、GPU Disposal 與長時間資源穩定性未驗證，AC-C25～C28 已核准延後；這不是已確認可重現的 Resource Leak。Agent 原始 PARTIAL／NOT VERIFIED 與 PO Acceptance 分開保留。M5 尚未開始。
 
 ## M4-1 狀態
 
@@ -748,6 +822,11 @@ Final Addendum 額外證據：
 - `同一 Scheduler 連續 10,000 個 Near-tie 事件不累積誤差`：不重建 Turn State，直接驗證 10,000 次事件後 Battle Time、Round、Remaining Distance、Turn ID 與近似 Tie 累積誤差上界。
 - `Direct Reducer 拒絕缺失、過期、錯誤 Context 及舊 Confirm／Standby`：直接呼叫 `battleReducer()`，驗證六類 Context replay，不經 Fixture 自動補齊。
 
-## 下一步
+## Historical Next-Step Snapshot — Before M4 Formal Closure
 
 M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A End Condition Framework & Battle Outcome、Patch 1 與 Final Review Correction 已分別標記 **COMPLETED — FORMALLY ACCEPTED**、**COMPLETED — ACCEPTED**、**COMPLETED — VERIFIED**；CR-M4-4A-01～05 全數 CLOSED。Formal Closure 文件已納入 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747`／GitHub Actions Run `44596893220` SUCCESS；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。M4-4A 結案基準為 246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 T、9/9 P-T、Lint、Build 與 Diff Check PASS；Product Owner Post-Patch BV-A01～A05 5/5 PASS（2026-11-20）。Patch 前 PO 驗收與 Agent 原始 PARTIAL／NOT VERIFIED 結果仍分列保留。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**：Repository Commit `e299fa48e28d16e24aadba9cc7925bedf4d53895`／GitHub Actions Run `44605672030` SUCCESS；265/265 Automated Tests、29/29 React Integration、2/2 Session Tests、Lint、Build PASS；PO BV-B01～B10 10/10 PASS。自動化追溯為 28 PASS／2 PARTIAL，綜合 AC 為 36 PASS／1 PARTIAL。RC-M4-4B-07 與 RV-M4-4B-01～03 移交 M4-4C；M4-4B Patch 1 未啟動，M4-4 Formal Acceptance 仍 PENDING。M4-4C 為 **NEXT — PENDING DEVELOPMENT**；M4 整體仍 IN PROGRESS，維持 75%、Overall 37.5%。本次 Conditional Closure 文件異動尚未提交；不 Commit／Push。
+此段保留 M4 Formal Closure 前的 Roadmap／Acceptance 快照；其中 M4-4C 尚未開始、M4-4 Formal Acceptance PENDING、M4 75% 與 Overall 37.5% 等均為當時歷史狀態，已由上方 **M4 Formal Closure Record** 取代。
+
+## Current Next Milestone
+
+M4 **COMPLETED — FORMALLY ACCEPTED**；M1–M4 進度 100%，Overall 40%，Completed Milestones 4/10。M5 — 戰鬥 UI／UX 為 **NEXT — PENDING DEVELOPMENT**；不得將本次結案文件同步擴展為 M5 實作。

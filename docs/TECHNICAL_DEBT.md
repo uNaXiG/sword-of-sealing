@@ -15,7 +15,7 @@
 | TD-007 | Battle Chunk Size 過大 | Vite 提示戰場 Bundle 超過 500 kB | Low | OPEN | Proposed：未來確認實際載入成本後再評估 lazy load／拆包 | TBD |
 | TD-008 | 缺少正式架構與 Roadmap 文件 | Session／Agent 容易失去持久化上下文 | Low | CLOSED | DOC-01 已建立 docs 索引、架構與 Roadmap，並完成使用者驗收 | DOC-01 |
 | TD-009 | `useBattleMovement` 命名與職責不符 | Hook 已管理攻擊、待命與衍生狀態，名稱可能誤導 | Low | OPEN | Proposed：後續正式重構並驗證所有使用點 | TBD |
-| TD-010 | CanvasTexture 資源生命週期 | UnitLabel 及 Floating Damage Texture 不當清理可能造成資源洩漏 | Low | PARTIALLY RESOLVED | M3-3 已處理新增 Texture 的 Unmount 清理並通過 BV-15；M3-4 Patch 1 Revision 2 改為每個 UnitLabel 重用單一 CanvasTexture，於 Effect Cleanup dispose；Floating Damage 長時間資源壓力仍待觀察 | TBD |
+| TD-010 | CanvasTexture 資源生命週期 | UnitLabel 及 Floating Damage Texture 不當清理可能造成資源洩漏 | Low | PARTIALLY RESOLVED | M3-3／M3-4 Texture cleanup 已實作；M4-4C VA1 記錄 14/14 observed Context Loss identity matches、final Route exit 後 0 connected Canvas、Heap 約 93.02–110.18 MB（Final Menu 107,159,387 bytes）。`renderer.info.memory`、GPU Disposal 與長時間資源穩定性 NOT VERIFIED；無已確認可重現的 Resource Leak，但不宣稱不存在 Leak。建議於 M10 效能／穩定性窗口進一步量測 | M10 Candidate |
 | TD-011 | 職業平衡數值與測試耦合 | 調整 Registry 必須同步固定 `expectedStats` | Low | OPEN | Proposed：分離平衡值測試與資料結構合法性測試 | TBD |
 | TD-012 | 攻擊屬性驗證模組耦合 | `validateAttackProperties()` 位於 `class.data.ts`，未來武器／技能也可能使用 | Low | OPEN | Proposed：規格確認後抽成中性攻擊驗證模組 | M7 Candidate |
 | TD-013 | README 舊攻擊範圍敘述殘留 | 文件仍稱曼哈頓範圍，與四種模式不符 | Low | CLOSED | README 已改為依職業攻擊模式描述，並完成使用者驗收 | DOC-01 |
@@ -65,7 +65,7 @@ Architecture Review、Code Review、Final Verification 與 Product Owner Browser
 - Three.js 的 `Clock` deprecated 與 `PCFSoftShadowMap` compatibility 警告。
 - Vite Battle Chunk 超過 500 kB。
 
-M3-3 已依使用者 BV-15 關閉 TD-004。TD-010 的直接相關 Texture Cleanup 已實作及通過場景重入驗收，但缺少長時間資源壓力與記憶體測量，因此保持 PARTIALLY RESOLVED。其餘技術債維持既有狀態。
+M3-3 已依使用者 BV-15 關閉 TD-004。TD-010 維持 PARTIALLY RESOLVED：M4 Formal Closure 接受 VA1 已記錄的 WebGL 診斷限制，並核准將 `renderer.info.memory`、GPU Disposal 與長時間資源穩定性驗證延至建議的 M10 效能／穩定性窗口。沒有已確認可重現的 Resource Leak；也沒有證據可宣稱不存在 Leak。其餘技術債與 UX Backlog 維持既有狀態。
 
 TD-014 維持 OPEN，本次結案不進行重構。
 
