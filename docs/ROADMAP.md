@@ -60,9 +60,12 @@ M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./D
 | M4-2 | Individual Action Economy & Turn State Reset | COMPLETED — Formal Acceptance Approved |
 | M4-2 Patch 1 | Code Review Hardening & Verification | COMPLETED |
 | M4-3 | 敵方移動與攻擊決策 | COMPLETED — FORMALLY ACCEPTED |
-| M4-4 | 勝利、失敗與戰鬥結束 | NEXT — PENDING DEVELOPMENT |
+| M4-4 | 勝利、失敗與戰鬥結束 | IN PROGRESS |
+| M4-4A | Extensible End Condition Architecture & Battle Resolution | PATCH 1 IMPLEMENTED — PENDING INDEPENDENT FINAL REVIEW |
+| M4-4B | Overlay、Restart 與 Session Isolation | PENDING DEVELOPMENT |
+| M4-4C | Final Regression、Browser Verification、Independent Review 與 Formal Acceptance | PENDING DEVELOPMENT |
 
-M4-1 與 M4-2 均已完成。M4-2 包含完整 Action Economy、Turn Context、Combat Reservation、Turn Reset、PAS Precision、10,000 Continuous Near-tie、Direct Reducer Context Tests、Architecture／Code Review 及 Product Owner Browser Acceptance。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收結案：223/223 Automated Tests、ESLint、Production Build PASS；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED。Repository baseline 為 Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9`，GitHub Actions Run `44500720991` SUCCESS 且 Head SHA 相符。M4-3 closure evidence 見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。M4 完成度為 75%；Overall 為 37.5%；M4-4 是下一階段，仍未開始實作。
+M4-1 與 M4-2 均已完成。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收結案：223/223 Automated Tests、ESLint、Production Build PASS；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED。Repository CI baseline 為 Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9`，GitHub Actions Run `44500720991` SUCCESS 且 Head SHA 相符。M4-4A Patch 1 已在本機實作，246/246 Automated Tests、ESLint、Production Build PASS；Patch 後 BV-A01 為 PARTIAL、BV-A02～A05 NOT VERIFIED，獨立 Final Review 尚未完成，未正式驗收。Product Owner BV-A01～A05 5/5 PASS 為 Patch 前驗收。M4-4B／C 尚未開始。M4 完成度仍為 75%；Overall 為 37.5%。詳見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
 ## M5：戰鬥 UI／UX — PENDING
 

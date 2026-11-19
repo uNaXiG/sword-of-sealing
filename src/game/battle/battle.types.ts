@@ -6,6 +6,8 @@ import type { BattleTurnState, PendingTurnCompletion, TurnActionState } from './
 
 export type BattleFaction = 'player' | 'enemy'
 
+export type BattleOutcome = 'VICTORY' | 'DEFEAT' | null
+
 export type BattleUnit = {
   id: string
   name: string
@@ -122,6 +124,7 @@ export type AIProgress =
   }
 
 export type BattleState = {
+  outcome: BattleOutcome
   units: BattleUnit[]
   obstacles: BattleObstacle[]
   selectedUnitId: string | null

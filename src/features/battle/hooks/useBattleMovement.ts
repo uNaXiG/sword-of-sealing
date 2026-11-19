@@ -1,8 +1,9 @@
-import { useCallback, useMemo, useReducer } from 'react'
+import { useCallback, useMemo, useReducer, useState } from 'react'
 import { INITIAL_UNITS } from '../../../game/battle/battle.data'
 import { getAttackableTargets, getAttackableTiles, getAttackDistance } from '../../../game/battle/battle.attack'
 import { reachableForUnit } from '../../../game/battle/battle.movement'
-import { battleReducer, canEnterMoveMode, canUndoLastMove, createBattleState, isBattleBusy } from '../../../game/battle/battle.state'
+import { canEnterMoveMode, canUndoLastMove, isBattleBusy } from '../../../game/battle/battle.state'
+import { createBattleSession } from '../../../game/battle/battle.session.ts'
 import { INITIAL_OBSTACLES, obstacleCell } from '../../../game/battle/obstacles'
 import type { InteractionMode } from '../../../game/battle/battle.types'
 import { cellKey } from '../../../game/grid/grid.utils'
@@ -10,10 +11,20 @@ import type { Cell } from '../../../game/grid/grid.types'
 import type { ReachableTile } from '../../../game/grid/movement'
 import { predictUpcomingTurns } from '../../../game/battle/battle.turn'
 import { canConfirmAttack, canEnterAttackMode, canStandby } from '../../../game/battle/battle.action'
+import { LossCondition } from '../../../game/end-conditions/loss-condition.ts'
+import { AllDead as LossAllDead } from '../../../game/end-conditions/loss/all-dead.ts'
+import { WinCondition } from '../../../game/end-conditions/win-condition.ts'
+import { AllDead as WinAllDead } from '../../../game/end-conditions/win/all-dead.ts'
 import { useBattleAI } from './useBattleAI'
 
 export function useBattleMovement() {
-  const [state, dispatch] = useReducer(battleReducer, undefined, () => createBattleState(INITIAL_UNITS, INITIAL_OBSTACLES))
+  const [battleSession] = useState(() => createBattleSession({
+    units: INITIAL_UNITS,
+    obstacles: INITIAL_OBSTACLES,
+    winCondition: new WinCondition([new WinAllDead()]),
+    lossCondition: new LossCondition([new LossAllDead()]),
+  }))
+  const [state, dispatch] = useReducer(battleSession.reducer, battleSession.initialState)
   useBattleAI(state, dispatch)
   const selectedUnit = state.units.find((unit) => unit.id === state.selectedUnitId) ?? null
   const reachable = useMemo(

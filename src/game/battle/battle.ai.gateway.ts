@@ -41,6 +41,7 @@ export function isAuthorizedAIAction(action: unknown): action is AIAction {
 export function getAIControllerIntent(state: BattleState): AIControllerIntent | null {
   const unitId = state.turn.activeUnitId
   if (
+    state.outcome !== null ||
     !unitId ||
     !isEnemyTurn(state) ||
     !hasOpposingAliveUnits(state) ||

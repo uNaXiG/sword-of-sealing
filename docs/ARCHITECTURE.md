@@ -36,6 +36,14 @@ sword-of-sealing/
 │       │   ├── battle.turn.ts
 │       │   ├── battle.turn.types.ts
 │       │   └── battle.turn.constants.ts
+│       ├── end-conditions/
+│       │   ├── end-condition.interface.ts
+│       │   ├── end-condition.context.ts
+│       │   ├── abstract-end-condition.ts
+│       │   ├── win-condition.ts
+│       │   ├── loss-condition.ts
+│       │   ├── win/all-dead.ts
+│       │   └── loss/all-dead.ts
 │       ├── classes/
 │       └── grid/
 └── tests/
@@ -68,6 +76,8 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | --- | --- |
 | `game/battle/battle.types.ts` | BattleUnit、BattleState、Motion、Attack Result 型別 |
 | `game/battle/battle.state.ts` | Reducer、建立與驗證狀態、操作轉換、Undo |
+| `game/battle/battle.session.ts` | 以固定 Scenario Configuration 建立初始 BattleState 與對應 Reducer |
+| `game/end-conditions/` | EndCondition Contract、唯讀 Context、ANY／ALL Manager、Outcome Resolver 與具體勝敗策略 |
 | `game/battle/battle.attack.ts` | 攻擊距離、範圍、合法目標 |
 | `game/battle/battle.damage.ts` | 純傷害計算 |
 | `game/battle/battle.animation.ts` | Attack Animation Type、職業 Mapping、Profile、純 Timeline |
@@ -171,7 +181,7 @@ HP / Attack Motion / Turn State
 
 此測試真實掛載 React Controller；Frame Scheduler 使用可控制時序與 delta 的測試替身；Lifecycle Runtime 與 Reducer 不被 Mock，Visual Components 以 Stub 隔離。這是 Node + jsdom 的 Controller／Reducer 整合測試，不涵蓋 WebGL Rendering、視覺驗收或完整 E2E。
 
-M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。TEST-M4-3-01 與完整自動化基準為 223/223；Repository Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9` 的 GitHub Actions Run `44500720991` SUCCESS。Product Owner Browser Acceptance PASS，Architecture／Code Review APPROVED，CR-M4-3-01／02／03 及 TEST-M4-3-01 CLOSED。M4-3 為 COMPLETED — FORMALLY ACCEPTED；M4-4 NEXT — PENDING DEVELOPMENT，尚未開始。M4 75%、Overall 37.5%。
+M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。TEST-M4-3-01 與 M4-3 自動化基準為 223/223；Repository Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9` 的 GitHub Actions Run `44500720991` SUCCESS。Product Owner Browser Acceptance PASS，Architecture／Code Review APPROVED，CR-M4-3-01／02／03 及 TEST-M4-3-01 CLOSED。M4-3 為 COMPLETED — FORMALLY ACCEPTED。M4-4A Patch 1 已本機實作，246/246 Tests PASS；Product Owner BV-A01～A05 5/5 PASS 為 Patch 前驗收，Patch 後 Browser Regression 與獨立 Final Review 尚未完成。M4-4B／C 尚未開始。M4 75%、Overall 37.5%。
 
 ## Battle State 與 Reducer
 
@@ -241,3 +251,24 @@ flowchart LR
 - State transition、成本、範圍與傷害應保持可測試的純邏輯。
 - UI 與正式狀態共用規則，避免雙重實作。
 - 不引入尚無需求的持久化、後端、狀態庫或引擎。
+
+## M4-4A End Condition Strategy 與 Battle Outcome
+
+`src/game/end-conditions/` 將每個條件實作為獨立 Strategy。`EndCondition` 提供唯讀 `evaluate(BattleConditionContext): boolean` 契約；`WinEndCondition` 與 `LossEndCondition` 的 Outcome metadata，避免把失敗規則放入勝利管理器。`WinCondition`、`LossCondition` 共用 `AbstractEndCondition`，支援非空集合、預設 ANY／ALL 組合與 Runtime 契約驗證。不得以具體類別判斷或集中式 Condition Switch 取代多型。
+
+`BattleConditionContext` 由 Reducer 根據同一份 BattleState 與 Session 初始名冊建立，向策略提供已凍結的初始／現有單位快照、DefeatedUnitRecord、生命狀態及共用陣營全滅查詢。策略看不到可修改的正式 State。全滅需要非空初始陣營名冊，且所有名冊單位都具有正式死亡紀錄；單位暫時離開 Active Units 或 HP 歸零仍在 DYING 都不會被當作已全滅。
+
+Runtime 會複製／凍結 Condition Collection、凍結 Strategy 物件本身，並提供唯讀 Context；這些保護不等同通用深層不可變性。Concrete Strategy 作者必須驗證 Constructor Configuration，並為已知資料結構建立獨立快照；巢狀物件及陣列須逐層複製並按其 schema 凍結，不得對任意外部物件執行無限制遞迴 Freeze。`Object.freeze()` 不會凍結 Private Fields、Closure 內部狀態，亦不會使 Map／Set 的內容唯讀；Strategy 不得保留可由外部變更的設定參照，`evaluate()` 必須保持同步、純且無副作用。Test-only Nested Configuration Strategy 以明確欄位快照示範此責任模式。
+
+Production `useBattleMovement` 以穩定的 `useState` initializer 建立 `createBattleSession()`，明確提供 `WinCondition([new WinAllDead()])` 與 `LossCondition([new LossAllDead()])`。Session 建立初始 BattleState 與閉包式 `createBattleReducer()`；Condition Manager、策略與初始名冊由 Reducer closure 持有，不存入 BattleState。BattleState 只存 `outcome: null | 'VICTORY' | 'DEFEAT'`，因此 Save／Serialization 不需序列化 Class Instance；M4-4B Restart 建立新 Session 即可取得 ACTIVE 與新的條件實例。未配置條件的 `battleReducer` 保留為舊測試／相容入口；Production Battle Scene 不使用該入口，而是明確注入 Session Configuration。
+
+Battle Core 只依賴 Condition Manager／Context／Resolver Contract，不 import `win/all-dead` 或 `loss/all-dead`。Outcome Resolver 對單一 Context 評估 Win 與 Loss，固定 DEFEAT 優先。Outcome Evaluation Trigger Contract 明確限定：Session 初始化不評估條件，初始 Outcome 保持 ACTIVE；若初始條件已成立，會等到第一個合法、安全的判定觸發才結算，不依賴無效 Action。判定觸發包括有效 Move Finish／Cancel、可接受的 Attack／Death Lifecycle Completion，以及 PAS 推進前的合法回合完成檢查。Attack Impact 仍受 Attack Motion／Combat Reservation 保護，會等 Attack／Death Barrier 完成後才評估。一般 UI 選取／模式操作、無效或未授權 Action、過期／重複 Callback 不觸發 Outcome Evaluation。Pending Turn Completion 在排程 PAS 前先檢查條件；終局原子清除 Pending Turn、Turn Action、AI Progress 與選取，不推進下一 Turn；DefeatedUnitRecord 和已結算戰鬥結果保留。終局 Reducer Guard 與 AI Gateway Guard 阻止所有新命令及晚到 Callback 改寫 Outcome。
+
+### 新增 Condition 的擴充流程
+
+1. 在 `win/` 或 `loss/` 新增一個實作正確 Outcome 類別的 Concrete Strategy；驗證輸入並以明確 schema 快照／凍結設定，讓 `evaluate()` 只依賴 Context。
+2. 為策略及邊界語意新增測試；必要時使用 Test-only Strategy 驗證參數化與組合，不將其加入 Production。
+3. 由指定 Battle Scenario 建立對應 Win／Loss Manager，透過 `createBattleSession()` 注入；不修改 Reducer 的勝敗分支。
+4. 若需新的領域資料，先擴充唯讀 Context／Battle State 的正式契約；不可在 Strategy 私下累積跨 Turn 進度。
+
+未來可新增 `GoToDestination`、`BossDead`、`NpcDead` 或 `OverRounds` 類型的策略，但這些僅為架構例，不代表已實作或已確認其遊戲語意。

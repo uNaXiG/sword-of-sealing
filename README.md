@@ -2,7 +2,7 @@
 
 使用 React、TypeScript、Vite 和 React Three Fiber 製作的奇幻 RPG 原型。
 
-目前 M1–M3 已完成；M4-1 與 Patch 1 已條件式結案並通過使用者驗收。M4-2：Individual Action Economy & Turn State Reset 與 Patch 1 已正式驗收。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 **COMPLETED — FORMALLY ACCEPTED**；最新 Repository Commit 為 `4043459cfa3cb884aa9d9a6653ed646ef59975a9`，GitHub Actions Run `44500720991` SUCCESS，223/223 Tests、Lint、Production Build PASS，Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED。M4 進度為 75%；M4-4 勝敗系統為下一階段，尚未開始。
+目前 M1–M3 已完成；M4-1 與 Patch 1 已條件式結案並通過使用者驗收。M4-2：Individual Action Economy & Turn State Reset 與 Patch 1 已正式驗收。M4-3 Enemy AI、Patch 1／2／3 與 TEST-M4-3-01 已正式驗收，狀態為 **COMPLETED — FORMALLY ACCEPTED**；最新 CI 驗證的 Repository Commit 為 `4043459cfa3cb884aa9d9a6653ed646ef59975a9`，GitHub Actions Run `44500720991` SUCCESS，當時 223/223 Tests、Lint、Production Build PASS。M4-4A Patch 1 已在本機實作，`npm test` 246/246 PASS、ESLint PASS、Production Build PASS（既有 >500 kB Battle Chunk warning 保留）。Patch 後 Browser Regression 僅 BV-A01 部分驗證，BV-A02～A05 尚未驗證；獨立 Final Review 尚未完成。Product Owner 的 BV-A01～A05 5/5 PASS 是 2026-11-19 Patch 前驗收，不代表 Patch 後重驗或 Formal Acceptance。此異動尚未提交或納入 CI。M4 仍為 75%；M4-4B／C 尚未開始。
 
 ## Project Documentation
 
@@ -28,7 +28,7 @@ npm run dev
 
 開啟終端機顯示的網址。主選單的「開始新遊戲」可進入 3D 戰場測試場景，也可在網址後加上 `#battle`。
 
-執行 `npm run lint` 檢查程式碼、`npm test` 執行涵蓋攻擊動畫生命週期、攻擊距離與目標驗證、移動、佔位、障礙物、地形成本、Dijkstra、移動撤銷、Individual Action Economy、Turn Context、Enemy AI 決策／授權與 PAS 長期排程 Oracle 的 Node.js 原生測試，或執行 `npm run build` 建置正式版本。建置結果位於 `dist`。
+執行 `npm run lint` 檢查程式碼、`npm test` 執行涵蓋戰鬥生命週期、勝敗條件 ANY／ALL 組合、AllDead、Outcome 結算與終局安全、Enemy AI、移動、攻擊、死亡及 PAS 的 Node.js 原生測試，或執行 `npm run build` 建置正式版本。建置結果位於 `dist`。
 
 戰場使用 PAS 個體回合：進入戰場會自動排程刺客，只有 Active Unit 能取得玩家指令。每個 Turn 具有獨立的 Movement Action、Combat Action 與 Turn Context。選擇「移動」才會顯示藍色可移動格及最低成本路徑預覽；合法移動完成後只提供攻擊、取消及待命，同一 Turn 不可再次移動。「取消」只在尚有可撤銷移動時出現，會返回原位並恢復移動權。確認攻擊會清除 Undo、保留已使用的移動、保留 Combat Reservation，並鎖定後續移動；只有攻擊完成或待命後才自動排程下一位。敵方 Turn 由確定性 Tactical AI 自動決策：直接攻擊優先，其次移動後攻擊，再以合法路徑成本接近或待命；玩家戰鬥指令在敵方 Turn 仍鎖定。每個角色的行動力是單次移動預算，起始格不計成本；平地與草地消耗 1 點，森林與淺水消耗 2 點，岩石與石牆不可通行。Dijkstra 以四方向尋找最低成本路徑；同陣營角色可作為路徑經過格，但不可作為目的格，敵方角色、樹木及其他障礙物則會阻擋路徑。
 
@@ -58,7 +58,7 @@ npm run dev
 
 ## PAS 個體回合
 
-PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Scheduler 先選取真正最小 Action Value，再依 Time Epsilon 建立 Tie Candidate；Preview 共用相同規則。M4-3 已以受控 Capability Action 連接正式 Enemy AI Controller，並已通過 Product Owner Browser Acceptance、Architecture Review 與 Code Review。特殊未完成 Browser Scenarios 仍維持各自驗證狀態；下一階段 M4-4 尚未開始。
+PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Scheduler 先選取真正最小 Action Value，再依 Time Epsilon 建立 Tie Candidate；Preview 共用相同規則。M4-3 已以受控 Capability Action 連接正式 Enemy AI Controller，並已通過 Product Owner Browser Acceptance、Architecture Review 與 Code Review。M4-4A Patch 1 等待獨立 Final Review；M4-4B 負責 Overlay、Restart 與 Session Isolation，M4-4C 負責 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance。
 
 若要調整職業平衡，請修改 `CLASS_DEFINITIONS`；若要新增測試角色，使用 `createBattleUnit()` 並指定 ID、職業、陣營與座標，可選擇覆寫顯示名稱。初始戰場包含五名我方職業與三隻各自擁有獨立 HP／SP 的哥布林。死亡佔位與移除規則見 [Combat System](docs/COMBAT_SYSTEM.md)。
 

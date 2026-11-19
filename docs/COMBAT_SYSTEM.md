@@ -295,7 +295,7 @@ AttackResult 保存計算傷害、實際扣除、前後 HP 與 `isDefeated`。Ov
 
 正式初始戰場前 17 次順序與 Round 邊界由 [battle.turn.test.mjs](../tests/battle.turn.test.mjs) 驗證。
 
-M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 Enemy AI 已實作並提交；勝敗或 M7 效果仍未實作。
+M4-2 已實作完整個體移動及普通戰鬥行動限制、Reservation、Pre-/Post-impact Abort Recovery、Turn Context 及 Turn Reset。M4-3 Enemy AI 已實作並提交。M4-4A Patch 1 已本機實作；Overlay、Restart 與 Session Isolation 屬 M4-4B，Final Regression、Browser Verification、Independent Review 與 Formal Acceptance 屬 M4-4C；M7 效果尚未實作。
 
 M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、181/181 自動化測試、Continuous Near-tie、Direct Reducer Context Tests 及 Product Owner Browser Acceptance 結案。TD-019 隨 M4-3 Formal Acceptance CLOSED；M4-3 的最新結案與 CI 基準見本節及 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
@@ -316,7 +316,7 @@ Active Enemy Turn 由獨立 React Controller 自動觀察；Player Turn 不提�
 - AI Move 使用既有 Motion；AI Attack 使用相同 Attack Pattern、Damage、Reservation、Impact、Confirmed Impact、Abort、Death Motion 與 Turn Completion。
 - AI Action 由 Gateway 從目前 State 衍生 Controller Intent 後發行凍結物件，並以模組私有 identity capability 驗證；Reducer 重新驗證 Context、Faction、Alive、Action State、Busy、Destination、Target 與 Lifecycle Phase。
 - Enemy Pre-impact Abort 釋放 Reservation 並 queue Turn Completion；Post-impact Abort 保留傷害與消耗狀態。一般玩家 Pre-impact Abort 仍保留 Turn。
-- 沒有存活玩家時 Controller 安全停止，不建立勝敗結果，不連續推進 PAS。
+- 沒有存活玩家時 AI Controller 停止提交 Intent；正式 Defeat 由 Reducer 在死亡與其他阻擋 Motion 安全結束後判定，不會額外連續推進 PAS。
 
 ### Combat Lifecycle
 
@@ -335,7 +335,7 @@ Active Enemy Turn 由獨立 React Controller 自動觀察；Player Turn 不提�
 - **223/223 Automated Tests PASS**；ESLint PASS；Production Build PASS（既有 >500 kB Battle Chunk warning 保留）。
 - Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED；CR-M4-3-01／02／03 與 TEST-M4-3-01 CLOSED。
 - Repository Commit `4043459cfa3cb884aa9d9a6653ed646ef59975a9` 的 GitHub Actions Run `44500720991` SUCCESS；M4-3 Gameplay Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25` 的 Run `44496931887` SUCCESS。
-- M4-3 **COMPLETED — FORMALLY ACCEPTED**；勝敗系統仍屬 M4-4，該階段 NEXT — PENDING DEVELOPMENT。
+- M4-3 **COMPLETED — FORMALLY ACCEPTED**；M4-4A Patch 1 已實作，待獨立 Final Review 與 Patch 後 Browser Regression；M4-4B／C 尚未開始。
 
 ### M4-3 Patch 1：Move-to-Attack Phase Integrity
 
@@ -368,9 +368,32 @@ Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `u
 
 七個靜態障礙位於 `INITIAL_OBSTACLES`，角色皆由 Factory 建立。
 
+## M4-4A 勝敗條件與 Outcome
+
+### Condition 與全滅語意
+
+- `EndCondition.evaluate(context)` 是同步、確定性、唯讀的 boolean 判定；Condition 不得修改 BattleState、Dispatch Action 或操作 UI。
+- `WinCondition` 與 `LossCondition` 共用 AbstractEndCondition，分別以型別限制 VICTORY／DEFEAT 策略。條件集合非空、建立時複製並凍結；Mode 僅接受 `ANY`／`ALL`，預設 `ANY`。Runtime 會凍結 Strategy 物件，但 Concrete Strategy 作者仍須驗證設定、複製自己 schema 內的巢狀資料並保持 `evaluate()` 純且唯讀；不得將淺層 `Object.freeze()` 誤認為對 Private Fields、Closure、Map／Set 的通用深層保護，也不得對任意外部物件無限制遞迴 Freeze。
+- `BattleConditionContext` 提供不可變的初始參戰名冊、目前 Active Units、DefeatedUnitRecords、生命狀態查詢與陣營全滅查詢，不暴露正式 BattleState。
+- 全滅要求指定陣營至少有一名初始參戰單位，且每名初始單位均不再位於 Active Units 並有 HP 0 的正式 DefeatedUnitRecord。缺少 Active Unit 但沒有合法死亡紀錄不成立；HP 0／DYING 且死亡流程未完成亦不成立。
+- Production Scenario 明確建立敵方 `WinAllDead` 勝利條件及我方 `LossAllDead` 失敗條件，再由 `createBattleSession()` 注入。Win／Loss 策略不由 Reducer 建構。
+
+### Outcome 結算、Death Barrier 與終局防護
+
+- `BattleState.outcome` 初始為 `null`（ACTIVE），終局值為 `VICTORY` 或 `DEFEAT`。通用 Outcome Resolver 對同一份 Context 評估 Win 與 Loss；同時成立時 `DEFEAT` 優先，不產生 DRAW。
+- Session Initialization 不評估條件，初始 `outcome` 明確保持 `null`／ACTIVE。若初始條件已成立，會在第一個合法且安全的 Outcome Trigger 結算；不會由任意無效操作觸發。
+- Outcome 僅由明確允許的觸發點評估：有效 Move Finish／Cancel、合法 Attack／Death Lifecycle Completion，以及合法回合完成的 Pre-PAS Check。一般選取／模式操作、無效或未授權 Action、過期／重複 Callback 不觸發評估。Attack Impact 發生時 Attack Motion／Reservation 仍是阻擋邊界，須等生命周期完成；所有判定同時要求沒有 Move、Attack、Death Motion 或 Combat Reservation。
+- 最後一個阻擋 Motion 結束後，Pending Turn Completion 先評估 Outcome，再決定是否推進 PAS；若已終局便清除 Pending，避免多排一個 Turn。DEFEAT 優先與 Death Barrier 保持不變。
+- 終局轉移保留 DefeatedUnitRecord 與已結算戰鬥結果，清除操作選取、Turn Action、Pending、AI Progress 及待播放 Impact Queue。終局後 Reducer 對所有 Action／晚到 Callback 均回傳原 State；AI Gateway 亦不再產生 Intent。
+- 本階段不提供 Victory／Defeat Overlay、Restart 或 Session Isolation UI；終局狀態留在戰場畫面。Overlay、Restart、Session Isolation 屬 M4-4B；Final Regression、Browser Verification、Independent Review 與 Formal Acceptance 屬 M4-4C。
+
+### 擴充 Condition
+
+新增 Condition 的流程：建立符合 `EndCondition` 與正確 Outcome 類別的獨立策略、為其增加純邏輯測試、由 Scenario Configuration 加入對應 Win／Loss Manager，再透過 Battle Session 注入。Reducer 不需新增具體策略判斷或 Condition Type Switch。`GoToDestination`、`BossDead`、`NpcDead` 與 `OverRounds` 僅為未來概念，尚未實作，也未定義 Round Limit 語意或巢狀 Composite。
+
 ## 已知限制
 
-- M4-3 敵方 AI 已正式驗收；勝敗系統尚未實作，屬 M4-4；技能或 M7 效果亦尚未實作。
+- M4-4A Patch 1 已本機實作、尚待獨立 Final Review 與 Patch 後 Browser Regression；M4-4B 的 Overlay／Restart／Session Isolation、M4-4C 的 Final Regression／Browser Verification／Independent Review／Formal Acceptance、技能與 M7 效果尚未實作。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
 - 尚未導入攻擊音效、正式骨架動畫或 Physics；目前的死亡演出使用 Placeholder 模型。
 - UI 目前要求選取目標後再確認攻擊。

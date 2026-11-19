@@ -2,6 +2,25 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-19 — M4-4A Patch 1 — End Condition Hardening & Verification
+
+- **CR-M4-4A-01 — Configuration Immutability**：補充 Concrete Strategy 作者契約；新增 Test-only nested configuration Strategy，以明確欄位快照證明外部修改不影響設定。未新增通用任意物件遞迴 Freeze，也未替既有 AllDead 加入無意義設定。
+- **CR-M4-4A-02 — Outcome Trigger Boundary**：移除 Reducer wrapper 對所有 Action 的無條件 Outcome Evaluation。只在合法 Move Finish／Cancel、有效 Lifecycle Completion 與 Pre-PAS 檢查結算；初始化維持 ACTIVE，初始條件在第一個有效安全觸發點檢查；無效／未授權 Action 與 stale／duplicate callback 不觸發結算。
+- **CR-M4-4A-03／04 — Tests & React Integration**：擴充 ANY／ALL truth table、Constructor parameter、Attack Motion／Reservation、AI Gateway 終局 guard、雙向終局晚到事件及 configured AllDead session progression；React Controller Harness 掛載真實 `AttackAnimationController`、`DeathAnimationController`／`useDeathAnimation`，並使用 Battle Session／Reducer／Win／Loss AllDead 驗證 Victory 與 Defeat 的分階段 Impact／Attack Complete／Death Complete。
+- **Automated Verification**：`npm test` 246/246 PASS（相較 Patch 起始基準 239 項新增 7 個測試案例）；`npm run lint` PASS；`npm run build` PASS，既有 >500 kB Battle Chunk warning 保留；`git -c core.whitespace=cr-at-eol diff --check` PASS，另檢查未追蹤檔案 whitespace。
+- **Browser**：Product Owner 已提供 2026-11-19 的 Patch 前 BV-A01～A05 5/5 PASS；此證據與 Agent 原先 PARTIAL／NOT VERIFIED 歷史分開保存。Patch 後 BV-A01 PARTIAL（成功移動、攻擊模式顯示 0 個合法目標、待命推進至 Player Turn 2）；BV-A02～A05 NOT VERIFIED，尚未取得 Patch 後 Product Owner Acceptance。
+- **Documentation / Stage Scope**：同步 README、Development Status、Architecture、Combat System、Game Design、Roadmap、Changelog；M4-4B 為 Overlay／Restart／Session Isolation，M4-4C 為 Final Regression／Browser Verification／Independent Review／Formal Acceptance。TD-018、TD-019、TD-021 與 UX Backlog 狀態未調整。
+- **Review / Git**：CR-M4-4A-01～05 已實作處理；M4-4A 尚待獨立 Final Review，未宣告 Formal Acceptance。未 Commit／Push；M4 仍 75%，Overall 37.5%。
+
+## 2026-11-19 — M4-4A End Condition Architecture & Battle Resolution
+
+- **Implemented locally**：新增 EndCondition Strategy、唯讀 BattleConditionContext、ANY／ALL Win／Loss Manager、共用 AllDead 查詢、Outcome Resolver、Battle Session／Reducer Injection，以及 Production Scenario 明確配置。Outcome 只在 Motion／Death／Combat Reservation 安全結束後解析；DEFEAT 優先，終局後 Reducer 與 AI Gateway 阻擋新指令及晚到 Callback。
+- **Tests**：新增 16 項 `tests/end-conditions.test.mjs`；`npm test` 239/239 PASS，原 223 個測試案例保留。另測試有效 Move Motion 完成前不提交 Outcome。既有 AI 測試斷言由欄位不存在更新為 `outcome === null`，以符合新增 ACTIVE Outcome Contract，保留原本「不自主宣告終局」的測試意圖。
+- **Verification**：`npm run lint` PASS；`npm run build` PASS，既有 >500 kB Battle Chunk warning 保留；`git -c core.whitespace=cr-at-eol diff --check` PASS（保留 Windows CRLF 行尾）。
+- **Browser**：BV-A01 PARTIAL（載入場景、操作模式／待命及多輪 AI 回合流程；未確認成功移動／攻擊）；BV-A02～A05 NOT VERIFIED。未以自動化測試代替瀏覽器證據；無 Overlay 屬 M4-4A 預期範圍。
+- **Reviews / Acceptance**：M4-4A 尚待獨立 Architecture／Code Review 及 Product Owner Acceptance；不得標記為正式結案。
+- **Git / Scope**：Session Start HEAD／本機 `origin/main` tracking ref 為 `11b1652d1702376d703da8eed4cb83586e23401e`；本次程式、測試與文件異動未提交／推送。M4 維持 75%，Overall 37.5%；M4-4B／C 尚未開始。
+
 ## 2026-11-19 — M4-3 Formal Closure
 
 - **Milestone**：M4-3 Enemy AI 正式驗收完成，狀態 **COMPLETED — FORMALLY ACCEPTED**。

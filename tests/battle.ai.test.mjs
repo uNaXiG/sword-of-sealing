@@ -216,7 +216,7 @@ test('無存活玩家時選擇安全待命且沒有自主 Terminal Outcome', () 
     unit('enemy-b', 'goblin', 'enemy', 5, 5),
   ], 'enemy-a')
   assert.deepEqual(decideEnemyTurn(state), { type: 'STANDBY' })
-  assert.equal('outcome' in state, false)
+  assert.equal(state.outcome, null)
 })
 
 test('玩家 Active Turn 與錯誤 Faction 的 AI 指令均被拒絕', () => {

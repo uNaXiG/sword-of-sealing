@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { after, before, test } from 'node:test'
-import { createElement, StrictMode, useCallback, useReducer } from 'react'
+import { createElement, Fragment, StrictMode, useCallback, useReducer } from 'react'
 import { JSDOM } from 'jsdom'
 import react from '@vitejs/plugin-react'
 import { createServer } from 'vite'
@@ -11,7 +11,12 @@ import {
   battleReducer,
   createBattleState,
 } from '../src/game/battle/battle.state.ts'
+import { createBattleSession } from '../src/game/battle/battle.session.ts'
 import { dispatchAIControllerAction } from '../src/game/battle/battle.ai.gateway.ts'
+import { LossCondition } from '../src/game/end-conditions/loss-condition.ts'
+import { AllDead as LossAllDead } from '../src/game/end-conditions/loss/all-dead.ts'
+import { WinCondition } from '../src/game/end-conditions/win-condition.ts'
+import { AllDead as WinAllDead } from '../src/game/end-conditions/win/all-dead.ts'
 import { activateUnitFixture, battleReducerFixture } from './turn.fixture.mjs'
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -19,9 +24,14 @@ const controllerPath = resolve(
   projectRoot,
   'src/features/battle/components/AttackAnimationController.tsx',
 )
+const deathControllerPath = resolve(
+  projectRoot,
+  'src/features/battle/components/DeathAnimationController.tsx',
+)
 const frameHarnessPath = resolve(projectRoot, 'tests/fixtures/r3fFrameHarness.mjs')
 const visualImports = new Set([
   './AttackProjectile',
+  './DeathParticleEffect',
   './HitEffect',
   './FloatingDamage',
 ])
@@ -31,7 +41,9 @@ let dom
 let createRoot
 let act
 let AttackAnimationController
+let DeathAnimationController
 let useAttackAnimation
+let useDeathAnimation
 let frameHarness
 const originalGlobals = new Map()
 
@@ -51,8 +63,10 @@ function createIntegrationPlugin() {
     resolveId(source, importer) {
       const normalizedImporter = importer?.split('?')[0].replace(/\\/g, '/')
       const normalizedControllerPath = controllerPath.replace(/\\/g, '/')
+      const normalizedDeathControllerPath = deathControllerPath.replace(/\\/g, '/')
       if (
-        normalizedImporter === normalizedControllerPath &&
+        (normalizedImporter === normalizedControllerPath ||
+          normalizedImporter === normalizedDeathControllerPath) &&
         visualImports.has(source)
       ) return `\0attack-visual:${source}`
       return null
@@ -76,6 +90,34 @@ function makeUnit(id, unitClass, faction, column, row, overrides = {}) {
     }),
     ...overrides,
   }
+}
+
+function withTurnContext(state, action) {
+  return {
+    ...action,
+    turnId: state.turn.turnId,
+    unitId: state.turn.activeUnitId,
+  }
+}
+
+function createAllDeadSession(units) {
+  return createBattleSession({
+    units,
+    winCondition: new WinCondition([new WinAllDead()]),
+    lossCondition: new LossCondition([new LossAllDead()]),
+  })
+}
+
+function beginConfiguredPlayerAttack(session, targetId) {
+  let state = session.initialState
+  state = session.reducer(state, withTurnContext(state, { type: 'set-mode', mode: 'ATTACK' }))
+  state = session.reducer(state, withTurnContext(state, {
+    type: 'select-attack-target',
+    targetId,
+  }))
+  state = session.reducer(state, withTurnContext(state, { type: 'confirm-attack' }))
+  assert.ok(state.attackMotion)
+  return state
 }
 
 const knight = makeUnit('knight', 'knight', 'player', 3, 3)
@@ -126,13 +168,15 @@ function createEnemyAttackStateWithDeathBarrier() {
 
 function ControllerHost({
   initialState,
+  reducer,
   stateRef,
   dispatchRef,
   clockRefRef,
   actions,
   showController,
+  showDeathController,
 }) {
-  const [state, dispatch] = useReducer(battleReducer, initialState)
+  const [state, dispatch] = useReducer(reducer, initialState)
   stateRef.current = state
   const dispatchAction = useCallback((action) => {
     actions.push(action)
@@ -159,19 +203,41 @@ function ControllerHost({
   const animation = useAttackAnimation(impact, complete, abort)
   clockRefRef.current = animation.clockRef
 
+  const deathComplete = useCallback(
+    (deathId, unitId) => dispatchAction({ type: 'death-complete', deathId, unitId }),
+    [dispatchAction],
+  )
+  const deathAbort = useCallback(
+    (deathId, unitId) => dispatchAction({ type: 'death-abort', deathId, unitId }),
+    [dispatchAction],
+  )
+  const deathAnimation = useDeathAnimation(deathComplete, deathAbort)
+
   if (!showController) return null
-  return createElement(AttackAnimationController, {
-    attackMotion: state.attackMotion,
-    confirmedImpacts: [],
-    clockRef: animation.clockRef,
-    onImpact: animation.onImpact,
-    onComplete: animation.onComplete,
-    onAbort: animation.onAbort,
-    onFeedbackComplete: feedbackComplete,
-  })
+  return createElement(
+    Fragment,
+    null,
+    createElement(AttackAnimationController, {
+      attackMotion: state.attackMotion,
+      confirmedImpacts: [],
+      clockRef: animation.clockRef,
+      onImpact: animation.onImpact,
+      onComplete: animation.onComplete,
+      onAbort: animation.onAbort,
+      onFeedbackComplete: feedbackComplete,
+    }),
+    showDeathController
+      ? createElement(DeathAnimationController, {
+        motions: state.deathMotions,
+        deathClockRef: deathAnimation.deathClockRef,
+        onComplete: deathAnimation.onComplete,
+        onAbort: deathAnimation.onAbort,
+      })
+      : null,
+  )
 }
 
-async function mountController(initialState) {
+async function mountController(initialState, reducer = battleReducer, showDeathController = false) {
   const stats = frameHarness.getFrameHarnessStats()
   assert.equal(stats.activeCallbacks, 0, 'previous test leaked a frame callback')
 
@@ -184,11 +250,13 @@ async function mountController(initialState) {
   const actions = []
   let props = {
     initialState,
+    reducer,
     stateRef,
     dispatchRef,
     clockRefRef,
     actions,
     showController: true,
+    showDeathController,
   }
 
   async function render(overrides = {}) {
@@ -240,12 +308,18 @@ before(async () => {
     logLevel: 'silent',
   })
   const controllerModule = await vite.ssrLoadModule(controllerPath)
+  const deathControllerModule = await vite.ssrLoadModule(deathControllerPath)
   const animationHookModule = await vite.ssrLoadModule(
     resolve(projectRoot, 'src/features/battle/hooks/useAttackAnimation.ts'),
   )
+  const deathAnimationHookModule = await vite.ssrLoadModule(
+    resolve(projectRoot, 'src/features/battle/hooks/useDeathAnimation.ts'),
+  )
   frameHarness = await vite.ssrLoadModule(frameHarnessPath)
   AttackAnimationController = controllerModule.default
+  DeathAnimationController = deathControllerModule.default
   useAttackAnimation = animationHookModule.useAttackAnimation
+  useDeathAnimation = deathAnimationHookModule.useDeathAnimation
 
   dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost/',
@@ -428,6 +502,108 @@ test('pre-impact frame abort dispatches once without HP damage or ending the pla
       playerHp,
     )
     assert.equal(harness.stateRef.current.turn.turnId, turnId)
+  } finally {
+    await harness.unmount()
+  }
+})
+
+test('configured Victory waits for React attack and death lifecycle completion without advancing PAS', async () => {
+  const fragileGoblin = makeUnit('fragile-goblin', 'goblin', 'enemy', 4, 3, { hp: 5 })
+  const session = createAllDeadSession([knight, fragileGoblin])
+  const attackState = beginConfiguredPlayerAttack(session, fragileGoblin.id)
+  const attackId = attackState.attackMotion.attackId
+  const turnId = attackState.turn.turnId
+  const harness = await mountController(attackState, session.reducer, true)
+
+  try {
+    await harness.frame(0.45)
+    const afterImpact = harness.stateRef.current
+    assert.deepEqual(
+      harness.actions.map(({ type }) => type),
+      ['attack-impact'],
+    )
+    assert.equal(afterImpact.outcome, null)
+    assert.equal(afterImpact.attackMotion.phase, 'IMPACTED')
+    assert.equal(afterImpact.deathMotions.length, 1)
+    assert.equal(afterImpact.turn.turnId, turnId)
+
+    await harness.frame(0.55)
+    const afterAttack = harness.stateRef.current
+    assert.deepEqual(
+      harness.actions.map(({ type }) => type),
+      ['attack-impact', 'attack-complete'],
+    )
+    assert.equal(afterAttack.outcome, null)
+    assert.equal(afterAttack.attackMotion, null)
+    assert.equal(afterAttack.deathMotions.length, 1)
+    assert.equal(afterAttack.pendingTurnCompletion?.unitId, knight.id)
+    assert.equal(afterAttack.turn.turnId, turnId)
+
+    await harness.frame(0.7)
+    const terminal = harness.stateRef.current
+    assert.equal(terminal.outcome, 'VICTORY')
+    assert.equal(terminal.pendingTurnCompletion, null)
+    assert.equal(terminal.turn.turnId, turnId)
+    assert.deepEqual(
+      harness.actions.map(({ type }) => type),
+      ['attack-impact', 'attack-complete', 'death-complete'],
+    )
+
+    await harness.dispatch({ type: 'attack-complete', attackId })
+    assert.equal(harness.stateRef.current, terminal)
+    assert.equal(harness.stateRef.current.outcome, 'VICTORY')
+  } finally {
+    await harness.unmount()
+  }
+})
+
+test('configured Defeat waits for React enemy attack and player death lifecycle completion', async () => {
+  const fragileKnight = { ...knight, hp: 5 }
+  const fastGoblin = { ...goblin, agi: 20 }
+  const session = createAllDeadSession([fragileKnight, fastGoblin])
+  const initial = session.initialState
+  let aiAction
+  const intent = dispatchAIControllerAction(initial, (action) => { aiAction = action })
+  assert.equal(intent?.type, 'ATTACK')
+  assert.ok(aiAction)
+  const attackState = session.reducer(initial, aiAction)
+  const attackId = attackState.attackMotion.attackId
+  const turnId = attackState.turn.turnId
+  const harness = await mountController(attackState, session.reducer, true)
+
+  try {
+    await harness.frame(0.4)
+    const afterImpact = harness.stateRef.current
+    assert.deepEqual(
+      harness.actions.map(({ type }) => type),
+      ['attack-impact'],
+    )
+    assert.equal(afterImpact.outcome, null)
+    assert.equal(afterImpact.attackMotion.phase, 'IMPACTED')
+    assert.equal(afterImpact.deathMotions.length, 1)
+    assert.equal(afterImpact.turn.turnId, turnId)
+
+    await harness.frame(0.5)
+    const afterAttack = harness.stateRef.current
+    assert.deepEqual(
+      harness.actions.map(({ type }) => type),
+      ['attack-impact', 'attack-complete'],
+    )
+    assert.equal(afterAttack.outcome, null)
+    assert.equal(afterAttack.attackMotion, null)
+    assert.equal(afterAttack.deathMotions.length, 1)
+    assert.equal(afterAttack.pendingTurnCompletion?.unitId, fastGoblin.id)
+    assert.equal(afterAttack.turn.turnId, turnId)
+
+    await harness.frame(0.7)
+    const terminal = harness.stateRef.current
+    assert.equal(terminal.outcome, 'DEFEAT')
+    assert.equal(terminal.pendingTurnCompletion, null)
+    assert.equal(terminal.turn.turnId, turnId)
+
+    await harness.dispatch({ type: 'attack-abort', attackId })
+    assert.equal(harness.stateRef.current, terminal)
+    assert.equal(harness.stateRef.current.outcome, 'DEFEAT')
   } finally {
     await harness.unmount()
   }

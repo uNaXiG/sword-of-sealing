@@ -16,9 +16,10 @@
 | Latest Verified Repository CI Run | [44500720991](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44500720991) — SUCCESS（`main` / `4043459c`） |
 | Latest Verified Gameplay Commit | `main` @ `6052c6197588b00c8732f34b7dbda0a3dc696a25`（M4-3 Patch 3） |
 | Gameplay CI Run | [44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS（`main` / `6052c619`） |
-| Baseline Working Tree | 核對開始時乾淨；HEAD 與本機 `origin/main` tracking ref 均為 `4043459cfa3cb884aa9d9a6653ed646ef59975a9`（未據此推定遠端最新狀態）；本次文件同步產生未提交 Markdown 異動，未 Commit／Push |
+| M4-4A Session Start Git Baseline | `main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；本機 `origin/main` tracking ref 相同；開始時工作樹乾淨。此為本機 ref 記錄，不據此推定遠端最新狀態或 CI 狀態 |
+| Current Working Tree | M4-4A 原有異動及 Patch 1 Source／Tests／文件含未提交異動；未 Commit／Push |
 | 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved；M4-3：COMPLETED — FORMALLY ACCEPTED |
-| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（75%）**，M4-4 尚未開始；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
+| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（75%）**，M4-4A Patch 1 已實作、待獨立 Final Review；M4-4B／C 尚未開始；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | M4 進度 | 75%（3/4） |
@@ -28,7 +29,7 @@
 | M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
 | M4-3 狀態 | **COMPLETED — FORMALLY ACCEPTED**；Patch 1／2／3 與 TEST-M4-3-01 已完成；223/223 Automated Tests；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED |
 | Code Review Findings | CR-M4-3-01／02／03 CLOSED；TEST-M4-3-01 CLOSED — PASS；TD-019 CLOSED |
-| M4-4 狀態 | **NEXT — PENDING DEVELOPMENT**；尚未開始實作 |
+| M4-4 狀態 | **IN PROGRESS**；M4-4A Patch 1 **IMPLEMENTED — PENDING INDEPENDENT FINAL REVIEW**；M4-4B／C **PENDING DEVELOPMENT** |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
 ## 驗證結果
@@ -51,6 +52,74 @@
 | M4-3 Patch 3 | IMPLEMENTED — INCLUDED IN FORMAL CLOSURE | AI Gateway Capability、Enemy Pre-impact Abort Contract、Animation Lifecycle Hardening；Review findings 已 CLOSED |
 | M4-3 Gameplay Commit / CI | Git Push SUCCESS；GitHub CI SUCCESS | Gameplay Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；Run `44496931887` SUCCESS；最新 Repository Commit／CI 見目前基準表 |
 | M4-3 Formal Review | Architecture Review APPROVED；Code Review APPROVED；Formal Closure APPROVED | M4-3 已正式結案；TEST-M4-3-01 與 CR-M4-3-01／02／03 均 CLOSED |
+| M4-4A Patch 1 Starting Baseline | 239/239 PASS；ESLint PASS；Build PASS | Patch 開始前重跑；HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；保留既有未提交 M4-4A 異動 |
+| M4-4A Patch 1 Automated Tests | 246/246 PASS | `npm test`；保留原 239 項測試意圖並新增 7 個測試；涵蓋 nested config、Outcome Trigger Boundary、Attack Reservation、configured session progression 與 Victory／Defeat React lifecycle |
+| M4-4A Patch 1 ESLint / Production Build | PASS / PASS | `npm run lint`、`npm run build`；Build 保留既有 >500 kB Battle Chunk warning |
+| M4-4A Agent Browser Verification (pre-P1) | PARTIAL | 真實 Browser 載入 Battle Scene，操作模式／待命及多輪 AI 回合流程；未能確認一次成功移動或攻擊。原 BV-A02～A05 未驗證 |
+| M4-4A Product Owner Browser Acceptance (pre-P1) | PASS（2026-11-19；BV-A01～A05 5/5） | 依 Product Owner 提供的驗收結果記錄；屬 Patch 1 前證據，不代表本次 Runtime 變更已重驗 |
+| M4-4A Patch 1 Browser Regression | PARTIAL | BV-A01 部分重驗：確認移動、攻擊模式、待命與 PAS；未完成有效攻擊。BV-A02～A05 尚未重驗 |
+| M4-4A Review / Acceptance | PENDING INDEPENDENT FINAL REVIEW | M4-4A Architecture Review 已 APPROVED、Code Review CONDITIONAL APPROVAL；Patch 1 尚未經獨立 Final Review，亦未宣告 Formal Acceptance |
+
+## M4-4A Acceptance Criteria Evidence Matrix
+
+| AC | 結果 | 實作／查證證據 | 限制 |
+|---|---|---|---|
+| AC-A01 獨立 end-conditions 目錄 | PASS | `src/game/end-conditions/`；Source tree | — |
+| AC-A02 win／loss 子目錄 | PASS | `src/game/end-conditions/win/`、`loss/` | — |
+| AC-A03 EndCondition Interface | PASS | `end-condition.interface.ts`；Strategy tests | — |
+| AC-A04 Abstract Condition Manager | PASS | `abstract-end-condition.ts`；ANY／ALL 與設定測試 | — |
+| AC-A05 WinCondition | PASS | `win-condition.ts`；manager tests | — |
+| AC-A06 LossCondition | PASS | `loss-condition.ts`；manager tests | — |
+| AC-A07 ANY 判定 | PASS | `tests/end-conditions.test.mjs`；single true／false、ANY all-true／all-false／mixed truth table | — |
+| AC-A08 ALL 判定 | PASS | `tests/end-conditions.test.mjs`；ALL all-true／all-false／mixed truth table | — |
+| AC-A09 配置驗證及不可變集合 | PASS | empty／invalid mode／contract tests；test-only nested Strategy schema snapshot 與巢狀 freeze assertions | Runtime 不提供任意物件通用深層 Freeze；Concrete Strategy 作者負責設定快照契約 |
+| AC-A10 Win AllDead | PASS | `win/all-dead.ts`；faction elimination tests | — |
+| AC-A11 Loss AllDead | PASS | `loss/all-dead.ts`；faction elimination tests | — |
+| AC-A12 正常死亡語意 | PASS | context tests；DYING、正式 DefeatedUnitRecord、空陣營與缺失紀錄 cases | — |
+| AC-A13 Production Scene 明確初始化 | PASS | `useBattleMovement.ts`；明確建立 Win／Loss Condition | — |
+| AC-A14 Dependency Injection | PASS | `battle.session.ts`；test-only parameterized Strategy 注入 Reducer 測試 | — |
+| AC-A15 Reducer 無 Concrete Condition 分支 | PASS | `battle.state.ts` 僅使用 Manager／Resolver；source inspection | — |
+| AC-A16 Test-only Condition 可擴充 | PASS | 不同 Constructor 參數的 `MinimumRosterWin` 與 Nested Configuration Strategy 透過注入 Reducer 評估；不改 Reducer | — |
+| AC-A17 Victory Resolution | PASS | `tests/end-conditions.test.mjs`；Death Barrier 後 Outcome VICTORY | — |
+| AC-A18 Defeat Resolution | PASS | `tests/end-conditions.test.mjs`；最後玩家死亡後 Outcome DEFEAT | — |
+| AC-A19 DEFEAT_PRIORITY | PASS | same-context simultaneous Win／Loss test | — |
+| AC-A20 Attack／Death／Move Barriers | PASS | 單獨 Attack Motion／Combat Reservation、Move Motion、Death Motion 與 multi-Death barrier assertions | — |
+| AC-A21 Pending Turn Completion | PASS | test verifies Outcome before PAS; Pending cleared without extra Turn | — |
+| AC-A22 Terminal Action Guard | PASS | terminal action test covers selection、move、mode、standby、undo、attack、impact queue | — |
+| AC-A23 AI Terminal Guard | PASS | 直接驗證 `getAIControllerIntent(terminalState) === null`，並驗證 Reducer 拒絕已授權但晚到的 AI Action | — |
+| AC-A24 Late Callback 不影響終局 | PASS | VICTORY 與 DEFEAT 均重播 Attack／Death／Move callbacks，Reducer 回傳相同 terminal State | — |
+| AC-A25 既有 223 項測試無退化 | PASS | `npm test` 246/246；相較 239 項 Patch 基線新增 7 項，保留先前測試意圖 | Patch 觸及部分既有 Outcome assertions，已改為合法 Trigger 並加強拒絕邊界 |
+| AC-A26 新增測試全部 PASS | PASS | End Condition 與 React Outcome Integration 測試均通過；完整 suite 246/246 | — |
+| AC-A27 ESLint | PASS | `npm run lint` | — |
+| AC-A28 Production Build | PASS | `npm run build` | Existing >500 kB Battle Chunk warning remains |
+| AC-A29 Git Diff Check | PASS | `git -c core.whitespace=cr-at-eol diff --check` 與未追蹤檔案 whitespace inspection；尊重 Repository 的 CRLF 行尾 | No commit or push |
+| AC-A30 持久化文件同步 | PASS | README、Development Status、Roadmap、Architecture、Combat System、Game Design、Changelog 同步 Patch 1；TD-018／019／021 與 UX Backlog 未變更 | Patch 後 Browser Regression 與 Review 狀態不得推定完成 |
+| AC-A31 無未授權 Scope Expansion | PASS | Diff inspection；只實作 M4-4A，未建立 Overlay／Restart／Session Isolation | BV-A01 Patch 後 PARTIAL；BV-A02～A05 NOT VERIFIED |
+| AC-A32 無 Circular Runtime Dependency | PASS | TypeScript Production Build；Battle Core imports Condition Contracts／Resolver, not concrete AllDead modules | — |
+
+## M4-4A Browser Evidence
+
+| BV | Agent Browser Verification (pre-P1) | Product Owner Acceptance (2026-11-19, pre-P1) | Patch 1 Browser Regression |
+|---|---|---|---|
+| BV-A01 Normal Battle Regression | PARTIAL | PASS | PARTIAL — moved Assassin successfully; Attack Mode showed 0 legal targets; Standby advanced to Player Turn 2 |
+| BV-A02 Victory Terminal State | NOT VERIFIED | PASS | NOT VERIFIED |
+| BV-A03 Defeat Terminal State | NOT VERIFIED | PASS | NOT VERIFIED |
+| BV-A04 Death Barrier Visual Regression | NOT VERIFIED | PASS | NOT VERIFIED |
+| BV-A05 Terminal Interaction | NOT VERIFIED | PASS | NOT VERIFIED |
+
+Product Owner 的 5/5 PASS 是 Patch 1 前的真實瀏覽器驗收紀錄；Agent 原有 PARTIAL／NOT VERIFIED 結果保留為獨立歷史證據。Patch 1 改變 Runtime Outcome Trigger，相關 Browser Regression 必須重驗；Node／React Integration 測試不替代 Browser Verification 或新的 Product Owner Acceptance。
+
+## M4-4A Patch 1 Review Finding Resolution
+
+| Finding | Patch 1 Resolution | Evidence | Status |
+|---|---|---|---|
+| CR-M4-4A-01 Configuration Immutability | 明確區分 Runtime shallow freeze 與 Concrete Strategy Author Contract；Test-only nested config 使用 schema-specific copy/freeze | `tests/end-conditions.test.mjs`：`test-only nested configuration strategy snapshots and protects its schema explicitly`；Architecture／Combat System Contract | IMPLEMENTED |
+| CR-M4-4A-02 Outcome Evaluation Boundary | 僅在有效安全的 Move／Lifecycle Completion 與 Pre-PAS 觸發；Session 初始化保持 ACTIVE，初始已成立條件在首個合法安全觸發點結算 | `session initialization is ACTIVE and only valid outcome triggers evaluate initial conditions`；stale／unauthorized、Attack Reservation 與 PAS tests | IMPLEMENTED |
+| CR-M4-4A-03 Test Coverage Completion | 補齊指定 truth table、constructor、Attack-only barrier、Gateway、雙向終局、configured session 等情境 | `tests/end-conditions.test.mjs`、`tests/battle.animation.react.integration.test.mjs`；246/246 | IMPLEMENTED |
+| CR-M4-4A-04 React Outcome Integration | 真實 `AttackAnimationController`、`DeathAnimationController`／`useDeathAnimation`、Session、Configured Reducer、Win／Loss AllDead 覆蓋正式 Victory、Defeat 及 late callback | React tests：`configured Victory waits for React attack and death lifecycle completion without advancing PAS`；`configured Defeat waits for React enemy attack and player death lifecycle completion` | IMPLEMENTED |
+| CR-M4-4A-05 Documentation Synchronization | 同步七份指定文件；記錄 Product Owner Patch 前 5/5 Acceptance，並保留 Agent 舊 Browser 結果 | README、Development Status、Architecture、Combat System、Game Design、Roadmap、Changelog | IMPLEMENTED |
+
+以上為 Patch Implementation 狀態，不代表獨立 Final Review 或 M4-4A Formal Acceptance 已完成。
 
 ## M4-3 Formal Closure Record
 
@@ -178,7 +247,7 @@
 
 - **歷史狀態快照（M4-3 正式結案前）**：當時 M4-3 正式敵方 AI 尚待驗收；技能、成長、劇情、存檔、PWA 與勝敗系統亦尚未完成。
 
-**目前狀態（2026-11-19）**：M4-3 Enemy AI 已完成正式驗收（COMPLETED — FORMALLY ACCEPTED），M4-4「勝利、失敗與戰鬥結束」為下一個待開發項目。M4 進度為 75%，專案整體進度為 37.5%。
+**目前狀態（2026-11-19）**：M4-3 Enemy AI 已完成正式驗收（COMPLETED — FORMALLY ACCEPTED）；M4-4A Patch 1 已實作，246/246 Tests PASS。Patch 前 Product Owner Browser Acceptance 為 BV-A01～A05 5/5 PASS；Patch 後 Browser Regression 與獨立 Final Review 尚未完成，故 M4-4A 仍未正式結案。M4-4B／C 尚未開始。M4 仍為 75%，專案整體仍為 37.5%。
 - 技術債及 UX 項目詳見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) 與 [UX_BACKLOG.md](./UX_BACKLOG.md)。
 
 ## 已知阻擋問題
@@ -260,4 +329,4 @@ Final Addendum 額外證據：
 
 ## 下一步
 
-M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。下一階段為 M4-4，狀態 **NEXT — PENDING DEVELOPMENT**；M4 維持 75%、Overall 維持 37.5%。本次僅同步文件，未開始 M4-4。
+M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A Patch 1 **IMPLEMENTED — PENDING INDEPENDENT FINAL REVIEW**；246/246 Tests、ESLint、Production Build 與 Diff Check PASS（保留既有 >500 kB Battle Chunk warning）。Patch 前 Product Owner BV-A01～A05 5/5 PASS；Patch 後 BV-A01 PARTIAL、BV-A02～A05 NOT VERIFIED，未宣稱 Patch 後驗收完成。M4-4B／C 為 **PENDING DEVELOPMENT**；M4 維持 75%、Overall 維持 37.5%。M4-4A 尚未正式驗收，亦未 Commit／Push。
