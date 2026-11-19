@@ -9,6 +9,7 @@
 - **Verification**：`npm run lint` PASS；`npm test` 181/181 PASS；`npm run build` PASS。`git diff --check` 在 repository 既有 CRLF tracked files 下將 CR 判為 trailing whitespace；`git -c core.whitespace=cr-at-eol diff --check` PASS，未發現真實 trailing whitespace。
 - **Formal Acceptance**：Architecture Review、Code Review、Final Verification 與 Product Owner Browser Acceptance 均 PASS。
 - **Status**：M4-2 **COMPLETED — Formal Acceptance Approved**；Patch 1 **COMPLETED**。M4 50%、Overall 35.0%；TD-016／017／020 CLOSED；M4-3 UP NEXT — Enemy AI。
+- **Git / CI**：Formal Gameplay Commit `f18f7aab2768e6fa5fcb1620243bf61c3a1779cf`；GitHub Actions Run `44472015253` COMPLETED / SUCCESS（Head SHA 相符）。
 
 ## 2026-11-19 — M4-2 Patch 1 — Review Hardening — IMPLEMENTED — Review / Acceptance Pending
 
@@ -30,7 +31,7 @@
 - **Browser Verification**：PARTIAL；已驗證 Development／Production 戰場進入、HUD／Timeline、Move 隱藏、Undo、Attack Mode Cancel 保留 Undo、Standby 切換、同步重複 Standby 防跳 Turn、Development Enemy Standby、Production 無 Dev Control、移動中離場重入及 Camera 操作。Three.js 既有兩項 Warning；攻擊／傷害／死亡尚未於本次完整操作。
 - **Documentation**：README、Architecture、Game Design、Combat System、Development Status、Roadmap、Technical Debt 與 Changelog 已同步；M4 完成度維持 25%，Project Completion 維持 32.5%。
 - **Known Limitations**：M4-3 Enemy AI、M4-4 勝敗、M7 Effect／Skill、正式 Product Owner Acceptance 及 Formal Closure 尚未完成。
-- **Git / CI**：Starting HEAD `818cc6634bce89eaeffb4de13c98e9c9c05737fa`。本次 M4-2 實作未 Commit、未 Push，無新 CI 結果，不宣告 COMPLETED。
+- **Git / CI**：Starting HEAD `818cc6634bce89eaeffb4de13c98e9c9c05737fa`；Formal Gameplay Commit `f18f7aab2768e6fa5fcb1620243bf61c3a1779cf`；Run `44472015253` SUCCESS。
 - **Closure**：M4-2 後續通過 Final Verification、Formal Acceptance、TD-016／017／020 Closure；正式 Git／CI Baseline 由本次 Closure 提交後補充。
 
 ## 2026-11-19 — M4-1 & Patch 1 Milestone Closure — Conditional

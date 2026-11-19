@@ -12,10 +12,10 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `818cc6634bce89eaeffb4de13c98e9c9c05737fa` — `docs: update project documentation and changelog for M4-1 completion and conditional closure` |
-| Latest Verified Repository CI Run | [44390621446](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44390621446) — SUCCESS（`main` / `818cc66`） |
-| Latest Verified Gameplay Commit | `main` @ `db30869e528f2aed95787d4cfdd1db3aca988c09`（M4-1 與 Patch 1） |
-| Gameplay CI Run | [44385223281](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44385223281) — SUCCESS（`main` / `db30869`） |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `f18f7aab2768e6fa5fcb1620243bf61c3a1779cf` — `feat(battle): complete M4-2 action economy and turn lifecycle` |
+| Latest Verified Repository CI Run | [44472015253](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44472015253) — SUCCESS（`main` / `f18f7aa`） |
+| Latest Verified Gameplay Commit | `main` @ `f18f7aab2768e6fa5fcb1620243bf61c3a1779cf`（M4-2、Patch 1 及 Final Verification Addendum） |
+| Gameplay CI Run | [44472015253](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44472015253) — SUCCESS（`main` / `f18f7aa`） |
 | 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved |
 | 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（50%）**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
@@ -24,7 +24,7 @@
 | 完整結案主要里程碑 | 3/10 |
 | 整體里程碑等權重進度 | 35.0%（Roadmap Completion Percentage，不代表實際工時比例） |
 | M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED** |
-| M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；等待本次正式 Commit／Push／CI Baseline Synchronization |
+| M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
 | Code Review Findings | CR-01 至 CR-05 已登錄為 TD-016 至 TD-020；全部 OPEN，使用者已核准延後處理 |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
@@ -171,4 +171,4 @@ Final Addendum 額外證據：
 
 ## 下一步
 
-執行正式 Commit、Push 與 GitHub Actions 驗證。CI 成功後更新 Latest Repository／Gameplay Baseline；不得開始 M4-3 功能開發。
+M4-2 Formal Closure 已納入 `f18f7aab2768e6fa5fcb1620243bf61c3a1779cf`；GitHub Actions Run `44472015253` SUCCESS。下一階段為 M4-3 Enemy AI，仍等待獨立開發規劃與授權。
