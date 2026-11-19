@@ -58,7 +58,7 @@
 
 ## 規劃中：未來系統
 
-- M4-4C：Final Regression、Browser Verification、Independent Review 與 Formal Acceptance；包含 RV-M4-4B-01～03 的延後驗證。
+- M4-4C：Final Regression、Browser Verification、Independent Review 與 Formal Acceptance；目前已實作部分 Production Route Integration 驗證，但 GPU Resource Stats、終局 Browser 情境與若干驗收項目仍未驗證。M4-4C 維持 IN PROGRESS／REVIEW PENDING；M4-4 Formal Acceptance 尚未完成。詳見 [Development Status](./DEVELOPMENT_STATUS.md)。
 - 多角色完整行動限制。
 - 技能、裝備、經驗值、等級與成長。
 - 戰鬥勝負與關卡。

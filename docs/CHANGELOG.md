@@ -2,6 +2,15 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M4-4C Lifecycle Verification (Pending Review)
+
+- **Baseline**：`main`／HEAD `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；GitHub Actions Run [44607801214](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44607801214) SUCCESS，對應開始驗證基準，不涵蓋本次未提交檔案。
+- **Production Integration**：新增 `tests/battle.route.lifecycle.integration.test.mjs` 與兩個 test-only R3F／Drei fixture。正式 App／BattleScene／Session Host／Runtime／Scenario／Reducer／Outcome／Restart wiring 未 Mock；視覺元件與 WebGL surface 替換為測試 Adapter。新增 5 項 Integration Tests，涵蓋 10 次 Route 重入、同 ID 的 Move／Player／Attack／AI／Death Callback 隔離、Victory／Defeat 與 10 次有效 Restart。
+- **Automated Verification**：`npm test` 270/270 PASS（原 265 項保留，新增 5 項）；Route Integration 5/5 PASS；`npm run lint` PASS；`npm run build` PASS，既有 >500 kB Battle Chunk warning 仍存在；CRLF-aware Diff Check 與新增檔案 whitespace inspection PASS。
+- **Agent Browser Verification**：實際操作 Move／Undo／Standby、合法攻擊（劍士對哥布林 A，15 點傷害）與敵方移動；Main Menu／Battle 往返 12 次（2 次 warm-up、10 次量測）。BV-C01～C03 為 PARTIAL；BV-C08 PASS；BV-C12／C13／C14 PARTIAL；BV-C04～C07、C09～C11 NOT VERIFIED。不得以 Node／jsdom 結果替代 Browser 結果。
+- **Resource Measurements**：穩定 Route 有 1 個 Canvas；量測觀察 13 次 Canvas／WebGL 建立、11 次 Context Loss，最後一次未確認；JS Heap 約 91–113 MB 波動，未取得有效 `renderer.info`。不據此宣稱 GPU Resource Disposal 通過或存在 Resource Leak。
+- **Status / Limitations**：M4-4C 為 IN PROGRESS — PARTIAL VERIFICATION；RV-M4-4B-01～03 有部分證據但尚待 Independent Review，RC-M4-4B-07 維持 PARTIAL。M4 75%、Overall 37.5%；PO Acceptance 與 M4-4 Formal Acceptance PENDING。本次未修改 Production Runtime 或 Battle Core；僅新增 Test Source Code 與同步文件，未 Commit／Push。另有非本任務 `public/assets/` 二進位異動於工作樹中，未碰觸或回復；詳細矩陣與目前狀態見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+
 ## 2026-11-20 — M4-4B Conditional Closure & Documentation Synchronization
 
 - **Closure Decision**：M4-4B Implementation **COMPLETED**；Architecture Review **APPROVED**；Independent Code Review **APPROVED WITH LIMITATIONS**；Product Owner Acceptance **APPROVED**；Conditional Closure **APPROVED**。M4-4 Formal Acceptance 仍 **PENDING**；未啟動 M4-4B Patch 1。

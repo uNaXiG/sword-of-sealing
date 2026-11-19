@@ -60,7 +60,7 @@ npm run dev
 
 PAS 使用 1000 BU 競速距離與 AGI 等速前進。Battle Time 是虛擬 BTU，不受等待、鏡頭或動畫播放時間影響；每 200 BTU 推進一個 Round。HUD 與 Timeline 顯示目前 Active Unit、Round、Battle Time、Turn ID 及未來 10 次行動。Scheduler 先選取真正最小 Action Value，再依 Time Epsilon 建立 Tie Candidate；Preview 共用相同規則。M4-3 已以受控 Capability Action 連接正式 Enemy AI Controller，並已通過 Product Owner Browser Acceptance、Architecture Review 與 Code Review。M4-4A 已正式結案；M4-4B 已條件式驗收，M4-4C 負責整體 M4-4 的 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance。
 
-戰鬥的正式 `BattleState.outcome` 提交為 VICTORY 或 DEFEAT 後，會顯示對應的模態結果 Overlay；Restart 會在相同 Battle Route 以新 Session 重建正式 Scenario，不重新載入頁面。結果介面不新增戰利品、經驗值或成長結算。M4-4B 已完成條件式驗收；Production Route／WebGL 資源生命週期及正式 Runtime Wiring 驗證列入 M4-4C，細節見 [Development Status](docs/DEVELOPMENT_STATUS.md)。M4-4 Formal Acceptance 尚未完成。
+戰鬥的正式 `BattleState.outcome` 提交為 VICTORY 或 DEFEAT 後，會顯示對應的模態結果 Overlay；Restart 會在相同 Battle Route 以新 Session 重建正式 Scenario，不重新載入頁面。結果介面不新增戰利品、經驗值或成長結算。M4-4B 已完成條件式驗收；M4-4C 已完成部分 Production Route／Session Isolation／Outcome 整合驗證，仍有 GPU 資源量測與終局 Browser 情境待驗證並等待 Independent Review。M4-4 Formal Acceptance 尚未完成；逐項證據見 [Development Status](docs/DEVELOPMENT_STATUS.md)。
 
 若要調整職業平衡，請修改 `CLASS_DEFINITIONS`；若要新增測試角色，使用 `createBattleUnit()` 並指定 ID、職業、陣營與座標，可選擇覆寫顯示名稱。初始戰場包含五名我方職業與三隻各自擁有獨立 HP／SP 的哥布林。死亡佔位與移除規則見 [Combat System](docs/COMBAT_SYSTEM.md)。
 

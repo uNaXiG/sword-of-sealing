@@ -396,6 +396,14 @@ Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `u
 - 各 callback 綁定建立當時的 Session Dispatch；舊與新 Session 即使重用相同 Unit／Turn／Motion／Attack／Death／Impact ID，也不會跨 Session 派送。Host 只接受仍屬目前 Generation 的 Restart Handler。
 - 本階段不新增 EXP、Gold、Loot、Level Up、戰鬥統計、劇情或 Save／Load。M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**，Product Owner Browser Acceptance 為 10/10 PASS；Agent 先前受 WebGL fallback 限制的 Browser 結果保留為獨立歷史紀錄。RC-M4-4B-07 與 RV-M4-4B-01～03 延至 M4-4C；不代表已確認程式缺陷或已完成相關驗證。
 
+## M4-4C Route Exit 與 Runtime Lifecycle Verification
+
+正式 Route 離開時，App-owned `hashchange` Listener 依 App Effect cleanup 移除；Battle Route 卸載 `BattleSessionRuntime`，Session-owned Reducer／Dispatch、AI Effect、Animation Controller、Frame Subscription、暫態 UI 與 Canvas 隨 Runtime 結束。重新進入 Route 重新執行 Scenario Factory，不沿用前一個 Session。Restart 則由 Session Host Generation 與 Keyed Remount 建立新 Session，Terminal Outcome 仍只由正式 Reducer 提交。
+
+Production React Integration 測試實際掛載 App、BattleScene、Session Host、Scenario Factory 與 Runtime wiring，驗證 Idle／Move／Pre-impact Attack／Post-impact Attack／Enemy AI／Death callback 的卸載隔離、相同 ID collision、正式 Victory／Defeat Barrier、Overlay 與 Restart。測試以受控 Frame Scheduler 與 WebGL／純視覺替身量測生命周期；不能替代瀏覽器 GPU 資源量測或 Product Owner Browser Acceptance。
+
+Agent Browser 實際驗證移動、撤銷、待命、合法攻擊及敵方移動，並完成 12 次 Main Menu／Battle Route 往返（2 次 warm-up、10 次量測）。WebGL Context Loss 記錄為 13 次建立、11 次可觀察 Loss，末次 Loss 未確認；Renderer `info` 未取得有效數值，故 AC-C26／BV-C13 維持 PARTIAL。終局 Overlay／Restart、Mobile 版面及部分中途卸載 Browser 情境仍 NOT VERIFIED；M4-4C 與 M4 Formal Acceptance 皆未結案。逐項結果見 [Development Status](./DEVELOPMENT_STATUS.md)。
+
 ### 擴充 Condition
 
 新增 Condition 的流程：建立符合 `EndCondition` 與正確 Outcome 類別的獨立策略、為其增加純邏輯測試、由 Scenario Configuration 加入對應 Win／Loss Manager，再透過 Battle Session 注入。Reducer 不需新增具體策略判斷或 Condition Type Switch。`GoToDestination`、`BossDead`、`NpcDead` 與 `OverRounds` 僅為未來概念，尚未實作，也未定義 Round Limit 語意或巢狀 Composite。

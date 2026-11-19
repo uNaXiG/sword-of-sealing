@@ -293,4 +293,8 @@ RC-M4-4B-07 與以下剩餘驗證需求移交 M4-4C；它們不是已確認程�
 - **RV-M4-4B-02 — WebGL Resource Lifecycle**：驗證多次 Restart 與 Route Unmount 後 WebGL Context、Frame Subscription 或 Resource 是否持續累積；不得僅依 Canvas DOM 數量推定 GPU Resource Disposal。
 - **RV-M4-4B-03 — Production Runtime Integration Coverage**：在正式 Runtime Wiring 驗證跨 Session Callback Isolation 與 Outcome／Restart Integration；優先重用 Production Component／Hook，降低測試 Probe 差異。
 
-M4-4C 為下一階段，負責整體 Final Regression、Browser Verification、Independent Review 與 Formal Acceptance；M4 維持 75%、Overall 37.5%。
+M4-4C 已執行部分 Final Regression 與 Lifecycle Verification，但不視為階段結案。正式 Route 由 App 的 hash listener 切換；`BattleSessionRuntime` 仍是 Session／Reducer Dispatch／AI／Animation／Canvas 的所有權邊界，離開 Route 會卸載 Runtime，重新進入會建立新 Session。Production React Integration Harness 以正式 App、BattleScene、Session Host、Scenario Factory、Reducer 與 Controllers 驗證 Route 重入、舊 Session Callback 與 Outcome／Restart；測試只替換 WebGL Surface、Drei 元件及純視覺輸出，並以測試轉換量測 Frame Callback 與 Canvas 數量，不注入正式 Runtime Counter。
+
+Controller callback closure 綁定建立當時的 Session Dispatch；測試使用相同 Unit／Turn／Motion／Attack／Death／Impact IDs 重入後重播舊 Callback，確認新 Session 不變。StrictMode 下 App Route Listener 與 Frame Subscription 數量受測；Attack／Death Outcome 仍由正式 Reducer Barrier 決定。這些證據不改變 AI Capability Isolation 的既有界線：安全性來自 Runtime Dispatch Ownership，不宣稱底層 Capability Session Binding。
+
+Resource Ownership 依元件責任處理：R3F Canvas Root unmount 負責其 Renderer lifecycle；Drei OrbitControls 清理其 Listener 並 dispose 控制器；Death Particle Geometry、Floating Damage CanvasTexture 與 Unit Label CanvasTexture 由各自擁有者在 Effect cleanup dispose。這些 source／dependency inspection 與測試用 Frame／Canvas 計數不等同完整 GPU 資源量測。Agent Browser 能實際繪製 WebGL 場景；路由量測觀察 13 次 Canvas／WebGL 建立與 11 次 Context Loss，最後一次未確認，JS Heap 約 91–113 MB 波動，無有效 `renderer.info` 數據，因此不據此宣稱 GPU 資源無洩漏。M4-4C 狀態、測試追溯及未驗證項目見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)；Independent Review 與 Product Owner Acceptance 仍待完成，M4 維持 75%、Overall 37.5%。
