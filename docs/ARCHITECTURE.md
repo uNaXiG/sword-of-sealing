@@ -143,7 +143,7 @@ M4-3 Patch 2 補足 Rendering / Effect 競態邊界。有效 AttackMotion 可能
 
 敵方 AI 的 Pre-impact Abort 與玩家 Abort 有意不同：敵方已進入 Attack 後若動畫於 Impact 前終止，Reducer 清除 Reservation 並 queue 該敵方 Turn Completion，交由既有 Pending Resolver 等待任何阻擋性 Death Motion；玩家 Pre-impact Abort 仍釋放 Reservation 並保留其 Turn。
 
-沒有存活玩家與敵人的對戰時，Controller 進入穩定非執行狀態，不建立 M4-4 Outcome 或重複排程。M4-3 Enemy AI、Patch 1／2 已納入 Commit `a912457ae7eb159bd7f5411217f8548e30956e67`，其 210/210 驗證、Lint、Build、GitHub CI 與主要 Product Owner Browser Acceptance 已確認。Patch 3 目前僅為未提交工作樹變更：本機 213/213 測試、Lint、Build 通過，但未執行 Browser Verification、未取得新 CI 或 Product Owner Acceptance。Architecture Review、Code Review 與 Formal Closure 仍為 PENDING，M4 完成度維持 50%；M4-4 未開始。
+沒有存活玩家與敵人的對戰時，Controller 進入穩定非執行狀態，不建立 M4-4 Outcome 或重複排程。M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，GitHub Actions Run `44496931887` SUCCESS；該 Commit 的 213/213 測試、Lint、Build 為 Agent 回報，Product Owner Browser Acceptance 於 2026-11-19 PASS。TEST-M4-3-01 後續本機 `npm test` 為 223/223 PASS，新增 ReactDOM／StrictMode／受控 Frame 與正式 Reducer 的整合證據；Architecture／Code Review 維持 CONDITIONAL PASS，CR-M4-3-01／02 PASS，CR-M4-3-03 新證據待獨立審查。未提交異動不屬於 GitHub CI；M4-3 尚待 Formal Closure。M4 完成度維持 50%、Overall 35.0%；M4-4 未開始。
 
 ## Battle State 與 Reducer
 

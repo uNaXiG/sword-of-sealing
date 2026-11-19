@@ -2,7 +2,7 @@
 
 狀態只反映已確認事實。Proposed 解法不代表已核准實作；未確認目標標為 TBD。
 
-**技術債統計（TD-001 至 TD-020）**：共 20 項；CLOSED 11、OPEN 7、PENDING REVIEW 1、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
+**技術債統計（TD-001 至 TD-020）**：共 20 項；CLOSED 11、OPEN 7、APPROVED FOR CLOSURE 1、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
 
 | ID | Description | Impact | Priority | Status | Suggested Resolution | Target |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -24,7 +24,7 @@
 | TD-016 | PAS Floating-point Arrival Tolerance | 舊 Scheduler 以 Tie Candidate 的 AV 推進，近似同時抵達可能過度推進 | Medium | CLOSED | M4-2 分離最小事件時間與 Tie Selection；Exact-tie、Near-tie、Round Boundary、10,000 Continuous Events 均通過 | M4-2 |
 | TD-017 | Player Standby Turn Context Integrity | 玩家 `standby` 舊缺少 Turn／Unit Context，重複事件可能污染下一 Turn | High | CLOSED | M4-2 玩家指令攜帶 Context；Reducer Guard 與 Direct Context Replay Tests 通過 | M4-2 |
 | TD-018 | AGI Validation Consistency | Class Registry 接受 finite positive number，Battle State 要求 non-negative safe integer，PAS 又要求正速度；資料契約不一致 | Low | OPEN | 統一 Base AGI 合法值；未來明確分離 Base AGI 與 Effective Velocity；不為 M7 Buff 提前放寬所有基礎屬性 | M7 |
-| TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | PENDING REVIEW | M4-3 已移除 Development Enemy Standby；Patch 3 改由 AI Gateway 依 Controller Intent 發行凍結且以私有 identity set 驗證的 Action，Reducer 保留重驗證。Patch 3 本機 213/213、Lint、Build PASS；尚未提交／進 CI／完成 Browser Acceptance；待 Architecture／Code Review 後才可 CLOSED。既有 Patch 1／2 CI Run `44489947675` 與主要 Product Owner Acceptance 不代表 Patch 3 已驗收 | M4-3 |
+| TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | APPROVED FOR CLOSURE — PENDING FORMAL CLOSURE | M4-3 已移除 Development Enemy Standby；Patch 3 以 AI Gateway 發行凍結 Action 並由私有 identity set 驗證，Reducer 保留重驗證。CR-M4-3-01／02 PASS；TEST-M4-3-01 自動化證據已完成、待獨立審查及 Formal Closure | M4-3 |
 | TD-020 | Extended Scheduling Verification Coverage | 舊 10,000 次測試缺少獨立 Oracle 與長期數值誤差證據 | Medium | CLOSED | M4-2 加入固定速度 Oracle、Continuous Near-tie、Round Boundary、Preview 一致性、長期誤差與非負距離驗證 | M4-2 |
 
 ## 已結案 Bug
@@ -43,7 +43,7 @@ TD-016 至 TD-020 分別對應 ChatGPT Code Review CR-01 至 CR-05。使用者�
 - TD-017 是 M4-2 必要前置修正，不得延至 M4-3。
 - TD-016 與 TD-020 納入 M4-2 開發與驗證範圍。
 - TD-018 留待 M7。
-- TD-019 已由 M4-3 Capability AI 入口實作，目標狀態為 PENDING REVIEW。
+- TD-019 已由 M4-3 Capability AI 入口實作；目前 APPROVED FOR CLOSURE，TEST-M4-3-01 自動化證據已完成，待獨立審查及 Formal Closure。
 
 ## M4-2 Implementation Evidence — Formal Acceptance Approved
 
@@ -66,7 +66,7 @@ M3-3 已依使用者 BV-15 關閉 TD-004。TD-010 的直接相關 Texture Cleanu
 
 TD-014 維持 OPEN，本次結案不進行重構。
 
-## M4-3 Implementation Evidence — Pending Formal Review
+## M4-3 Implementation Evidence — Conditional Review Pass
 
 TD-019 的 `simulate-enemy-standby` UI／Reducer 入口已移除，並由以下正式設計取代：
 
@@ -76,9 +76,13 @@ TD-019 的 `simulate-enemy-standby` UI／Reducer 入口已移除，並由以下�
 - AI Progress 由 State 管理；敵方 Pre-impact Abort 釋放 Reservation 並明確排入該 Turn Completion，Pending Completion 仍等待阻擋 Motion；玩家 Abort 行為不變。
 - Terminal State 只停止 AI Controller，不建立 M4-4 Victory／Defeat Outcome。
 
-Patch 3 本機回歸以 [213/213 tests](../DEVELOPMENT_STATUS.md#驗證結果)、ESLint 與 Production Build 通過；受控 Frame Harness 驗證首幀 Clock 初始化、Effect Replay cleanup、Attack ID mismatch，以及同一 Frame 跨越 Impact／Complete 時只結算一次傷害。Patch 3 未執行 Browser Verification，未取得新 CI 或 Product Owner Acceptance，且未提交／推送。
+Patch 3 的 213/213 tests、ESLint 與 Production Build 為 Agent 回報；GitHub Actions Run `44496931887` 對應 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25` 並成功。Product Owner Browser Acceptance 於 2026-11-19 PASS。後續本機 TEST-M4-3-01 將 React Controller 真正掛載於 ReactDOM／StrictMode，由 layout-phase `useFrame` harness 控制 delta 並執行正式 Lifecycle Runtime；Impact／Complete／Abort callbacks 均 dispatch 至正式 `battleReducer`。本機 `npm test` 223/223、ESLint、Production Build PASS。jsdom 測試不是 Browser Verification，亦不改寫既有 Acceptance 或 GitHub CI 基準。
 
-TD-019 目前為 **PENDING REVIEW**；Architecture／Code Review 未完成前不得改為 CLOSED。
+Architecture／Code Review 均為 **CONDITIONAL PASS**。CR-M4-3-01（AI Gateway Capability Boundary）及 CR-M4-3-02（Enemy Pre-impact Abort Contract）PASS；CR-M4-3-03 的 Architecture Review PASS，React-mounted Controller Integration Evidence 已補齊，待獨立審查。
+
+**TEST-M4-3-01 — React Controller Lifecycle Integration Evidence**：已實作並由本機 10 項 ReactDOM 整合測試驗證，涵蓋 StrictMode Effect Replay、passive Effect 前 Frame Clock 初始化、受控 delta、Attack ID 隔離、Player／Enemy Abort、同幀 Impact／Complete、HP 更新與 Death Motion Barrier；所有 Controller callbacks 使用正式 Reducer。AC-01～AC-20 證據矩陣及案例結果記錄於 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。本次 `npm test` 223/223、ESLint、Production Build PASS；新證據尚待獨立 Architecture／Code Review，無正式豁免。
+
+TD-019 維持 **APPROVED FOR CLOSURE — PENDING FORMAL CLOSURE**；TEST-M4-3-01 已完成實作驗證，但在獨立審查及 Formal Closure 前不得標示 CLOSED。
 
 ## M4-3 Patch 3 — Abort and Capability Hardening
 
@@ -89,14 +93,18 @@ TD-019 目前為 **PENDING REVIEW**；Architecture／Code Review 未完成前不
 
 ## BUG-M4-3-003 — Enemy Animation Impact Regression
 
+> Patch 2 當時的驗證快照；最新 CI、Product Owner Acceptance 與 Review 狀態見上方 M4-3 Patch 3。
+
 - **Status**：FIXED — Patch 2；主要 Product Owner Browser Acceptance 已 PASS。
 - **Root Cause**：AttackAnimationController 的 passive Effect 尚未初始化 Clock 時，`useFrame` 將 null Clock 當成可中止異常，造成 Pre-impact Abort。
 - **Trigger**：Patch 1 的 Controller 於 MOVE_COMPLETED Effect 提交 AI Attack，使有效 AttackMotion 與 Clock Initialization 的 Render／Frame Ordering 更容易形成競態。
 - **Fix**：首個有效 Frame 建立 matching Attack ID 的 0ms Clock；不變更 Impact Guard、Damage Formula、Capability 或 Turn Completion。
-- **Evidence**：Before trace 無 Impact Callback 且無 HP Change；After trace 取得 Reducer IMPACT ACCEPTED，Applied Damage 10，Ranger HP 80→70；210/210 automated tests。
-- **Remaining**：特殊長時間、Console Abort 與其他未完成特殊 Browser Scenarios 保持個別 NOT VERIFIED；TD-019 維持 PENDING REVIEW。
+- **Evidence at Patch 2**：Before trace 無 Impact Callback 且無 HP Change；After trace 取得 Reducer IMPACT ACCEPTED，Applied Damage 10，Ranger HP 80→70；當時 210/210 automated tests。
+- **Remaining at Patch 2**：特殊長時間、Console Abort 與其他未完成特殊 Browser Scenarios 保持個別 NOT VERIFIED；當時 TD-019 為 PENDING REVIEW。
 
 ## M4-3 Patch 1 — AI Attack Lifecycle
+
+> Patch 1 當時的狀態快照；TD-019 最新狀態見上方 M4-3 Patch 3。
 
 - **BUG-M4-3-001 — FIXED — Patch 1**：Direct Attack 決策可被 Controller 純 Intent 函式獨立驗證，不會因 Controller 分支落入 Standby。
 - **BUG-M4-3-002 — FIXED — Patch 1**：Move-to-Attack 不再用 `MOVING + movementUsed` 隱含推斷完成；Reducer 的 Finish Transition 明確建立 `MOVE_COMPLETED`。

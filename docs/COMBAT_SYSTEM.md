@@ -301,7 +301,7 @@ M4-2 Formal Acceptance 已完成。TD-016、TD-017 與 TD-020 已依 Review、18
 
 ## M4-3 Rule-based Tactical AI
 
-M4-3 目前為 IMPLEMENTED — PENDING FORMAL REVIEW：
+M4-3 目前為 IMPLEMENTED — PENDING FORMAL CLOSURE：
 
 - Active Enemy Turn 由獨立 React Controller 自動觀察；Player Turn 不提交 AI Action。
 - `decideEnemyTurn()` 為純確定性函式；輸入不修改、不 Dispatch、不使用隨機數或真實時間。
@@ -313,7 +313,7 @@ M4-3 目前為 IMPLEMENTED — PENDING FORMAL REVIEW：
 - Enemy Pre-impact Abort 釋放 Reservation 並 queue Turn Completion；Post-impact Abort 保留傷害與消耗狀態。一般玩家 Pre-impact Abort 仍保留 Turn。
 - 沒有存活玩家時 Controller 安全停止，不建立勝敗結果，不連續推進 PAS。
 
-正式 AI 已移除 `simulate-enemy-standby` UI／Reducer 入口；TD-019 等待 Architecture／Code Review。Patch 3 本機自動化驗證為 213/213，未執行新的 Browser Verification／Product Owner Acceptance，也未納入 GitHub CI。
+正式 AI 已移除 `simulate-enemy-standby` UI／Reducer 入口。M4-3 Patch 3 已提交於 `6052c6197588b00c8732f34b7dbda0a3dc696a25`，CI Run `44496931887` SUCCESS；Product Owner Browser Acceptance 於 2026-11-19 PASS。TEST-M4-3-01 已以 ReactDOM／StrictMode 真正掛載 Attack Controller，並透過受控 Frame 驗證 Effect／Clock、Impact／Complete／Abort 與 Reducer 更新；死亡阻擋及玩家／敵方 Abort 整合案例通過。Architecture／Code Review 維持 CONDITIONAL PASS；CR-M4-3-03 新測試證據待獨立審查後才能 Formal Closure。TD-019 維持 APPROVED FOR CLOSURE — PENDING FORMAL CLOSURE。
 
 ### M4-3 Patch 1：Move-to-Attack Phase Integrity
 

@@ -2,7 +2,18 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-19 — M4-3 TEST-M4-3-01 — React Controller Lifecycle Integration Evidence
+
+- **Added**：10 個 ReactDOM 整合測試，真正掛載 `AttackAnimationController` 與 `useAttackAnimation`；React StrictMode 執行 Effect Replay，受控 `useFrame` harness 在 passive Effect 前推進正式 Lifecycle Runtime。
+- **Verified**：Impact／Complete／Abort callbacks 透過 React hook dispatch 至正式 `battleReducer`；涵蓋首幀 Clock 初始化、delta 邊界、同幀事件順序與 exactly-once、Attack ID 轉換／錯配、Player／Enemy Abort、HP、Turn 與 Death Motion Barrier。AC-01～AC-20 矩陣見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+- **Automated Verification**：本次本機 `npm test` 223/223 PASS、`npm run lint` PASS、`npm run build` PASS；保留既有 Battle Chunk > 500 kB warning。
+- **Scope / Fixture**：僅以 Node + jsdom ReactDOM Fixture 驗證 Controller Lifecycle；視覺子元件 stub 為 null，未驗證 3D／Browser 視覺與 `onFeedbackComplete` UI 行為；沒有修改戰鬥規則。
+- **Git / CI**：HEAD 與本機 `origin/main` tracking ref 仍為 `6052c6197588b00c8732f34b7dbda0a3dc696a25`。Run `44496931887` SUCCESS 僅對應該已提交 Commit，不涵蓋本次未提交測試與文件異動；未 Commit／Push。
+- **Acceptance / Review**：2026-11-19 Product Owner Browser Acceptance 是既有 M4-3 gameplay 驗收，本次沒有 Browser Verification 或新的 Product Owner Acceptance。TEST-M4-3-01 證據待獨立 Architecture／Code Review；M4-3 維持 IMPLEMENTED — PENDING FORMAL CLOSURE，TD-019 維持 APPROVED FOR CLOSURE — PENDING FORMAL CLOSURE，M4 50%、Overall 35.0%、M4-4 PENDING。
+
 ## 2026-11-19 — M4-3 Patch 3 — Capability, Abort, and Animation Lifecycle Hardening
+
+> 歷史快照：下列實作驗證紀錄更新時 Patch 3 尚未提交；目前 Commit、CI、Browser Acceptance 與 Review 最新狀態請見下方 Review & Verification Status Update。
 
 - **Changed**：AI Action signer 從純 Decision Engine 移至 `battle.ai.gateway.ts`；Gateway 僅依目前 Battle State 導出的 Controller Intent 發行 frozen Action，使用私有 identity set 授權，Reducer 繼續完整重驗證。
 - **Fixed**：Enemy AI Pre-impact Abort 在清除 Reservation 後 queue 該 Turn Completion，並沿 Pending Resolver 等待阻擋 Motion；Player Pre-impact Abort 行為不變。
@@ -10,7 +21,19 @@
 - **Verification**：本機 `npm test` 213/213 PASS；`npm run lint` PASS；`npm run build` PASS（既有 Battle Chunk > 500 kB warning）。
 - **Browser / Acceptance / CI**：Patch 3 未執行 Browser Verification，未取得新的 Product Owner Acceptance 或 GitHub CI；不沿用 Patch 1／2 結果。
 - **Status**：IMPLEMENTED；Architecture Review／Code Review／Formal Closure PENDING；TD-019 PENDING REVIEW；M4 50%、Overall 35.0%、M4-4 PENDING。
-- **Git / Scope**：Patch 3 僅為本機未提交／未推送工作樹變更；最新已驗證分支基準及 `origin/main` 為 `d71d8df9315a46123dc18ab442ef0d146f28ec62`。
+- **Git / Scope at Snapshot**：該次紀錄時 Patch 3 尚未提交／推送；此歷史狀態已由下方 Review & Verification Status Update 取代。
+
+## 2026-11-19 — M4-3 Patch 3 — Review & Verification Status Update
+
+> 歷史快照：TEST-M4-3-01 尚待補證的狀態為當時紀錄；最新整合測試結果與審查狀態請見本文件最上方。
+
+- **Git Baseline**：`main`、`origin/main`、工作樹均已核實；Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，`Refactor AI logic and introduce AI action gateway`。
+- **CI**：GitHub Actions Run [44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS；Head SHA 與上述 Commit 相符。
+- **Automated Verification**：213/213 Tests、ESLint、Production Build PASS（Agent 回報）。
+- **Product Owner Acceptance**：Browser Acceptance PASS（2026-11-19）。
+- **Review**：Architecture Review／Code Review CONDITIONAL PASS；CR-M4-3-01 AI Gateway Capability Boundary PASS；CR-M4-3-02 Enemy Pre-impact Abort Contract PASS；CR-M4-3-03 Architecture PASS，但 React-mounted Controller Integration Test 待補證。
+- **Outstanding**：TEST-M4-3-01 — React Controller Lifecycle Integration Evidence；須補足 React mount、Effect Replay、Frame 驅動與 Callback Dispatch 整合測試，或取得 Product Owner 正式豁免後列為後續技術債。
+- **Status**：M4-3 IMPLEMENTED — PENDING FORMAL CLOSURE；TD-019 APPROVED FOR CLOSURE、待 Formal Closure。M4-4 PENDING；M4 50%；Overall 35.0%。完成測試要求或取得正式豁免前不調整完成率。
 
 ## 2026-11-19 — DOC-M4-3-01 — M4-3 Git Baseline Synchronization
 

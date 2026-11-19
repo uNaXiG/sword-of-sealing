@@ -59,10 +59,10 @@ M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./D
 | M4-1 Patch 1 | 移動確認與指令流程修正 | COMPLETED |
 | M4-2 | Individual Action Economy & Turn State Reset | COMPLETED — Formal Acceptance Approved |
 | M4-2 Patch 1 | Code Review Hardening & Verification | COMPLETED |
-| M4-3 | 敵方移動與攻擊決策 | IMPLEMENTED — PENDING FORMAL REVIEW |
+| M4-3 | 敵方移動與攻擊決策 | IMPLEMENTED — PENDING FORMAL CLOSURE |
 | M4-4 | 勝利、失敗與戰鬥結束 | PENDING |
 
-M4-1 與 M4-2 均已完成。M4-2 包含完整 Action Economy、Turn Context、Combat Reservation、Turn Reset、PAS Precision、10,000 Continuous Near-tie、Direct Reducer Context Tests、Architecture／Code Review 及 Product Owner Browser Acceptance。M4-2 與 Patch 1 均為 **COMPLETED**。M4-3 Enemy AI、Patch 1 與 Patch 2 已實作並推送至 `a912457ae7eb159bd7f5411217f8548e30956e67`；210/210 Tests、Lint、Production Build、GitHub CI 與主要 Product Owner Browser Acceptance 均已確認。M4-3 目前為 **IMPLEMENTED — PENDING FORMAL REVIEW**，下一個工作項目為 **Architecture Review → Code Review → Formal Closure**；M4 整體完成度維持 50%，M4-4 仍為 PENDING。
+M4-1 與 M4-2 均已完成。M4-2 包含完整 Action Economy、Turn Context、Combat Reservation、Turn Reset、PAS Precision、10,000 Continuous Near-tie、Direct Reducer Context Tests、Architecture／Code Review 及 Product Owner Browser Acceptance。M4-2 與 Patch 1 均為 **COMPLETED**。M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，GitHub Actions Run `44496931887` SUCCESS；該基準的 213/213 Tests、ESLint、Production Build 為 Agent 回報，Product Owner Browser Acceptance 於 2026-11-19 PASS。TEST-M4-3-01 已有本機 React-mounted 整合證據（本機 223/223 Tests），Architecture／Code Review 仍為 CONDITIONAL PASS；CR-M4-3-01／02 PASS，CR-M4-3-03 新證據待獨立審查。下一步為獨立審查，之後才處理 Formal Closure。M4 整體完成度維持 50%，Overall 維持 35.0%，M4-4 仍為 PENDING。
 
 ## M5：戰鬥 UI／UX — PENDING
 
