@@ -12,15 +12,15 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `5048fea90ae7f81e2367e23ab42485d176fe8483` — M4-4A Final Review Correction and Patch 1 documentation |
-| Latest Verified Repository CI Run | [44595045755](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44595045755) — SUCCESS（`main` / `5048fea`；Deploy to GitHub Pages） |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `41b43c77e849276847c8c643deedd3a7ca0b0747` — M4-4A Formal Closure documentation |
+| Latest Verified Repository CI Run | [44596893220](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44596893220) — SUCCESS（`main` / `41b43c7`） |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Latest Verified Repository Commit | `main` @ `5048fea90ae7f81e2367e23ab42485d176fe8483`；GitHub Commit 查詢確認 SHA 與本機 HEAD 相符 |
+| Latest Verified Repository Commit | `main` @ `41b43c77e849276847c8c643deedd3a7ca0b0747`；本機 HEAD 及 `origin/main` tracking ref 相符 |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
-| Current Working Tree | Formal Closure Documentation 的文件異動尚未提交；無 Runtime Source Code 或 Test Source Code 異動；本次未 Commit／Push |
+| Current Working Tree | M4-4B Runtime、Test 與文件異動尚未提交；`41b43c7`／Run `44596893220` 為開始基準，不涵蓋本次異動；未 Commit／Push |
 | 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved；M4-3：COMPLETED — FORMALLY ACCEPTED |
-| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（75%）**，M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **NEXT — PENDING DEVELOPMENT**；M4-4C **PENDING DEVELOPMENT**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
+| 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（75%）**，M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **IMPLEMENTED — PENDING REVIEW**；M4-4C **PENDING DEVELOPMENT**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | M4 進度 | 75%（3/4） |
@@ -30,7 +30,7 @@
 | M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
 | M4-3 狀態 | **COMPLETED — FORMALLY ACCEPTED**；Patch 1／2／3 與 TEST-M4-3-01 已完成；223/223 Automated Tests；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED |
 | Code Review Findings | CR-M4-3-01／02／03 CLOSED；TEST-M4-3-01 CLOSED — PASS；TD-019 CLOSED |
-| M4-4 狀態 | **IN PROGRESS**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **NEXT — PENDING DEVELOPMENT**；M4-4C **PENDING DEVELOPMENT** |
+| M4-4 狀態 | **IN PROGRESS**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **IMPLEMENTED — PENDING REVIEW**；M4-4C **PENDING DEVELOPMENT** |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
 
 ## 驗證結果
@@ -59,12 +59,18 @@
 | M4-4A Final Review Correction | PASS | `npm test` 246/246、Lint PASS、Build PASS、Diff Check PASS；補足 Win／Loss ALL 全 false assertions，不新增 Test Case、不修改 Runtime Source Code |
 | M4-4A React Integration Tests | 12/12 PASS | `tests/battle.animation.react.integration.test.mjs`；Formal Closure baseline |
 | M4-4A Acceptance / Traceability | PASS | AC 32/32；Revision 2 Test Traceability 28/28；Patch Test Traceability 9/9；Formal Closure baseline |
-| Verified GitHub Commit / Actions | PASS | Repository Commit `5048fea90ae7f81e2367e23ab42485d176fe8483`；Actions Run `44595045755` SUCCESS（Deploy to GitHub Pages，Head SHA 相符）；Feature Commit `1cce94613791548cc1717942b72d1513487db857` |
+| Verified GitHub Commit / Actions | PASS | Formal Closure 當時 Repository Commit `5048fea90ae7f81e2367e23ab42485d176fe8483`／Run `44595045755`；Formal Closure 文件後續納入 `41b43c77e849276847c8c643deedd3a7ca0b0747`／Run `44596893220` SUCCESS；Feature Commit `1cce94613791548cc1717942b72d1513487db857` |
 | M4-4A Agent Browser Verification (pre-P1) | PARTIAL | 真實 Browser 載入 Battle Scene，操作模式／待命及多輪 AI 回合流程；未能確認一次成功移動或攻擊。原 BV-A02～A05 未驗證 |
 | M4-4A Product Owner Browser Acceptance (pre-P1) | PASS（2026-11-19；BV-A01～A05 5/5） | 依 Product Owner 提供的驗收結果記錄；屬 Patch 1 前證據，不代表本次 Runtime 變更已重驗 |
 | M4-4A Agent Browser Regression (post-P1) | PARTIAL | BV-A01 部分重驗：確認移動、攻擊模式、待命與 PAS；未完成有效攻擊。BV-A02～A05 尚未重驗；Product Owner Post-Patch Acceptance 見下列正式驗收紀錄 |
 | M4-4A Patch 1 Product Owner Acceptance | PASS — 5/5（2026-11-20） | BV-A01～A05 Post-Patch Browser Regression；Product Owner Acceptance Approved |
 | M4-4A Review / Acceptance | COMPLETED — FORMALLY ACCEPTED | Architecture Review、Independent Code Review、Product Owner Acceptance 與 Formal Closure 均 APPROVED |
+| M4-4B Starting Baseline | `main` @ `41b43c77e849276847c8c643deedd3a7ca0b0747`；Actions Run `44596893220` SUCCESS | M4-4B 開始基準；CI 不涵蓋其後本機未提交異動 |
+| M4-4B Automated Tests | 265/265 PASS | 本機 `npm test`；原有 246 項意圖保留，新增 19 項測試 |
+| M4-4B React / Session Integration | 31/31 PASS（29 React + 2 Session） | `tests/battle.animation.react.integration.test.mjs` 與 `tests/battle.session.test.mjs` |
+| M4-4B ESLint / Production Build | PASS / PASS | `npm run lint`、`npm run build`；保留既有 >500 kB Battle Chunk warning |
+| M4-4B Browser Verification | PARTIAL | Battle Route 可載入，但頁面顯示 WebGL fallback；無法操作 3D 戰鬥及完成 Overlay／Restart Browser Regression |
+| M4-4B Product Owner Acceptance / Independent Review | PENDING | 未宣告 Browser Acceptance、Independent Review 或 Formal Acceptance |
 
 ## M4-4A Acceptance Criteria Evidence Matrix
 
@@ -99,7 +105,7 @@
 | AC-A27 ESLint | PASS | `npm run lint` | — |
 | AC-A28 Production Build | PASS | `npm run build` | Existing >500 kB Battle Chunk warning remains |
 | AC-A29 Git Diff Check | PASS | `git -c core.whitespace=cr-at-eol diff --check` 與未追蹤檔案 whitespace inspection；尊重 Repository 的 CRLF 行尾 | Final Review Correction 工作樹未提交／推送 |
-| AC-A30 持久化文件同步 | PASS | README、Development Status、Roadmap、Architecture、Combat System、Game Design、Changelog 已同步 Formal Closure；TD-018／019／021 與 UX Backlog 狀態未變更 | Closure 本次文件異動尚未提交 |
+| AC-A30 持久化文件同步 | PASS | README、Development Status、Roadmap、Architecture、Combat System、Game Design、Changelog 已同步 Formal Closure；TD-018／019／021 與 UX Backlog 狀態未變更 | Formal Closure 文件後續納入 `41b43c7` |
 | AC-A31 無未授權 Scope Expansion | PASS | 本次僅修改文件；無 Runtime Source Code 或 Test Source Code 異動，未實作 Overlay／Restart／Session Isolation／Save-Load／Round Limit | Agent Browser 舊結果保留為歷史；新的 5/5 PASS 為 Product Owner Acceptance |
 | AC-A32 無 Circular Runtime Dependency | PASS | TypeScript Production Build；Battle Core imports Condition Contracts／Resolver, not concrete AllDead modules | — |
 
@@ -132,11 +138,137 @@ Product Owner 於 2026-11-20 完成 M4-4A Patch 1 Post-Patch Browser Regression�
 - **Formal Acceptance Date**：2026-11-20。M4-4A End Condition Framework & Battle Outcome 為 **COMPLETED — FORMALLY ACCEPTED**；Patch 1 為 **COMPLETED — ACCEPTED**；Final Review Correction 為 **COMPLETED — VERIFIED**。
 - **Reviews**：Architecture Review APPROVED；Independent Code Review APPROVED；Product Owner Acceptance APPROVED；Formal Closure APPROVED。CR-M4-4A-01～05 全數 CLOSED。
 - **Product Owner Browser Acceptance**：M4-4A Patch 1 Post-Patch Browser Regression，BV-A01～A05 5/5 PASS — ACCEPTED（2026-11-20）。Patch 前 Product Owner 5/5 PASS 與 Agent 原始 Browser PARTIAL／NOT VERIFIED 紀錄仍分列保留。
-- **Verified Repository / CI**：Branch `main`；Latest Verified Commit `5048fea90ae7f81e2367e23ab42485d176fe8483`；GitHub Actions Run `44595045755` SUCCESS，Head SHA 相符。M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。Run 為 Deploy to GitHub Pages；不能據此取代本機測試結果。此 Closure Documentation 尚未提交，未填入未建立的 Commit 或 CI。
+- **Verified Repository / CI**：Branch `main`；M4-4A Formal Closure 文件後續納入 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747`；GitHub Actions Run `44596893220` SUCCESS。M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`；Commit `5048fea...`／Run `44595045755` 保留為 Formal Closure 當時的歷史基準。CI 只涵蓋已提交內容，不取代本機測試。
 - **Verification Baseline**：246/246 Automated Tests、12/12 React Integration Tests、AC 32/32、原始 Test Traceability 28/28、Patch Test Traceability 9/9 PASS；Lint、Build、Diff Check PASS。Build 的既有 >500 kB Battle Chunk warning 保留。
 - **Architecture Constraints**：Strategy／DI、Configuration Immutability、明確 Battle Session、Initial ACTIVE、Outcome Trigger Boundary、Motion／Reservation Barriers、DEFEAT Priority、Pre-PAS Resolution、Terminal Guards 均維持原契約。Restart Session Isolation、Save／Load Serialization 與 Round Limit Semantics 未實作。
 - **Technical Debt / UX Backlog**：本次不調整相關狀態；TD-018、TD-021 維持 OPEN，TD-019 維持 CLOSED — M4-3 FORMAL ACCEPTANCE；UX Backlog 未變更。
-- **Roadmap / Scope**：M4-4A 已完成；M4-4B 為 NEXT — PENDING DEVELOPMENT，M4-4C PENDING DEVELOPMENT；M4-4 整體仍 IN PROGRESS。M4 維持 75%、Overall 37.5%。本次僅同步文件，無 Runtime Source Code 或 Test Source Code 異動；不 Commit／Push。
+- **Roadmap / Scope**：M4-4A 已完成；此 Formal Closure 的文件異動後續已納入 `41b43c7`。目前 M4-4B 為 IMPLEMENTED — PENDING REVIEW，M4-4C PENDING DEVELOPMENT；M4-4 整體仍 IN PROGRESS。M4 維持 75%、Overall 37.5%。
+
+## M4-4B Implementation & Verification — IMPLEMENTED — PENDING REVIEW
+
+### Environment / Baseline
+
+- **Branch / HEAD**：`main`／`41b43c77e849276847c8c643deedd3a7ca0b0747`；`origin/main` tracking ref 相同，工作樹包含本次 M4-4B 未提交異動。
+- **Verified baseline CI**：GitHub Actions Run `44596893220` SUCCESS；僅代表開始基準 Commit，不包含本機 M4-4B 修改。
+- **Local verification**：`npm test` 265/265 PASS；`npm run lint` PASS；`npm run build` PASS；本次 build 保留既有 >500 kB Battle Chunk warning。`tests/battle.animation.react.integration.test.mjs` 與 `tests/battle.session.test.mjs` 合計 31/31 PASS（29 React Integration + 2 Session tests）。
+- **Browser**：Battle Route 載入並顯示初始 HUD／資訊及 WebGL fallback。無法使用 3D 場景完成戰鬥與終局流程；BV-B01、BV-B10 PARTIAL，BV-B02～B09 NOT VERIFIED。測試瀏覽器操作不等於 Product Owner Acceptance；Acceptance PENDING。
+- **Final status**：M4-4B 已實作但尚未獨立審查、尚未 Product Owner 驗收，也未 Commit／Push；M4-4C 尚未開始。
+
+### Implementation / Ownership Map
+
+| Requirement | Implementation / Evidence |
+|---|---|
+| FR-B01～B04、TS-B05～B07 | `src/features/battle/components/BattleResultOverlay.tsx` 與 `.css`；由 `BattleSessionRuntime` 只依 `BattleState.outcome` 顯示共用原生 Modal Dialog，集中勝敗文案、焦點、Escape／背景點擊防護與 reduced-motion 樣式 |
+| FR-B05～B10、TS-B02～B04 | `BattleScene.tsx`、`BattleSessionHost.tsx`、`BattleSessionRuntime.tsx`；來源 Generation 驗證、純 State Updater、React `key` Remount、場景 Runtime 所有權 |
+| FR-B06、TS-B04 | `battleScenario.ts` 與 `useBattleMovement.ts`；每次 Runtime 以同一 Factory 明確注入 Win／Loss AllDead，重建初始 Session／Reducer |
+| FR-B08～B09、TS-B08～B11 | Hook／Controller Callback 閉包保留建立時 Dispatch；Session Probe 對相同 IDs 的跨 Session callback、StrictMode 與 Frame cleanup 測試 |
+| FR-B11、TS-B12 | 未更動 Battle Route／Navigation；Session Host 只替換同路由內的 Runtime |
+
+### Runtime Reset Matrix
+
+| 狀態 | Restart 後來源 | Verification |
+|---|---|---|
+| Unit roster、HP／SP、position、obstacles、initial roster | `createBattleScenarioSession()` → `createBattleSession()` 複製 Scenario 輸入 | Production Scenario sessions equivalent／snapshot isolation tests |
+| PAS、Turn Context、Action Economy、Reservation、Outcome、Death Records、Pending Turn、各 ID counter | 新 Session 的正式 `initialState`，不從舊終局 state 回推 | Restart integration deep-equality 與初始 ID assertions |
+| Selection、interaction mode、Hover、Last Move／Attack Result、preview、clock refs、controllers | 舊 `BattleSessionRuntime` 卸載，新 Keyed Runtime 掛載 | 同 ID callback isolation 與 Frame cleanup tests |
+| AI State／Dispatch | 舊 Hook 綁定舊 Dispatch，新 Runtime 重新掛載並依新 State 計算 | AI／Player stale callback tests、StrictMode test；`useBattleAI` 無 Timer |
+| Canvas、Camera、OrbitControls | 隨 Runtime Remount 卸載／重建 | Browser WebGL fallback 阻止實際畫面／GPU lifecycle 驗證；不以 DOM 數量推論 GPU 資源釋放 |
+
+### B-T01～B-T30 Test Traceability
+
+Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.animation.react.integration.test.mjs)、[`battle.session.test.mjs`](../tests/battle.session.test.mjs)。Assertion 欄描述測試實際檢查；PARTIAL 項目限制明列，不以來源閱讀替代缺少的整合驗證。
+
+| ID | Test Name | Assertion Evidence | Coverage |
+|---|---|---|---|
+| B-T01 | `ACTIVE BattleState does not render a result dialog` | `outcome === null` 且沒有 `dialog` | PASS |
+| B-T02 | `Victory presentation waits for death completion and exposes the configured result copy` | VICTORY、標題／描述／Restart 文案、aria 關聯及初始 Focus | PASS |
+| B-T03 | `Defeat presentation follows the configured enemy attack and death lifecycle` | DEFEAT 標題／描述、暗紅樣式與正式 Attack／Death lifecycle | PASS |
+| B-T04 | `reachVictory`／`reachDefeat`（由 Victory／Defeat presentation tests 呼叫） | Impact 後仍無 Outcome／dialog；Death Motion 完成後才提交終局並顯示 dialog | PASS |
+| B-T05 | `Victory restart remounts a fresh Session without changing the route or mutating the old outcome` | 點擊正式 Restart Button 後 Generation 遞增、新 Session 建立、舊 Outcome 不變 | PASS |
+| B-T06 | `Result dialog prevents Escape and backdrop dismissal while retaining keyboard focus` | jsdom shim 驗證初始 Focus、cancel preventDefault、dialog click 不關閉；未驗真實 Tab Trap／背景 Pointer | PARTIAL |
+| B-T07 | `Victory restart remounts a fresh Session without changing the route or mutating the old outcome` | Victory 後 Session、Reducer、Dispatch 不同且 State 等於正式 Initial State | PASS |
+| B-T08 | `Defeat restart restores the same initial roster and clears terminal presentation` | Defeat 後 Outcome／dialog 清除，初始 roster 與 ID 恢復 | PASS |
+| B-T09 | `production scenario sessions initialize equivalent ACTIVE states with independent reducers and snapshots` | 新舊 Factory Session initial state 深度相等但 State、Reducer、Unit／Obstacle／Turn snapshots 不共用 | PASS |
+| B-T10 | 同 B-T09；Victory restart test | Session Reducer、Dispatch 和新舊 State reference 獨立 | PASS |
+| B-T11 | `changing one runtime snapshot cannot alter the Scenario source or a restarted session` | 修改舊 Runtime 的 Unit／Obstacle／PAS snapshot，不影響 Scenario constants 或新 Session | PASS |
+| B-T12 | Victory restart test | 舊 `previousSessionState.outcome` 保持 VICTORY，新 Session 為 ACTIVE | PASS |
+| B-T13 | `a same-generation Restart request succeeds once and stale handlers cannot restart the new Session` | 同 Generation 重複呼叫只遞增一次 | PASS |
+| B-T14 | 同 B-T13 | 新 Generation 建立後重播舊 Handler 不再變更 Host／Session | PASS |
+| B-T15 | `three completed victories and restarts create fresh, equivalent battle sessions` | 連續三次完成 Attack／Death／VICTORY，再由正式 Restart 重建新 Session；每次檢查 Generation、Initial State 及前一 Outcome | PASS |
+| B-T16 | `same-ID old Move finish and cancel callbacks cannot complete a new Session motion` | 新舊 Motion／Unit／Turn IDs 相同，舊 Finish／Cancel 不改新 Motion | PASS |
+| B-T17 | `same-ID old Attack impact, completion, and abort callbacks cannot alter a new attack` | Attack／Turn／Attacker IDs 相同；舊 Impact 不扣新目標 HP、不清除新 Attack | PASS |
+| B-T18 | 同 B-T17 | 舊 Complete／Abort 不改新 Attack Motion | PASS |
+| B-T19 | `same-ID old Death complete and abort callbacks cannot remove a new Session death motion` | Death／Unit／Attack IDs 相同；舊 Complete／Abort 不移除新 Death Motion | PASS |
+| B-T20 | `same-ID old Impact consumption cannot clear a new Session confirmed impact` | Impact／Attack IDs 相同；舊 Consume 不清除新 Confirmed Impact | PASS |
+| B-T21 | `same-turn old AI Gateway callback and signed action stay bound to the old Session dispatch` | 舊 AI Gateway callback／signed Action 不建立或修改新 Session Attack | PASS |
+| B-T22 | `same-turn old Player action callback cannot advance the new Session PAS` | 舊 Player Standby callback 不改新 Session 的 Turn／Active Unit | PASS |
+| B-T23 | B-T16～B-T20 | 每類舊／新 Session 的 Unit／Turn／Lifecycle IDs 明確相同後才重播舊 Callback | PASS |
+| B-T24 | `Production BattleScene remounts its keyed runtime when the Session Host accepts restart` | 真實 Production `BattleScene`／`BattleSessionHost`；僅替換 Runtime leaf probe；有效 Restart 後 generation 0 Runtime cleanup、generation 1 Runtime mount | PASS |
+| B-T25 | `Session remount and unmount clean old controller Frame subscriptions` | Remount 後舊 cleanup 增加且活躍 callback 數為 1；Unmount 後為 0 | PASS |
+| B-T26 | `StrictMode remount keeps a single effective AI attack and one active Frame subscription` | StrictMode Remount 後 AI Attack 只有效一次；舊 AI callback 不改新 Session；`useBattleAI` 為同步 Effect，沒有 Timer | PASS |
+| B-T27 | 同 B-T26 | StrictMode 下 Attack ID／counter 與 Frame Subscription 均單一有效 | PASS |
+| B-T28 | Victory presentation test + Victory restart test | 正式 Reducer／AllDead Session 經 Attack／Death Barrier 進入 VICTORY、顯示 Overlay、Restart 到新 ACTIVE Session | PASS |
+| B-T29 | Defeat presentation test + Defeat restart test | AI 敵方 Attack／Death Barrier 進入 DEFEAT、顯示 Overlay、Restart 還原 roster | PASS |
+| B-T30 | `Session remount and unmount clean old controller Frame subscriptions`；既有 `unmount aborts pending attack once, removes its frame callback, and remount is clean` | 測試 harness cleanup callback、Frame subscription 與 pending attack；未掛載整個 Production Route／Canvas Runtime | PARTIAL |
+
+### AC-B01～AC-B37 Verification Matrix
+
+| AC | Result | Evidence / Limitation |
+|---|---|---|
+| AC-B01 ACTIVE 不顯示 Overlay | PASS | B-T01 |
+| AC-B02 VICTORY UI 正確 | PASS | B-T02 |
+| AC-B03 DEFEAT UI 正確 | PASS | B-T03 |
+| AC-B04 共用 Result Overlay Component | PASS | Production Runtime 同一 `BattleResultOverlay` 接收兩種正式 Outcome |
+| AC-B05 僅依據正式 Outcome 顯示 | PASS | Runtime 以 `outcome !== null` 條件 render；B-T01～04 |
+| AC-B06 背景戰場保留 | PASS | Runtime 中 Canvas 與 Overlay 同屬場景；Overlay 不替換 Battle Runtime |
+| AC-B07 終局背景操作隔離 | PARTIAL | 原生 `showModal()` 與 Reducer Terminal Guard；未能在 Browser 實際操作終局背景 |
+| AC-B08 Modal Keyboard／Focus | PARTIAL | jsdom 驗 Focus／Cancel；真實 Tab／Escape／背景焦點需 Browser Regression |
+| AC-B09 Desktop／Mobile 版面 | PARTIAL | 有響應式 CSS／reduced-motion；Overlay 未能於 Browser 顯示以驗證視覺 |
+| AC-B10 Victory Restart | PASS | B-T07 |
+| AC-B11 Defeat Restart | PASS | B-T08 |
+| AC-B12 不 Reload Page | PASS | Restart 只更新 Host Generation，未呼叫 location reload；integration Remount |
+| AC-B13 Battle Route 不變 | PASS | Host 只重建同頁 Runtime，無 route/navigation 變更 |
+| AC-B14 Keyed Session Remount | PASS | `BattleScene` 將 generation 作 Runtime key；Host Remount integration |
+| AC-B15 初始 State 等價 | PASS | Production Scenario initial state deep equality |
+| AC-B16 Win／Loss Configuration 恢復 | PASS | Scenario Factory 每次建立 Win／Loss AllDead 並建立新 Session |
+| AC-B17 PAS／Action Economy 恢復 | PASS | Restart 新 State 等於 Initial State，含 Turn／Action fields |
+| AC-B18 Death／Combat State 清除 | PASS | Restart State 等於 Initial State，死亡與 Reservation 初始清空 |
+| AC-B19 Animation／Transient UI Reset | PASS | Keyed Runtime Remount；同 ID callbacks 與 Frame cleanup tests |
+| AC-B20 舊 Move Callback 隔離 | PASS | B-T16 |
+| AC-B21 舊 Attack Callback 隔離 | PASS | B-T17～18 |
+| AC-B22 舊 Death Callback 隔離 | PASS | B-T19 |
+| AC-B23 舊 Impact Callback 隔離 | PASS | B-T20 |
+| AC-B24 舊 AI Action 隔離 | PASS | B-T21、B-T26 |
+| AC-B25 舊 Player Action 隔離 | PASS | B-T22 |
+| AC-B26 ID Collision | PASS | B-T16～20／23 使用實際相同 IDs |
+| AC-B27 Restart Idempotency | PASS | B-T13 |
+| AC-B28 Stale Restart Handler 拒絕 | PASS | B-T14 |
+| AC-B29 React StrictMode | PASS | B-T26～27 |
+| AC-B30 Controller／Effect Cleanup | PARTIAL | Frame cleanup PASS；整個 Production Route／WebGL／GPU lifecycle 未實際驗證 |
+| AC-B31 原有 246 測試無退化 | PASS | Full suite 265/265；原有 integration assertions 保留 |
+| AC-B32 新增測試全部 PASS | PASS | Full suite 265/265；Session／React focused 31/31 |
+| AC-B33 ESLint | PASS | `npm run lint` |
+| AC-B34 Production Build | PASS | `npm run build` |
+| AC-B35 Git Diff Check | PASS | `git -c core.whitespace=cr-at-eol diff --check` 與 untracked whitespace inspection |
+| AC-B36 持久化文件同步 | PASS | README、Status、Architecture、Combat、Game Design、Roadmap、Changelog |
+| AC-B37 Scope Compliance | PASS | 無 M4-4C／M5、EXP／Gold／Loot／Save-Load、新依賴或未授權 Core 設計變更；無 Commit／Push |
+
+### BV-B01～BV-B10 Browser Verification
+
+| BV | Result | Browser Evidence / Remaining Work |
+|---|---|---|
+| BV-B01 Normal Battle | PARTIAL | 實際 `#battle` Route 載入，顯示初始 Turn／Timeline／戰場資訊與操作按鈕；Canvas fallback 顯示「無法啟用 WebGL」，未完成合法移動、攻擊或 AI 交戰 |
+| BV-B02 Victory Overlay | NOT VERIFIED | 無法透過 3D 戰鬥擊敗敵方並驗證動畫 Barrier 後的 Overlay |
+| BV-B03 Defeat Overlay | NOT VERIFIED | 未能執行完整敵方擊敗我方流程 |
+| BV-B04 Victory Restart | NOT VERIFIED | Browser 未到達 VICTORY，無法點擊後重驗初始配置 |
+| BV-B05 Defeat Restart | NOT VERIFIED | Browser 未到達 DEFEAT |
+| BV-B06 Terminal Input Protection | NOT VERIFIED | 未能於 Browser 顯示終局 Modal；jsdom assertions 不替代此項 |
+| BV-B07 Repeated Restart | NOT VERIFIED | Browser 未能進入結果畫面；三次 Remount 僅由 Node／jsdom integration 驗證 |
+| BV-B08 Rapid Restart Input | NOT VERIFIED | Browser 未能進入結果畫面；同來源重複 Handler 由 integration test 驗證 |
+| BV-B09 Responsive Layout | NOT VERIFIED | Overlay 未能於 Desktop／Mobile 實際顯示；CSS 不代表視覺驗收 |
+| BV-B10 Runtime Regression | PARTIAL | Browser reload 僅觀察 Vite／React DevTools 訊息，未見 pageerror；WebGL fallback 持續存在，無法驗證終局／Restart lifecycle 或底層 GPU cleanup |
+
+實際 Browser Screenshot 顯示 Battle Route 背景與 HUD，但沒有 3D 棋盤／單位；DOM 另顯示 Canvas WebGL fallback。未據 Node／jsdom 證據宣稱視覺 PASS。Product Owner Acceptance 尚待正式結果。
 
 ## M4-4 Revision 2 Test Traceability
 
@@ -326,12 +458,12 @@ T-28 保留的 10 個 TEST-M4-3-01 Test Names（對照 `tests/battle.animation.r
 
 - **歷史狀態快照（M4-3 正式結案前）**：當時 M4-3 正式敵方 AI 尚待驗收；技能、成長、劇情、存檔、PWA 與勝敗系統亦尚未完成。
 
-**目前狀態（2026-11-20）**：M4-3 Enemy AI 已完成正式驗收（COMPLETED — FORMALLY ACCEPTED）；M4-4A End Condition Framework & Battle Outcome 已完成正式結案（COMPLETED — FORMALLY ACCEPTED）。Patch 1 為 COMPLETED — ACCEPTED，Final Review Correction 為 COMPLETED — VERIFIED；CR-M4-4A-01～05 全數 CLOSED。Formal Acceptance 之後的 Product Owner Browser Acceptance 為 BV-A01～A05 5/5 PASS。最新已驗證 Repository Commit `5048fea90ae7f81e2367e23ab42485d176fe8483`，GitHub Actions Run `44595045755` SUCCESS；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。Automated Tests 246/246、React Integration 12/12、AC 32/32、原始 Test Traceability 28/28、Patch Traceability 9/9 PASS；Lint、Build、Diff Check PASS。Build 保留既有 >500 kB Battle Chunk warning。Agent 原始 Browser PARTIAL／NOT VERIFIED 與 Patch 前 Product Owner 5/5 PASS 均保留為獨立歷史紀錄。此次 Closure Documentation 尚未提交，無 Runtime Source Code 或 Test Source Code 異動。M4-4B 為 NEXT — PENDING DEVELOPMENT，M4-4C 尚未開始；M4 維持 75%、Overall 37.5%。
+**目前狀態（2026-11-20）**：M4-3 Enemy AI 已完成正式驗收（COMPLETED — FORMALLY ACCEPTED）；M4-4A End Condition Framework & Battle Outcome 已完成正式結案（COMPLETED — FORMALLY ACCEPTED）。Patch 1 為 COMPLETED — ACCEPTED，Final Review Correction 為 COMPLETED — VERIFIED；CR-M4-4A-01～05 全數 CLOSED。M4-4A Product Owner Post-Patch Browser Acceptance 為 BV-A01～A05 5/5 PASS；Agent 原始 PARTIAL／NOT VERIFIED 結果仍分列保留。最新已驗證 Repository Commit 為 `41b43c77e849276847c8c643deedd3a7ca0b0747`，GitHub Actions Run `44596893220` SUCCESS；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。M4-4A 結案基準為 246/246 Automated Tests、12/12 React Integration、AC 32/32、原始 Test Traceability 28/28、Patch Traceability 9/9 PASS；Lint、Build、Diff Check PASS。M4-4B Overlay／Restart／Keyed Session Isolation 已實作但尚待獨立 Review 與 Product Owner Acceptance；本機 `npm test` 265/265、React／Session integration 31/31、Lint 與 Build PASS，Build 保留既有 >500 kB Battle Chunk warning。Browser Route 可載入，但 WebGL fallback 阻擋 3D 戰鬥及終局 Browser Regression，BV-B01、BV-B10 PARTIAL，BV-B02～B09 NOT VERIFIED。M4-4B 本機異動尚未提交，41b Commit／CI 不涵蓋。M4-4C 尚未開始；M4 維持 75%、Overall 37.5%。
 - 技術債及 UX 項目詳見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) 與 [UX_BACKLOG.md](./UX_BACKLOG.md)。
 
 ## 已知阻擋問題
 
-目前無已知 M3、M4-1、M4-2 或 M4-3 正式驗收阻擋。M4-3 的 Architecture／Code Review 已 APPROVED；既有特殊 Browser Scenarios 維持各自驗證狀態。
+M3、M4-1、M4-2、M4-3 與 M4-4A 無已知正式驗收阻擋。M4-4B Browser Regression 目前受瀏覽器顯示 WebGL fallback 阻擋；此環境問題尚未確認為本次程式異動造成，相關終局與 Responsive Browser Criteria 維持 PARTIAL／NOT VERIFIED。
 
 ## M4-1 狀態
 
@@ -408,4 +540,4 @@ Final Addendum 額外證據：
 
 ## 下一步
 
-M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A End Condition Framework & Battle Outcome、Patch 1 與 Final Review Correction 已分別標記 **COMPLETED — FORMALLY ACCEPTED**、**COMPLETED — ACCEPTED**、**COMPLETED — VERIFIED**；CR-M4-4A-01～05 全數 CLOSED。正式結案基準為 Repository Commit `5048fea90ae7f81e2367e23ab42485d176fe8483`／GitHub Actions Run `44595045755` SUCCESS，Feature Commit `1cce94613791548cc1717942b72d1513487db857`；246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 T、9/9 P-T、Lint、Build 與 Diff Check PASS。Product Owner Post-Patch BV-A01～A05 5/5 PASS（2026-11-20）。Patch 前 PO 驗收及 Agent 原始 PARTIAL／NOT VERIFIED 結果仍分列保留。Closure Documentation 的本次變更尚未提交；無 Runtime Source Code 或 Test Source Code 異動。M4-4B 為 **NEXT — PENDING DEVELOPMENT**；M4-4C 為 **PENDING DEVELOPMENT**；M4 整體仍 IN PROGRESS，維持 75%、Overall 37.5%。
+M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A End Condition Framework & Battle Outcome、Patch 1 與 Final Review Correction 已分別標記 **COMPLETED — FORMALLY ACCEPTED**、**COMPLETED — ACCEPTED**、**COMPLETED — VERIFIED**；CR-M4-4A-01～05 全數 CLOSED。Formal Closure 文件已納入 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747`／GitHub Actions Run `44596893220` SUCCESS；M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。M4-4A 結案基準為 246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 T、9/9 P-T、Lint、Build 與 Diff Check PASS；Product Owner Post-Patch BV-A01～A05 5/5 PASS（2026-11-20）。Patch 前 PO 驗收與 Agent 原始 PARTIAL／NOT VERIFIED 結果仍分列保留。M4-4B **IMPLEMENTED — PENDING REVIEW**；本機 265/265 tests、31/31 Session／React Integration、Lint 與 Build PASS；Browser 終局驗證受 WebGL fallback 阻擋，Product Owner Acceptance PENDING。M4-4C 為 **PENDING DEVELOPMENT**；M4 整體仍 IN PROGRESS，維持 75%、Overall 37.5%。目前 M4-4B 程式、測試與文件異動尚未提交；不 Commit／Push。

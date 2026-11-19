@@ -1,0 +1,120 @@
+.battle-result-dialog {
+  width: min(460px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 8px;
+  border: 1px solid #d6bb87;
+  color: #fff9e9;
+  background: linear-gradient(145deg, rgba(33, 54, 68, .98), rgba(19, 38, 51, .98));
+  box-shadow: 0 24px 80px rgba(6, 20, 32, .55);
+  animation: battle-result-appear .24s ease-out both;
+}
+
+.battle-result-dialog::backdrop {
+  background: rgba(10, 26, 40, .58);
+  backdrop-filter: blur(2px);
+}
+
+.battle-result-panel {
+  border: 1px solid rgba(214, 187, 135, .65);
+  padding: clamp(24px, 6vw, 42px);
+  text-align: center;
+}
+
+.battle-result-ornament {
+  display: block;
+  margin-bottom: 13px;
+  color: #e8cc93;
+  font-size: 23px;
+}
+
+.battle-result-eyebrow {
+  margin: 0;
+  color: #e8cc93;
+  font: 11px Georgia, serif;
+  letter-spacing: .3em;
+}
+
+.battle-result-panel h2 {
+  margin: 13px 0;
+  font-family: 'Microsoft JhengHei', 'Noto Serif TC', serif;
+  font-size: clamp(24px, 6vw, 30px);
+  font-weight: 600;
+  letter-spacing: .1em;
+}
+
+.battle-result-panel > p:not(.battle-result-eyebrow) {
+  margin: 0;
+  color: #d7e2db;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.battle-result-dialog-victory .battle-result-ornament,
+.battle-result-dialog-victory .battle-result-eyebrow {
+  color: #f0d48e;
+}
+
+.battle-result-dialog-defeat {
+  border-color: #b6827e;
+}
+
+.battle-result-dialog-defeat .battle-result-panel {
+  border-color: rgba(182, 130, 126, .65);
+}
+
+.battle-result-dialog-defeat .battle-result-ornament,
+.battle-result-dialog-defeat .battle-result-eyebrow {
+  color: #d59a93;
+}
+
+.battle-result-restart {
+  margin-top: 25px;
+  padding: 12px 27px;
+  border: 1px solid #e3c991;
+  color: #fff9e9;
+  background: #34566a;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: .08em;
+  transition: background .2s, border-color .2s;
+}
+
+.battle-result-dialog-defeat .battle-result-restart {
+  border-color: #c28d87;
+  background: #68484b;
+}
+
+.battle-result-restart:hover {
+  background: #446d82;
+}
+
+.battle-result-dialog-defeat .battle-result-restart:hover {
+  background: #80585a;
+}
+
+.battle-result-restart:focus-visible {
+  outline: 3px solid #f0d48e;
+  outline-offset: 4px;
+}
+
+@keyframes battle-result-appear {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 480px) {
+  .battle-result-dialog {
+    width: calc(100% - 24px);
+    padding: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-result-dialog {
+    animation: none;
+  }
+
+  .battle-result-restart {
+    transition: none;
+  }
+}

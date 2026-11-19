@@ -2,13 +2,22 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M4-4B Implementation (Pending Review)
+
+- **Implementation**：新增單一 Victory／Defeat `BattleResultOverlay`，由正式 `BattleState.outcome` 驅動；以 `BattleSessionHost` Generation 與 Keyed `BattleSessionRuntime` Remount 實作 Restart 和 Session Isolation。重用 `createBattleScenarioSession()` 重新注入正式 Win／Loss Condition 並建立初始 State。
+- **Lifecycle / Reset**：Battle Reducer／Dispatch、AI Hook、Attack／Death Hooks、Frame Controllers、Canvas、Camera、選取及 Hover 等狀態全部屬於單場 Runtime。舊 Callback 維持舊 Dispatch；同 ID 重用仍隔離。測試直接證明 Frame Subscription cleanup；底層 GPU 資源釋放未宣稱已壓力驗證。
+- **Automated Verification**：`npm test` 265/265 PASS；`tests/battle.animation.react.integration.test.mjs` 與 `tests/battle.session.test.mjs` 共 31/31 PASS（29 React Integration + 2 Session tests）；ESLint、Production Build 與 Diff Check PASS。Build 保留既有 >500 kB Battle Chunk warning。
+- **Browser Verification**：BV-B01 PARTIAL；Battle Route 可載入，但測試瀏覽器顯示 WebGL fallback，截圖只見背景與 HUD，未能執行 3D 戰鬥；BV-B02～B09 NOT VERIFIED；BV-B10 PARTIAL（載入時沒有觀察到 console/page errors，但 WebGL fallback 持續存在）。未將 Node／jsdom 測試當作 Browser Verification；Product Owner Acceptance PENDING。
+- **Baseline / Git**：開始基準為 `main`／Commit `41b43c77e849276847c8c643deedd3a7ca0b0747`／GitHub Actions Run `44596893220` SUCCESS。此 Commit／CI 僅為開始基準，不涵蓋本次未提交 M4-4B 異動；本次未 Commit／Push。
+- **Roadmap / Scope**：M4-4B **IMPLEMENTED — PENDING REVIEW**；M4-4C **PENDING DEVELOPMENT**。M4 維持 75%、Overall 37.5%。未實作 EXP、Gold、Loot、Level Up、Story、Save／Load 或新 Condition；TD-018／019／021 與 UX Backlog 未變更。
+
 ## 2026-11-20 — M4-4A Formal Closure
 
 - **Formal Acceptance**：M4-4A End Condition Framework & Battle Outcome **COMPLETED — FORMALLY ACCEPTED**；Patch 1 **COMPLETED — ACCEPTED**；Final Review Correction **COMPLETED — VERIFIED**。Architecture Review、Independent Code Review、Product Owner Acceptance 與 Formal Closure 均 APPROVED。
 - **Review Findings**：CR-M4-4A-01～05 全數 CLOSED。保留各 Finding 原始 Resolution、測試證據，以及 Final Review／Final Correction 階段的歷史狀態，見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 - **Product Owner Browser Acceptance**：2026-11-20 Patch 1 Post-Patch Browser Regression：BV-A01～A05 5/5 PASS — ACCEPTED。2026-11-19 Patch 前 Product Owner Acceptance 與 Agent 原始 PARTIAL／NOT VERIFIED 紀錄仍分開保留。
 - **Verification Baseline**：246/246 Automated Tests、12/12 React Integration Tests、AC 32/32、原始 Test Traceability 28/28、Patch Test Traceability 9/9 PASS；Lint、Build、Diff Check PASS。Build 保留既有 >500 kB Battle Chunk warning。
-- **Verified Repository / CI**：Branch `main`；Commit `5048fea90ae7f81e2367e23ab42485d176fe8483`；GitHub Actions Run [44595045755](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44595045755) SUCCESS，Head SHA 相符（Deploy to GitHub Pages）。M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`。本次 Closure Documentation 尚未提交；不宣稱新的 Closure Commit 或 CI。
+- **Verified Repository / CI**：當時記錄的 Branch `main`；Formal Closure 文件後續納入 Commit `41b43c77e849276847c8c643deedd3a7ca0b0747`，GitHub Actions Run [44596893220](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44596893220) SUCCESS。M4-4A Feature Commit 為 `1cce94613791548cc1717942b72d1513487db857`；原始 Formal Closure 快照中的 `5048fea...`／Run `44595045755` 保留為當時基準。
 - **Architecture / Roadmap**：Strategy／DI、Configuration Immutability、Battle Session、Outcome Trigger Boundary、Motion／Reservation Barriers、DEFEAT Priority、Pre-PAS Resolution 與 Terminal Guards 保持不變。Restart Session Isolation、Save／Load Serialization 與 Round Limit Semantics 未實作。M4-4B 為 NEXT — PENDING DEVELOPMENT；M4-4C PENDING DEVELOPMENT；M4-4 整體仍 IN PROGRESS。M4 75%、Overall 37.5%。
 - **Technical Debt / UX Backlog**：未修改；TD-018、TD-021 維持 OPEN，TD-019 維持 CLOSED — M4-3 FORMAL ACCEPTANCE。
 - **Scope**：僅同步文件，無 Runtime Source Code 或 Test Source Code 異動；不 Commit／Push。

@@ -181,7 +181,7 @@ HP / Attack Motion / Turn State
 
 此測試真實掛載 React Controller；Frame Scheduler 使用可控制時序與 delta 的測試替身；Lifecycle Runtime 與 Reducer 不被 Mock，Visual Components 以 Stub 隔離。這是 Node + jsdom 的 Controller／Reducer 整合測試，不涵蓋 WebGL Rendering、視覺驗收或完整 E2E。
 
-M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，最新已驗證 Repository Commit `5048fea90ae7f81e2367e23ab42485d176fe8483` 的 GitHub Actions Run `44595045755` SUCCESS（Deploy to GitHub Pages，Head SHA 相符）。正式結案基準為 246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 原始 Test Traceability、9/9 Patch Traceability PASS；Architecture、Independent Code Review 與 Product Owner Acceptance 均 APPROVED，Browser BV-A01～A05 5/5 PASS（2026-11-20）。Patch 前 Product Owner Acceptance 與 Agent 原始 PARTIAL／NOT VERIFIED Browser 結果仍分開保留。M4-4B／C 尚未開始；M4 75%、Overall 37.5%。
+M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，最新已驗證 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。正式結案基準為 246/246 Automated Tests、12/12 React Integration Tests、32/32 AC、28/28 原始 Test Traceability、9/9 Patch Traceability PASS；Architecture、Independent Code Review 與 Product Owner Acceptance 均 APPROVED，Browser BV-A01～A05 5/5 PASS（2026-11-20）。Patch 前 Product Owner Acceptance 與 Agent 原始 PARTIAL／NOT VERIFIED Browser 結果仍分開保留。M4-4B **IMPLEMENTED — PENDING REVIEW**；M4-4C 尚未開始；M4 75%、Overall 37.5%。M4-4B 本機未提交異動不屬於 41b CI。
 
 ## Battle State 與 Reducer
 
@@ -273,4 +273,16 @@ Battle Core 只依賴 Condition Manager／Context／Resolver Contract，不 impo
 
 未來可新增 `GoToDestination`、`BossDead`、`NpcDead` 或 `OverRounds` 類型的策略，但這些僅為架構例，不代表已實作或已確認其遊戲語意。
 
-M4-4A 於 2026-11-20 正式結案；Strategy、Dependency Injection、Configuration Immutability、Battle Session、Outcome Trigger Boundary 與終局生命週期契約如上。Overlay、Restart Session Isolation、Save／Load Serialization 與 Round Limit Semantics 仍屬未完成的未來範圍，不因本次 M4-4A Acceptance 標記為已實作。
+M4-4A 於 2026-11-20 正式結案；Strategy、Dependency Injection、Configuration Immutability、Battle Session、Outcome Trigger Boundary 與終局生命週期契約如上。
+
+### M4-4B Session Host、Runtime 與 Restart
+
+`BattleScene` 是外層組合邊界，`BattleSessionHost` 持有單調遞增的 Generation，並將它作為 `BattleSessionRuntime` 的 React `key`。Restart Handler 捕捉建立時的 Generation；Host 只在來源值仍為目前 Generation 時遞增，重複或過期請求不會再建立 Session。State Updater 為純函式，不以可轉送舊 Callback 的 mutable dispatch ref 替換目前 Session。
+
+`BattleSessionRuntime` 是單場戰鬥所有權邊界，包含 `useBattleMovement`、Session Reducer／Dispatch、AI Hook、Attack／Death Animation Hooks、Canvas／Camera／OrbitControls、Controllers、Hover 與其他暫態 UI 狀態。Restart 以 Keyed Remount 卸載舊 Runtime，並透過 `createBattleScenarioSession()` 重新執行同一 Scenario 初始化；該 Factory 明確注入 Win／Loss AllDead Conditions，`createBattleSession()` 為每個 Session 複製 Unit、Obstacle 與初始名冊資料。既有 Session 不從終局狀態倒推初始值。
+
+動畫及玩家 Callback 閉包持有建立當下 Session 的 Dispatch；AI Effect 同樣以該 Session 的 State／Dispatch 運作。即使各 Session 重新從相同 Motion／Attack／Death／Impact ID 起算，舊 Callback 仍只派送到舊 Reducer，不能修改新 Battle State。卸載會清除 Controller Frame Subscription 與各 Runtime Hook／Ref；目前 `useBattleAI` 只同步派送，沒有 Timer。測試證明 Frame Subscription 清理及 Session Dispatch 隔離；底層 WebGL/GPU 資源釋放未由 DOM 數量推定，也未宣稱完成壓力驗證。
+
+`BattleResultOverlay` 是只接收正式 Outcome 與 Restart Callback 的 Presentation Component。原生 Modal Dialog 在終局後以 `showModal()` 開啟並將 Focus 移至 Restart；它不讀取 HP、死亡動畫或 Unit Count，也不呼叫 Reducer、AI 或 Condition Strategy。Outcome Terminal Guard 與 Motion／Reservation／Pre-PAS Resolution 仍完全由 M4-4A Battle Core 負責。
+
+M4-4B 的目前 Scenario Factory 可由未來專案端選擇不同正式 Scenario 設定，但通用 Scenario Registry、Save／Load Serialization、Round Limit Semantics 及其他戰役設定尚未實作。M4-4B 為 **IMPLEMENTED — PENDING REVIEW**；M4-4C Final Regression、Browser Verification、Independent Review 與 Formal Acceptance 尚未開始。
