@@ -12,15 +12,15 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9` — M4-4C start baseline |
-| Latest Verified Repository CI Run | [44607801214](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44607801214) — SUCCESS（`main` / `3705dfe`；基準 Commit 相符） |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `5006b4bb618088d0d342a2313c1a4b60a526d7da` — M4-4C VA1 baseline |
+| Latest Verified Repository CI Run | [44614674924](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44614674924) — SUCCESS（`main` / `5006b4b`；基準 Commit 相符） |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Latest Verified Repository Commit | `main` @ `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；本機 HEAD 及 `origin/main` tracking ref 相符；本次未提交異動不屬於此 Commit／CI |
+| Latest Verified Repository Commit | `main` @ `5006b4bb618088d0d342a2313c1a4b60a526d7da`；本機 HEAD 及 `origin/main` tracking ref 相符；本次未提交 Test／Documentation 異動不屬於此 Commit／CI |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
 | M4-4B Conditional Closure Commit | `e299fa48e28d16e24aadba9cc7925bedf4d53895`；16 個異動檔案；Battle Core Modification 0 |
 | M4-4C Session Start Baseline | `main`／HEAD／`origin/main` `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；開始時工作樹乾淨 |
-| Current Working Tree | M4-4C 新增 3 個 Test Source Files 與文件同步異動尚未提交；Runtime Source Code 未修改；另有非本任務 `public/assets/` 二進位新增／修改／刪除異動，均未碰觸或回復；未 Commit／Push |
+| Current Working Tree | VA1 修改 `tests/battle.route.lifecycle.integration.test.mjs` 並同步文件；Runtime Source Code、Battle Core 與 `public/assets/` 均未修改；未 Commit／Push |
 | 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved；M4-3：COMPLETED — FORMALLY ACCEPTED |
 | 主要里程碑狀態 | M1–M3 **COMPLETED**；M4 **IN PROGRESS（75%）**，M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B **COMPLETED — CONDITIONALLY ACCEPTED**；M4-4C **IN PROGRESS — PARTIAL VERIFICATION / REVIEW PENDING**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
@@ -74,11 +74,11 @@
 | M4-4B Product Owner Browser Acceptance | PASS — 10/10 | Product Owner 於 2026-11-20 確認 BV-B01～BV-B10 PASS；不回溯改寫 Agent 原始 WebGL fallback 與 PARTIAL／NOT VERIFIED 紀錄 |
 | M4-4B Independent Review / Conditional Closure | APPROVED WITH LIMITATIONS / APPROVED | Architecture Review APPROVED；Independent Code Review APPROVED WITH LIMITATIONS；Conditional Closure APPROVED；RC-M4-4B-01～06 APPROVED、07 PARTIAL（移交 M4-4C）、08 文件修正已完成 |
 | M4-4B Automated Test / AC Traceability | 28 PASS + 2 PARTIAL / 36 PASS + 1 PARTIAL | B-T06、B-T30 維持 Automated PARTIAL；AC-B07／08 由 PO BV-B06 補充為 PASS、AC-B09 由 PO BV-B09 補充為 PASS、AC-B30 維持 PARTIAL |
-| M4-4C Automated Tests | 270/270 PASS | 原有 265 項保留；新增 `tests/battle.route.lifecycle.integration.test.mjs` 5 項 |
-| M4-4C Production Route Integration | 5/5 PASS | 正式 App／BattleScene／Session Host／Scenario／Reducer／Runtime wiring；只替換 WebGL／純視覺 Adapter |
+| M4-4C Automated Tests | 271/271 PASS | VA1 保留原有 270 項並新增 1 項 Production terminal Route unmount test |
+| M4-4C Production Route Integration | 6/6 PASS | 正式 App／BattleScene／Session Host／Scenario／Reducer／Runtime wiring；只替換 WebGL／純視覺 Adapter |
 | M4-4C ESLint / Production Build | PASS / PASS | `npm run lint`、`npm run build`；Build 保留既有 >500 kB Battle Chunk warning |
-| M4-4C Agent Browser Regression | PARTIAL | Move／Undo／Standby、合法攻擊及敵方移動已實際操作；終局、Restart、Modal、Mobile 等 BV 項目未驗證 |
-| M4-4C WebGL Resource Measurement | PARTIAL | Route 量測觀察 Canvas／Context Loss 與 Heap；未取得有效 `renderer.info`，不宣稱 GPU Resource disposal 或無 leak |
+| M4-4C Agent Browser Regression | PARTIAL | 既有 Move／Undo／Standby、合法攻擊及敵方移動證據保留；VA1 完成 2 次 warm-up、10 次量測 Route 往返；其他終局／Restart／Modal／Mobile 項目依 BV Matrix |
+| M4-4C WebGL Resource Measurement | PARTIAL | 2 次 warm-up、10 次量測及 1 次額外 renderer inspection；14 個 Canvas／Context Identity 均觀察到對應 Context Loss；最終 Menu 0 個 Canvas；未取得有效 `renderer.info.memory`，不宣稱 GPU Disposal 或無 leak |
 
 ## M4-4A Acceptance Criteria Evidence Matrix
 
@@ -220,7 +220,7 @@ Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.ani
 | B-T27 | 同 B-T26 | StrictMode 下 Attack ID／counter 與 Frame Subscription 均單一有效 | PASS |
 | B-T28 | Victory presentation test + Victory restart test | 正式 Reducer／AllDead Session 經 Attack／Death Barrier 進入 VICTORY、顯示 Overlay、Restart 到新 ACTIVE Session | PASS |
 | B-T29 | Defeat presentation test + Defeat restart test | AI 敵方 Attack／Death Barrier 進入 DEFEAT、顯示 Overlay、Restart 還原 roster | PASS |
-| B-T30 | `Session remount and unmount clean old controller Frame subscriptions`；既有 `unmount aborts pending attack once, removes its frame callback, and remount is clean` | 測試 harness cleanup callback、Frame subscription 與 pending attack；未掛載整個 Production Route／Canvas Runtime | PARTIAL |
+| B-T30 | 原 `Session remount and unmount clean old controller Frame subscriptions`；VA1 `Production Route unmounts terminal Victory and Defeat Overlays without leaking old Session callbacks` | 原測試仍只驗證 harness cleanup；VA1 補足正式 App／Session／Overlay Route cleanup、Frame／Canvas 計數與 stale callback isolation，但不測量 GPU disposal | PARTIAL |
 
 ### AC-B01～AC-B37 Verification Matrix
 
@@ -255,7 +255,7 @@ Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.ani
 | AC-B27 Restart Idempotency | PASS | B-T13 |
 | AC-B28 Stale Restart Handler 拒絕 | PASS | B-T14 |
 | AC-B29 React StrictMode | PASS | B-T26～27 |
-| AC-B30 Controller／Effect Cleanup | PARTIAL | Frame cleanup PASS；Production Route、WebGL／GPU lifecycle 與正式 Runtime wiring 另列 RV-M4-4B-01～03 |
+| AC-B30 Controller／Effect Cleanup | PARTIAL | VA1 補足正式 Route／Session／Overlay unmount、Frame cleanup 與 stale callback evidence；WebGL／GPU disposal 仍未驗證，RV-M4-4B-02 保持 PARTIAL |
 | AC-B31 原有 246 測試無退化 | PASS | Full suite 265/265；原有 integration assertions 保留 |
 | AC-B32 新增測試全部 PASS | PASS | Full suite 265/265；Session／React focused 31/31 |
 | AC-B33 ESLint | PASS | `npm run lint` |
@@ -310,7 +310,7 @@ Test files：[`battle.animation.react.integration.test.mjs`](../tests/battle.ani
 | RC-M4-4B-04 | APPROVED | Independent review result recorded |
 | RC-M4-4B-05 | APPROVED | Independent review result recorded |
 | RC-M4-4B-06 | APPROVED | Independent review result recorded |
-| RC-M4-4B-07 | PARTIAL — DEFERRED TO M4-4C | Track with RV-M4-4B-01～03; not represented as a confirmed defect |
+| RC-M4-4B-07 | PARTIAL — DEFERRED TO M4-4C | VA1 adds terminal Route／Restart／WebGL sampling evidence for RV-M4-4B-01～03; finding remains pending Independent Review and is not represented as a confirmed defect |
 | RC-M4-4B-08 | RESOLVED — DOCUMENTATION UPDATED | This closure synchronization records the corrected baseline, acceptance, review limitations, traceability, architecture boundary, and deferred verification; no new independent review approval is claimed |
 
 ### M4-4C Remaining Verification — RV-M4-4B-01～03
@@ -319,9 +319,9 @@ These were deferred verification items, not confirmed defects. M4-4C collected t
 
 | ID | Evidence Collected | Current Status |
 |---|---|---|
-| RV-M4-4B-01 | Production App／Battle Route Integration Test: 10 Route re-entry cycles, idle exit cleanup, fresh Session identity; Agent Browser: 12 Menu／Battle round trips. Mid-motion Browser exit remains unverified. | EVIDENCE COLLECTED — REVIEW PENDING |
-| RV-M4-4B-02 | R3F／Drei and owned-resource cleanup inspection; Frame／Canvas lifecycle counters; Browser observed 13 Canvas／WebGL creations and 11 Context Loss events, last event unconfirmed; Heap 91–113 MB; no valid `renderer.info`. | PARTIAL — REVIEW PENDING |
-| RV-M4-4B-03 | Five Production Route Integration Tests use real App／Scene／Session Host／Scenario／Reducer／Runtime callback wiring, including ID collisions, AI／Death isolation, Outcomes, Overlay and Restart. | EVIDENCE COLLECTED — REVIEW PENDING |
+| RV-M4-4B-01 | Six Production Route Integration Tests include Victory／Defeat Overlay unmount, Runtime／Frame／Canvas cleanup, fresh Session and stale callback isolation; Agent Browser completed 2 warm-ups + 10 measured idle Route round trips. Mid-motion and terminal Browser exits remain unverified. | EVIDENCE COLLECTED — REVIEW PENDING |
+| RV-M4-4B-02 | Read-only Browser identity sampling mapped C1/G1 through C14/G14 and observed matching Context Loss events; final Menu had 0 connected Canvas after 1.5 seconds. `renderer.info.memory` unavailable; no GPU disposal conclusion. | PARTIAL — REVIEW PENDING |
+| RV-M4-4B-03 | Six Production Route Integration Tests use real App／Scene／Session Host／Scenario／Reducer／Runtime callback wiring, including ID collisions, AI／Death isolation, terminal Outcomes／Overlay unmount and Restart. WebGL／visual leaves remain test adapters. | EVIDENCE COLLECTED — REVIEW PENDING |
 
 ### Conditional Closure Decision
 
@@ -346,8 +346,8 @@ These were deferred verification items, not confirmed defects. M4-4C collected t
 | C-T05 | Same Attack callback test | Advance real Frame Harness through Impact, unmount, re-enter and replay prior callbacks; new Attack／HP remain unchanged. | PASS |
 | C-T06 | `battle.route.lifecycle.integration.test.mjs` — `Production Runtime Enemy AI and Death callbacks cannot mutate a re-entered Session` | Real lethal lifecycle creates Death Motion; old Death Complete／Abort and Impact Consume leave the new Session unchanged. | PASS |
 | C-T07 | Same Enemy AI and Death callback test | Advance real Production AI to an enemy Motion／Attack; unmount and dispatch captured old AI action; new Motion／Attack／Turn references remain unchanged. | PASS |
-| C-T08 | No Production Route test exits during Victory Overlay | Existing outcome test asserts Overlay, but not Route unmount while it is open. | NOT COVERED |
-| C-T09 | No Production Route test exits during Defeat Overlay | Existing outcome test asserts Overlay, but not Route unmount while it is open. | NOT COVERED |
+| C-T08 | `battle.route.lifecycle.integration.test.mjs` — `Production Route unmounts terminal Victory and Defeat Overlays without leaking old Session callbacks` | Reaches VICTORY through the configured Production lifecycle, confirms Victory dialog, exits Route, verifies dialog／Runtime／Frame／Canvas cleanup, re-enters ACTIVE Session, and replays old callbacks without changing it. | PASS |
+| C-T09 | Same terminal Route unmount test | Repeats the complete Route unmount／re-entry／stale callback assertions after a legal DEFEAT and Defeat dialog. | PASS |
 | C-T10 | `battle.route.lifecycle.integration.test.mjs` — Production App route entry／exit test | Ten re-entry cycles produce distinct Sessions／Reducers, initial Unit snapshots and ACTIVE outcomes. | PASS |
 | C-T11 | `battle.route.lifecycle.integration.test.mjs` — Move and Player callback test | Old Finish／Cancel with identical Motion／Turn／Unit IDs do not change the new Motion. | PASS |
 | C-T12 | `battle.route.lifecycle.integration.test.mjs` — Attack callback test | Old pre-impact callback set cannot Impact the new Session or change target HP. | PASS |
@@ -361,8 +361,8 @@ These were deferred verification items, not confirmed defects. M4-4C collected t
 | C-T20 | `battle.route.lifecycle.integration.test.mjs` — Attack callback test | Unmount during pre- and post-impact Attack lifecycle removes active Frame subscriptions; re-entry creates fresh callbacks. | PASS |
 | C-T21 | `battle.route.lifecycle.integration.test.mjs` — Enemy AI and Death callback test | Death Motion callback is session-bound; unmount and re-entry preserve new Death Motion／Impact. | PASS |
 | C-T22 | `battle.route.lifecycle.integration.test.mjs` — Enemy AI and Death callback test | Test-only capture observes real Production AI Effect dispatch; stale dispatch is isolated. | PASS |
-| C-T23 | Route integration test plus source inspection of `App.tsx` and battle hooks | Hash listener count is one through transitions and zero after App unmount; `useBattleAI` is synchronous and has no Timer. No global pending-Timer instrumentation. | PARTIAL |
-| C-T24 | `battle.route.lifecycle.integration.test.mjs` — `Production Runtime Outcome, Overlay, and Restart use the configured battle Session` | Ten effective Restarts restore initial roster／ACTIVE Session and stable active Frame／Canvas counts. AI instruction duplication is not independently counted. | PARTIAL |
+| C-T23 | `battle.route.lifecycle.integration.test.mjs` plus source inspection of `App.tsx` and battle hooks | StrictMode hash listener count remains one through Route transitions and zero after App unmount; runtime has no `setTimeout`／`setInterval`; test-only `queueMicrotask` tracking confirms scheduled work completes with pending count zero after Route exit and App unmount. | PASS |
+| C-T24 | `battle.route.lifecycle.integration.test.mjs` — `Production Runtime Outcome, Overlay, and Restart use the configured battle Session` | Ten effective Restarts each verify Generation increment, fresh initial ACTIVE Session, old Restart／Player callback isolation, controller Frame cleanup, one active Runtime／Canvas, and balanced active Frame／Canvas counts without cumulative Session-owned work. | PASS |
 | C-T25 | `battle.route.lifecycle.integration.test.mjs` — Production App route entry／exit test | Ten Route re-entry cycles assert zero active Frame／Canvas on exit, one on entry, one Route listener, fresh Session／Reducer. | PASS |
 | C-T26 | Same Route entry／exit test under React `StrictMode` | Route listener and Canvas／Frame lifecycle counts remain balanced through StrictMode and final unmount. | PASS |
 | C-T27 | Production Outcome／Restart test | Replayed stale Restart Handler after a successful restart does not replace the current Session. | PASS |
@@ -387,7 +387,7 @@ These were deferred verification items, not confirmed defects. M4-4C collected t
 | AC-C05 | PASS | Attack callbacks isolated with both pre-impact and post-impact Motion. |
 | AC-C06 | PASS | Death Motion completion／abort／impact callbacks isolated after re-entry. |
 | AC-C07 | PASS | Real AI Effect／Gateway action captured during enemy Motion; old action is isolated. |
-| AC-C08 | NOT VERIFIED | Victory／Defeat Overlay Route-unmount scenario is not in the Production Route harness. |
+| AC-C08 | PASS | VA1 terminal Route integration reaches VICTORY／DEFEAT, removes each Result Overlay on Route exit, cleans Runtime／Frame／Canvas ownership, and isolates callbacks after re-entry. |
 | AC-C09 | PASS | Move Finish／Cancel callbacks remain bound to prior Session. |
 | AC-C10 | PASS | Attack Impact／Complete／Abort callbacks remain bound to prior Session. |
 | AC-C11 | PASS | Death Complete／Abort callbacks remain bound to prior Session. |
@@ -400,12 +400,12 @@ These were deferred verification items, not confirmed defects. M4-4C collected t
 | AC-C18 | PASS | Attack Frame subscriptions clear on unmount; existing Controller test independently asserts cleanup. |
 | AC-C19 | PASS | Death lifecycle unmount and stale callback isolation covered with real controller wiring. |
 | AC-C20 | PASS | Real AI Effect／Gateway dispatch captured and isolated across Route re-entry. |
-| AC-C21 | PARTIAL | App listener lifecycle is counted and AI has no Timer; no generic pending-Timer counter is installed. |
-| AC-C22 | PASS | StrictMode Route mount／unmount and controller Frame subscription cleanup are asserted. |
-| AC-C23 | PASS | Ten effective integration Restarts restore initial Session State and stable Frame／Canvas counts; Node harness, not Browser stress. |
-| AC-C24 | PASS | Ten automated Route re-entry cycles plus twelve Agent Browser Menu／Battle round trips. |
-| AC-C25 | PARTIAL | Canvas／R3F source lifecycle inspected and Canvas counts observed; real renderer ownership／`renderer.info` unavailable. |
-| AC-C26 | PARTIAL | Browser Context Loss／Heap observations exist; no valid Renderer memory statistics or confirmed final Context Loss. |
+| AC-C21 | PASS | StrictMode App listener lifecycle is counted; no runtime timer exists in inspected scope; test-only `queueMicrotask` tracking reaches pending 0 and scheduled = completed after Route exit／App unmount. |
+| AC-C22 | PASS | StrictMode Route mount／unmount, controller Frame cleanup, and deferred-work completion are asserted. |
+| AC-C23 | PASS | Ten effective integration Restarts each restore initial Session State and verify Generation, stale callback rejection, one active Runtime／Canvas, and balanced stable Frame／Canvas counts; Node harness, not Browser stress. |
+| AC-C24 | PASS | Ten automated Route re-entry cycles plus two Browser warm-ups and ten measured Menu／Battle round trips. |
+| AC-C25 | PARTIAL | Source lifecycle and Browser Canvas／Context identities are observed; final Menu has zero connected Canvas, but renderer ownership／`renderer.info.memory` is unavailable. |
+| AC-C26 | PARTIAL | VA1 maps each observed Context Loss to its Canvas／Context identity (including the initial Context); no valid Renderer memory statistics, so GPU disposal remains unverified. |
 | AC-C27 | PARTIAL | Owned Geometry／Texture／OrbitControls cleanup inspected; no full shared asset／GPU disposal measurement. |
 | AC-C28 | PARTIAL | No reproducible leak observed in available counts; insufficient GPU telemetry to conclude no Resource Leak. |
 | AC-C29 | PASS | Existing Movement／Obstacle／Occupancy／Attack tests pass; no Runtime Source Code change. |
@@ -415,15 +415,15 @@ These were deferred verification items, not confirmed defects. M4-4C collected t
 | AC-C33 | PASS | Existing Overlay／Restart tests and Production Runtime outcome integration pass. |
 | AC-C34 | PASS | Production configured Reducer reaches both terminal Outcomes after lifecycle barriers. |
 | AC-C35 | PASS | Victory／Defeat Restart produce fresh Session State equal to Scenario initial Units. |
-| AC-C36 | PASS | `npm test` 270/270; original 265 test cases retained. |
-| AC-C37 | PASS | Five new Production Route Integration tests pass 5/5. |
+| AC-C36 | PASS | `npm test` 271/271; original 270 test cases retained. |
+| AC-C37 | PASS | Six Production Route Integration tests pass 6/6. |
 | AC-C38 | PASS | `npm run lint` exit code 0. |
 | AC-C39 | PASS | `npm run build` exit code 0; existing Battle chunk warning remains. |
 | AC-C40 | PASS | CRLF-aware `git diff --check` and new-file whitespace scan pass. |
 | AC-C41 | PARTIAL | RV evidence and limitations are documented; GPU and terminal Browser evidence remain incomplete. |
 | AC-C42 | PARTIAL | RC-M4-4B-07 remains PARTIAL; no new confirmed code defect; Independent Review is pending. |
 | AC-C43 | PASS | README／Development Status／Architecture／Combat／Game Design／Roadmap／Changelog synchronized. |
-| AC-C44 | PASS | No Production Runtime change, new feature, dependency, Commit or Push; unrelated `public/assets/` additions／modifications／deletions were left untouched. |
+| AC-C44 | PASS | No Production Runtime／Battle Core change, feature, dependency, Commit or Push; no VA1 `public/assets/` change. |
 | AC-C45 | PARTIAL | Verification report is prepared, but Browser items, Independent Review, and Product Owner Acceptance remain pending. |
 
 ### BV-C01～BV-C14 Agent Browser Verification
@@ -443,16 +443,39 @@ Browser verification below is Agent-observed evidence, not Product Owner Accepta
 | BV-C09 | NOT VERIFIED | Browser route stress was idle; no exact in-motion／AI／death mid-Route exit performed. Automated integration evidence is separate. |
 | BV-C10 | NOT VERIFIED | No terminal Outcome Route exit／re-entry performed in Browser. |
 | BV-C11 | NOT VERIFIED | Ten Restart cycles were performed by Production React Integration test, not Browser. |
-| BV-C12 | PARTIAL | Twelve idle Route round trips; stable screen showed one Canvas. Does not prove GPU disposal or active-runtime transition behavior. |
-| BV-C13 | PARTIAL | Method: observe Canvas／WebGL context events and JS Heap after warm-up／Route cycles. Result: 13 creation observations, 11 Context Loss events (last unconfirmed), Heap about 91–113 MB; no valid `renderer.info`, so GPU trends NOT VERIFIED. |
+| BV-C12 | PARTIAL | Two warm-up and ten measured idle Menu／Battle round trips completed; each measured Battle mount had one connected Canvas. Route observation does not prove GPU disposal or terminal／in-motion Browser behavior. |
+| BV-C13 | PARTIAL | VA1 identity-mapped the initial Context and 13 new Canvas／WebGL2 Contexts; all 14 observed contexts emitted a matching Context Loss on exit, with no restore events. After final Menu cleanup delay: 0 connected Canvas; `renderer.info.memory` unavailable, so GPU disposal remains NOT VERIFIED. Full samples follow. |
 | BV-C14 | PARTIAL | Desktop gameplay and no page-level unhandled exception observed; Mobile not tested. Console included Three.js `THREE.Clock`／`PCFSoftShadowMap` warnings and Main Menu image `ERR_CONNECTION_REFUSED`; cause of image failure is environment-dependent and unclassified. |
+
+### VA1 WebGL Sample Record
+
+The prior 13-creation／11-loss observation is retained as historical evidence. VA1 used temporary page-local instrumentation to assign Canvas／Context IDs and listen for `webglcontextlost`／`webglcontextrestored`; it did not alter Production source. At instrumentation start, existing Canvas C1／WebGL2 Context G1 was connected on `#battle` (104,115,685 heap bytes); its matching loss was observed during the preparatory exit. The two warm-ups and ten measured cycles are listed below. Heap values are `performance.memory.usedJSHeapSize` samples in bytes.
+
+| Cycle | Battle Canvas／Context | Battle Heap Bytes | Menu Heap Bytes | Exit Loss Identity |
+|---|---|---:|---:|---|
+| Warm-up 1 | C2／G2 | 97,308,722 | 98,601,369 | C2／G2 |
+| Warm-up 2 | C3／G3 | 98,001,657 | 98,729,415 | C3／G3 |
+| Measured 1 | C4／G4 | 99,446,844 | 99,184,541 | C4／G4 |
+| Measured 2 | C5／G5 | 99,893,060 | 99,715,705 | C5／G5 |
+| Measured 3 | C6／G6 | 100,376,564 | 103,082,131 | C6／G6 |
+| Measured 4 | C7／G7 | 100,888,914 | 104,640,358 | C7／G7 |
+| Measured 5 | C8／G8 | 99,503,317 | 104,438,028 | C8／G8 |
+| Measured 6 | C9／G9 | 93,015,529 | 104,776,748 | C9／G9 |
+| Measured 7 | C10／G10 | 93,422,777 | 101,255,613 | C10／G10 |
+| Measured 8 | C11／G11 | 100,765,845 | 105,745,408 | C11／G11 |
+| Measured 9 | C12／G12 | 94,289,082 | 106,211,008 | C12／G12 |
+| Measured 10 | C13／G13 | 110,184,892 | 106,684,463 | C13／G13 |
+
+An additional, non-measured Battle entry for the `renderer.info` inspection created C14／G14; its matching loss was observed on return to the Menu. Every observed loss (C1／G1 through C14／G14) reported `connected=false`, `cancelable=true`, and `defaultPrevented=false`; no `webglcontextrestored` event was observed. After a 1.5-second final Menu delay, the route was `(menu)`, connected Canvas count was 0, and heap was 107,159,387 bytes.
+
+The read-only renderer probe found no `canvas.__r3f` state or exposed renderer global; the canvas exposed only React Fiber／props keys, so no valid `renderer.info.memory` value was obtainable. The test-only R3F fixture substitutes Canvas and returns only a size from `useThree`, so it is not a valid renderer-memory source. Browser console warnings observed during the route mounts were `THREE.Clock` deprecation and `PCFSoftShadowMap` removal／fallback to `PCFShadowMap`. These event／heap observations do not prove GPU resource disposal or absence of a leak.
 
 ### Resource Ownership and Measurement Notes
 
 - Production source inspection: App removes its `hashchange` listener; `useBattleAI` uses synchronous Effect dispatch and no Timer; Drei OrbitControls cleanup removes listeners and disposes controls; Death Particle Geometry, Floating Damage CanvasTexture and Unit Label CanvasTexture are disposed by their owners.
 - Installed R3F `9.8.2` Canvas root cleanup was inspected for Event／Scene／Renderer teardown; it disposes an owned Renderer and requests Context Loss on root unmount. This dependency behavior is not equivalent to observing all GPU allocations.
-- Browser sampling: warm-up and 10 measured Route cycles; stable Canvas count was 1. Context creation/loss events are event observations, not live renderer counts. The final Context Loss event was not confirmed.
-- Heap sampling fluctuated approximately 91–113 MB and does not establish a leak trend. Attempted R3F `renderer.info` access returned no live roots; Geometry／Texture／Program counts remain NOT VERIFIED. No claim is made that GPU resources were fully disposed or that no leak exists.
+- Browser sampling: see the VA1 table above. Context creation/loss events are event observations, not live renderer counts; zero connected Canvas after Route exit is not GPU disposal evidence.
+- Heap sampling fluctuated and does not establish a leak trend. `renderer.info.memory` and Geometry／Texture／Program counts remain NOT VERIFIED. No claim is made that GPU resources were fully disposed or that no leak exists.
 - The Browser successfully rendered WebGL in this M4-4C session; this does not retroactively alter M4-4B's historical WebGL fallback／PARTIAL record or constitute Product Owner acceptance.
 
 ## M4-4 Revision 2 Test Traceability

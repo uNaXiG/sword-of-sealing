@@ -400,9 +400,9 @@ Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `u
 
 正式 Route 離開時，App-owned `hashchange` Listener 依 App Effect cleanup 移除；Battle Route 卸載 `BattleSessionRuntime`，Session-owned Reducer／Dispatch、AI Effect、Animation Controller、Frame Subscription、暫態 UI 與 Canvas 隨 Runtime 結束。重新進入 Route 重新執行 Scenario Factory，不沿用前一個 Session。Restart 則由 Session Host Generation 與 Keyed Remount 建立新 Session，Terminal Outcome 仍只由正式 Reducer 提交。
 
-Production React Integration 測試實際掛載 App、BattleScene、Session Host、Scenario Factory 與 Runtime wiring，驗證 Idle／Move／Pre-impact Attack／Post-impact Attack／Enemy AI／Death callback 的卸載隔離、相同 ID collision、正式 Victory／Defeat Barrier、Overlay 與 Restart。測試以受控 Frame Scheduler 與 WebGL／純視覺替身量測生命周期；不能替代瀏覽器 GPU 資源量測或 Product Owner Browser Acceptance。
+Production React Integration 測試實際掛載 App、BattleScene、Session Host、Scenario Factory 與 Runtime wiring，驗證 Idle／Move／Pre-impact Attack／Post-impact Attack／Enemy AI／Death callback 的卸載隔離、相同 ID collision、正式 Victory／Defeat Barrier、Overlay Route unmount 與 Restart。終局 Route 測試在合法 VICTORY／DEFEAT 後確認 Overlay、Runtime、Frame／Canvas Harness 清理，重入新 ACTIVE Session 並重播舊 callback；十次有效 Restart 逐次檢查 Generation、舊 callback 隔離、初始 State 與穩定工作數量。測試以受控 Frame Scheduler 與 WebGL／純視覺替身量測生命周期；不能替代瀏覽器 GPU 資源量測或 Product Owner Browser Acceptance。
 
-Agent Browser 實際驗證移動、撤銷、待命、合法攻擊及敵方移動，並完成 12 次 Main Menu／Battle Route 往返（2 次 warm-up、10 次量測）。WebGL Context Loss 記錄為 13 次建立、11 次可觀察 Loss，末次 Loss 未確認；Renderer `info` 未取得有效數值，故 AC-C26／BV-C13 維持 PARTIAL。終局 Overlay／Restart、Mobile 版面及部分中途卸載 Browser 情境仍 NOT VERIFIED；M4-4C 與 M4 Formal Acceptance 皆未結案。逐項結果見 [Development Status](./DEVELOPMENT_STATUS.md)。
+VA1 Browser 重測完成 2 次 warm-up 與 10 次量測的 Menu／Battle 往返；另外一次額外 Battle entry 用於 renderer probe。暫時頁面診斷記錄 initial C1/G1 與新建 C2/G2～C14/G14，14 個 Context 均收到對應 Context Loss，沒有 Restore event；最後回 Menu 等待 1.5 秒後為 0 個連接 Canvas。只讀 Probe 無法存取 `renderer.info.memory`，因此 GPU disposal／leak 仍 NOT VERIFIED，BV-C13 維持 PARTIAL。這不是 Product Owner Acceptance；BV-C10 終局 Route 的實際 Browser 操作、Restart、Modal 與 Mobile 項目仍未驗證。M4-4C 與 M4 Formal Acceptance 皆未結案；逐項 Heap／Identity 樣本見 [Development Status](./DEVELOPMENT_STATUS.md)。
 
 ### 擴充 Condition
 

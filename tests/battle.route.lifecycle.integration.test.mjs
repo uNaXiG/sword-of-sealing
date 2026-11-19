@@ -28,7 +28,10 @@ let container
 let root
 let routeRegistry
 let activeHashChangeListeners
+let restartFrameBaseline = null
 const originalGlobals = new Map()
+const deferredWork = { tracking: false, scheduled: 0, completed: 0, pending: 0 }
+const nativeQueueMicrotask = globalThis.queueMicrotask.bind(globalThis)
 
 const visualStubs = new Map([
   [runtimePath.replace(/\\/g, '/'), new Map([
@@ -123,11 +126,17 @@ function createRouteIntegrationPlugin() {
 }
 
 async function settle() {
-  await act(async () => {
-    await new Promise((resolvePromise) => setImmediate(resolvePromise))
-    await Promise.resolve()
-    await Promise.resolve()
-  })
+  const previousTracking = deferredWork.tracking
+  deferredWork.tracking = true
+  try {
+    await act(async () => {
+      await new Promise((resolvePromise) => setImmediate(resolvePromise))
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+  } finally {
+    deferredWork.tracking = previousTracking
+  }
 }
 
 async function waitFor(predicate, message) {
@@ -141,14 +150,20 @@ async function waitFor(predicate, message) {
 async function navigateHash(hash) {
   const oldURL = dom.window.location.href
   const nextURL = `${dom.window.location.pathname}${hash}`
-  await act(async () => {
-    dom.window.history.pushState(null, '', nextURL)
-    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange', {
-      oldURL,
-      newURL: dom.window.location.href,
-    }))
-  })
-  await settle()
+  const previousTracking = deferredWork.tracking
+  deferredWork.tracking = true
+  try {
+    await act(async () => {
+      dom.window.history.pushState(null, '', nextURL)
+      dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange', {
+        oldURL,
+        newURL: dom.window.location.href,
+      }))
+    })
+    await settle()
+  } finally {
+    deferredWork.tracking = previousTracking
+  }
 }
 
 async function enterBattle() {
@@ -157,6 +172,7 @@ async function enterBattle() {
     () => container.querySelector('.battle-screen') && routeRegistry.current(),
     'production Battle route did not mount',
   )
+  assert.equal(container.querySelectorAll('.battle-screen').length, 1)
   return routeRegistry.current()
 }
 
@@ -167,11 +183,20 @@ async function leaveBattle() {
     'production Main Menu did not replace Battle route',
   )
   await settle()
+  assert.equal(container.querySelectorAll('.battle-screen').length, 0)
+  assert.equal(deferredWork.pending, 0)
+  assert.equal(deferredWork.scheduled, deferredWork.completed)
 }
 
 async function run(callback) {
-  await act(async () => callback())
-  await settle()
+  const previousTracking = deferredWork.tracking
+  deferredWork.tracking = true
+  try {
+    await act(async () => callback())
+    await settle()
+  } finally {
+    deferredWork.tracking = previousTracking
+  }
 }
 
 function currentFor(session) {
@@ -337,7 +362,83 @@ async function advanceRuntimeBattle(record, targetOutcome, maxSteps = 2400, stop
   })}`)
 }
 
+async function restartFromOutcome(record) {
+  const previousSession = record.session
+  const previousGeneration = record.generation
+  const previousBattle = currentFor(previousSession).latest
+  const staleRestartHandler = record.restartHandler
+  const stalePlayerAction = previousBattle.standby
+  const framesBefore = frameHarness.getFrameHarnessStats()
+  const canvasBefore = routeHarness.getCanvasHarnessStats()
+  await run(() => container.querySelector('.battle-result-restart').click())
+  const current = routeRegistry.current()
+  const framesAfter = frameHarness.getFrameHarnessStats()
+  const canvasAfter = routeHarness.getCanvasHarnessStats()
+  assert.notEqual(current.session, previousSession)
+  assert.equal(current.generation, previousGeneration + 1)
+  assert.equal(current.latest.outcome, null)
+  assert.deepEqual(current.latest.units, current.session.initialState.units)
+  assert.equal(container.querySelector('dialog'), null)
+  assert.equal(container.querySelectorAll('.battle-screen').length, 1)
+  assert.ok(framesAfter.cleanups > framesBefore.cleanups)
+  if (restartFrameBaseline === null) restartFrameBaseline = framesAfter.activeCallbacks
+  assert.equal(framesAfter.activeCallbacks, restartFrameBaseline)
+  assert.equal(framesAfter.registrations - framesAfter.cleanups, framesAfter.activeCallbacks)
+  assert.ok(canvasAfter.canvasMounts > canvasBefore.canvasMounts)
+  assert.ok(canvasAfter.canvasCleanups > canvasBefore.canvasCleanups)
+  assert.equal(canvasAfter.activeCanvases, 1)
+  assert.equal(canvasAfter.canvasMounts - canvasAfter.canvasCleanups, canvasAfter.activeCanvases)
+
+  const currentTurn = current.latest.turn
+  await run(() => {
+    staleRestartHandler(previousGeneration)
+    stalePlayerAction()
+  })
+  assert.equal(routeRegistry.current(), current)
+  assert.equal(currentFor(current.session).latest.turn, currentTurn)
+  assert.equal(currentFor(current.session).latest.outcome, null)
+  assert.equal(deferredWork.pending, 0)
+  return current
+}
+
+async function verifyTerminalRouteUnmount(record, expectedOutcome, dialogSelector) {
+  const outcome = await advanceRuntimeBattle(record, expectedOutcome)
+  assert.equal(outcome, expectedOutcome)
+  const terminalBattle = currentFor(record.session).latest
+  const oldSession = record.session
+  const staleRestartHandler = record.restartHandler
+  const stalePlayerAction = terminalBattle.standby
+  assert.equal(terminalBattle.outcome, expectedOutcome)
+  assert.ok(container.querySelector(dialogSelector))
+  assert.equal(container.querySelectorAll('.battle-screen').length, 1)
+
+  await leaveBattle()
+  assert.equal(container.querySelector('.battle-screen'), null)
+  assert.equal(container.querySelector('dialog'), null)
+  assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
+  assert.equal(routeHarness.getCanvasHarnessStats().activeCanvases, 0)
+
+  const current = await enterBattle()
+  assert.notEqual(current.session, oldSession)
+  assert.equal(current.latest.outcome, null)
+  assert.deepEqual(current.latest.units, current.session.initialState.units)
+  assert.equal(container.querySelector('dialog'), null)
+  assert.equal(container.querySelectorAll('.battle-screen').length, 1)
+  const currentTurn = current.latest.turn
+
+  await run(() => {
+    staleRestartHandler(record.generation)
+    stalePlayerAction()
+  })
+  assert.equal(routeRegistry.current(), current)
+  assert.equal(currentFor(current.session).latest.outcome, null)
+  assert.equal(currentFor(current.session).latest.turn, currentTurn)
+  assert.deepEqual(currentFor(current.session).latest.units, current.session.initialState.units)
+  return current
+}
+
 async function mountApp() {
+  restartFrameBaseline = null
   routeRegistry = {
     records: [],
     capture(generation, battle, restartHandler) {
@@ -373,10 +474,18 @@ async function mountApp() {
 
 async function unmountApp() {
   if (!root) return
-  await act(async () => root.unmount())
-  await settle()
-  container.remove()
-  root = null
+  const previousTracking = deferredWork.tracking
+  deferredWork.tracking = true
+  try {
+    await act(async () => root.unmount())
+    await settle()
+    container.remove()
+    root = null
+  } finally {
+    deferredWork.tracking = previousTracking
+  }
+  assert.equal(deferredWork.pending, 0)
+  assert.equal(deferredWork.scheduled, deferredWork.completed)
 }
 
 before(async () => {
@@ -433,6 +542,22 @@ before(async () => {
     ['HTMLElement', dom.window.HTMLElement],
     ['Node', dom.window.Node],
     ['IS_REACT_ACT_ENVIRONMENT', true],
+    ['queueMicrotask', (callback) => {
+      if (!deferredWork.tracking) {
+        nativeQueueMicrotask(callback)
+        return
+      }
+      deferredWork.scheduled += 1
+      deferredWork.pending += 1
+      nativeQueueMicrotask(() => {
+        try {
+          callback()
+        } finally {
+          deferredWork.completed += 1
+          deferredWork.pending -= 1
+        }
+      })
+    }],
   ]) installGlobal(name, value)
   ;({ createRoot } = await import('react-dom/client'))
 })
@@ -456,6 +581,7 @@ test('Production App route entry, idle exit, and re-entry create isolated Sessio
   let previous = await enterBattle()
   const firstSession = previous.session
   assert.equal(previous.latest.outcome, null)
+  assert.equal(container.querySelectorAll('.battle-screen').length, 1)
   assert.ok(frameHarness.getFrameHarnessStats().activeCallbacks > 0)
   assert.equal(routeHarness.getCanvasHarnessStats().activeCanvases, 1)
 
@@ -463,6 +589,7 @@ test('Production App route entry, idle exit, and re-entry create isolated Sessio
     await leaveBattle()
     assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
     assert.equal(routeHarness.getCanvasHarnessStats().activeCanvases, 0)
+    assert.equal(container.querySelectorAll('.battle-screen').length, 0)
 
     const current = await enterBattle()
     assert.notEqual(current.session, previous.session)
@@ -480,6 +607,7 @@ test('Production App route entry, idle exit, and re-entry create isolated Sessio
   assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
   assert.equal(routeHarness.getCanvasHarnessStats().activeCanvases, 0)
   assert.equal(activeHashChangeListeners.size, 0)
+  assert.equal(container.querySelectorAll('.battle-screen').length, 0)
 })
 
 test('Production Runtime Move and Player callbacks with colliding IDs stay bound to the old Session', async () => {
@@ -489,7 +617,9 @@ test('Production Runtime Move and Player callbacks with colliding IDs stay bound
   const oldMotionBattle = await startMove(previous)
   const oldMotion = oldMotionBattle.motion
 
+  const deferredBeforeExit = deferredWork.scheduled
   await leaveBattle()
+  assert.ok(deferredWork.scheduled > deferredBeforeExit)
   assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
 
   const current = await enterBattle()
@@ -523,7 +653,9 @@ test('Production Runtime Attack callbacks with colliding IDs stay isolated befor
     abort: oldAttackBattle.abortAttack,
   }
 
+  let deferredBeforeExit = deferredWork.scheduled
   await leaveBattle()
+  assert.ok(deferredWork.scheduled > deferredBeforeExit)
   assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
   let current = await enterBattle()
   let newAttackBattle = await startAttack(current)
@@ -556,7 +688,9 @@ test('Production Runtime Attack callbacks with colliding IDs stay isolated befor
   }
   oldAttack = impactedBattle.attackMotion
 
+  deferredBeforeExit = deferredWork.scheduled
   await leaveBattle()
+  assert.ok(deferredWork.scheduled > deferredBeforeExit)
   assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
   previous = await enterBattle()
   newAttackBattle = await startAttack(previous)
@@ -594,7 +728,9 @@ test('Production Runtime Enemy AI and Death callbacks cannot mutate a re-entered
     state.turn.activeUnitId === enemyMotionResult.battle.turn.activeUnitId)
   assert.ok(oldEnemyAction, 'expected the real AI Effect to capture an enemy-turn dispatch')
 
+  let deferredBeforeExit = deferredWork.scheduled
   await leaveBattle()
+  assert.ok(deferredWork.scheduled > deferredBeforeExit)
   assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
   let current = await enterBattle()
   const newEnemyMotionResult = await advanceRuntimeBattle(
@@ -614,7 +750,9 @@ test('Production Runtime Enemy AI and Death callbacks cannot mutate a re-entered
   assert.equal(currentFor(current.session).latest.attackMotion, newEnemyState.attackMotion)
   assert.equal(currentFor(current.session).latest.turn, newEnemyState.turn)
 
+  deferredBeforeExit = deferredWork.scheduled
   await leaveBattle()
+  assert.ok(deferredWork.scheduled > deferredBeforeExit)
   current = await enterBattle()
   const firstDeath = await advanceRuntimeBattle(
     current,
@@ -629,7 +767,9 @@ test('Production Runtime Enemy AI and Death callbacks cannot mutate a re-entered
   assert.ok(oldDeath)
   assert.ok(oldImpact)
 
+  deferredBeforeExit = deferredWork.scheduled
   await leaveBattle()
+  assert.ok(deferredWork.scheduled > deferredBeforeExit)
   const reentered = await enterBattle()
   const newDeathResult = await advanceRuntimeBattle(
     reentered,
@@ -664,48 +804,36 @@ test('Production Runtime Outcome, Overlay, and Restart use the configured battle
   assert.equal(victory, 'VICTORY')
   assert.equal(currentFor(record.session).latest.outcome, 'VICTORY')
   assert.ok(container.querySelector('.battle-result-dialog-victory'))
-  const completedVictorySession = record.session
-  const staleRestartHandler = record.restartHandler
-
-  await run(() => container.querySelector('.battle-result-restart').click())
-  record = routeRegistry.current()
-  assert.notEqual(record.session, completedVictorySession)
-  assert.equal(record.latest.outcome, null)
-  assert.deepEqual(record.latest.units, record.session.initialState.units)
-  assert.equal(container.querySelector('dialog'), null)
-  const firstRestartedRecord = record
-  await run(() => staleRestartHandler(0))
-  assert.equal(routeRegistry.current(), firstRestartedRecord)
+  record = await restartFromOutcome(record)
 
   const defeat = await advanceRuntimeBattle(record, 'DEFEAT')
   assert.equal(defeat, 'DEFEAT')
   assert.equal(currentFor(record.session).latest.outcome, 'DEFEAT')
   assert.ok(container.querySelector('.battle-result-dialog-defeat'))
-  const completedDefeatSession = record.session
-
-  await run(() => container.querySelector('.battle-result-restart').click())
-  record = routeRegistry.current()
-  assert.notEqual(record.session, completedDefeatSession)
-  assert.equal(record.latest.outcome, null)
-  assert.deepEqual(record.latest.units, record.session.initialState.units)
-  assert.equal(container.querySelector('dialog'), null)
+  record = await restartFromOutcome(record)
 
   const activeCallbacksAfterRestart = frameHarness.getFrameHarnessStats().activeCallbacks
   for (let restart = 2; restart < 10; restart += 1) {
-    const previousSession = record.session
     const terminal = await advanceRuntimeBattle(record, 'DEFEAT')
     assert.equal(terminal, 'DEFEAT')
     assert.ok(container.querySelector('.battle-result-dialog-defeat'))
-
-    await run(() => container.querySelector('.battle-result-restart').click())
-    record = routeRegistry.current()
-    assert.notEqual(record.session, previousSession)
-    assert.deepEqual(record.latest.units, record.session.initialState.units)
-    assert.equal(record.latest.outcome, null)
+    record = await restartFromOutcome(record)
     assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, activeCallbacksAfterRestart)
     assert.equal(routeHarness.getCanvasHarnessStats().activeCanvases, 1)
   }
 
   await unmountApp()
   assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
+  assert.equal(container.querySelectorAll('.battle-screen').length, 0)
+})
+
+test('Production Route unmounts terminal Victory and Defeat Overlays without leaking old Session callbacks', async () => {
+  await mountApp()
+  let record = await enterBattle()
+  record = await verifyTerminalRouteUnmount(record, 'VICTORY', '.battle-result-dialog-victory')
+  record = await verifyTerminalRouteUnmount(record, 'DEFEAT', '.battle-result-dialog-defeat')
+
+  await unmountApp()
+  assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
+  assert.equal(container.querySelectorAll('.battle-screen').length, 0)
 })

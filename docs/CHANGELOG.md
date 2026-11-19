@@ -2,6 +2,15 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M4-4C Verification Addendum 1 (Review Pending)
+
+- **Baseline**：VA1 以 `main`／HEAD `5006b4bb618088d0d342a2313c1a4b60a526d7da` 為基準；GitHub Actions Run [44614674924](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44614674924) SUCCESS，該 CI 不涵蓋本次未提交 Test／Documentation changes。
+- **Production Lifecycle Tests**：原有 5 項 Route Integration Tests 保留；新增正式 Victory／Defeat Overlay Route unmount 測試，完整檢查離場 cleanup、新 ACTIVE Session 與舊 callback 隔離。十次有效 Restart 現逐次檢查 Generation、初始 State、Controller／Frame／Canvas cleanup 與穩定資源數量。
+- **Timer／Listener**：App hash listener 在 StrictMode Route transition／unmount 維持單一／零；Production Battle Runtime 無 `setTimeout`／`setInterval`；測試追蹤 Route、Restart 與 unmount 操作中的 `queueMicrotask`，確認排程 work 完成、pending 為零。
+- **Browser WebGL Measurement**：完成 2 次 warm-up、10 次量測 Route 往返；initial C1/G1 與新建 C2/G2～C14/G14 共 14 個 Context 均觀察到對應 Context Loss，沒有 Restore event。最後返回 Menu 並等待 1.5 秒後，connected Canvas 為 0；只讀 Renderer Probe 未能取得 `renderer.info.memory`。逐次 Heap／Identity 資料與 Console warnings 見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。GPU disposal／無 leak 仍 NOT VERIFIED。
+- **Automated Verification**：`npm test` 271/271 PASS；Production Route Integration 6/6 PASS；`npm run lint` PASS；`npm run build` PASS，既有 >500 kB Battle Chunk warning 保留；CRLF-aware `git diff --check` PASS。
+- **Status／Scope**：RV-M4-4B-01／03 evidence collected、RV-M4-4B-02 PARTIAL，全部待 Independent Review；RC-M4-4B-07 維持 PARTIAL。Product Owner Acceptance 與 M4-4 Formal Acceptance PENDING；M4 為 75%、Overall 37.5%。只修改一個既有 Test Source 與必要文件；無 Runtime／Battle Core／`public/assets/` 異動，未 Commit／Push。
+
 ## 2026-11-20 — M4-4C Lifecycle Verification (Pending Review)
 
 - **Baseline**：`main`／HEAD `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；GitHub Actions Run [44607801214](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44607801214) SUCCESS，對應開始驗證基準，不涵蓋本次未提交檔案。
