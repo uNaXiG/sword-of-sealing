@@ -55,7 +55,8 @@ UX-001～UX-005 目前均為 **PENDING**，Target Milestone 為 M5-3；UX-006 �
 ## UX-006：Active Unit Camera Framing
 
 - **ID**：UX-006
-- **Scope**：開場讓 Active Unit 位於可用戰場區的第三象限（左下）。鎖定時跟隨角色的實際世界位置，旋轉／縮放不解除鎖定。COMMAND 點擊棋盤外空白或無角色與障礙物的格子才解除鎖定，隱藏角色 CG、HUD 與輪盤，保留行動軸。場上角色／行動軸檢視及 PAS 換手會恢復聚焦；不改變正式選取與指令權限。取景需避開 HUD／Timeline，支援 Reduced Motion。
+- **Scope**：開場鎖定 Active Unit，焦點預設垂直位置為畫面高度約 52%，必要時避開 HUD／Timeline。鎖定時跟隨角色的實際世界位置，旋轉／縮放不解除鎖定。COMMAND 點擊棋盤外空白或無角色與障礙物的格子才解除鎖定，隱藏角色 CG、HUD 與輪盤，保留行動軸。場上角色／行動軸檢視及 PAS 換手會恢復聚焦；不改變正式選取與指令權限。支援 Reduced Motion。
 - **Target Milestone**：M5-2B
+- **MOVE Mode**：左鍵拖曳平移，暫停相機自動取景，但保留角色選取與 CG／HUD；單擊仍可選擇合法移動格。離開 MOVE 後恢復角色取景。
 - **Dependencies**：M5-2B Presentation Focus 與世界 Group Registry。
 - **Status**：IMPLEMENTED — PENDING REVIEW；Browser Verification 尚有未驗證項目，詳見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。

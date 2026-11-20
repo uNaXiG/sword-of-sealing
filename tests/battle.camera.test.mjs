@@ -39,7 +39,7 @@ test('safe focus anchor avoids expanded UI regions and remains within viewport i
     ],
   )
   assert.ok(referenceFrame.x > 500 && referenceFrame.x < 950)
-  assert.ok(referenceFrame.y > 355 && referenceFrame.y < 575)
+  assert.ok(referenceFrame.y / 713 >= 0.48 && referenceFrame.y / 713 <= 0.55)
 
   const compact = calculateSafeFocusAnchor(
     { width: 390, height: 845 },

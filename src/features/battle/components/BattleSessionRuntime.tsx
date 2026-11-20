@@ -100,6 +100,7 @@ export default function BattleSessionRuntime({
   const displayUnit = focusUnit && attackInspection?.turnId === turn.turnId
     ? selectInspectedUnit(units, attackInspection.unitId, focusUnit.id)
     : focusUnit
+  const cameraFocusUnitId = interactionMode === 'MOVE' ? null : focusUnit?.id ?? null
   const canInspect = canInspectUnit(interactionMode, battleBusy)
   const showActionRadial = canShowBattleActionRadial({
     activeUnit,
@@ -268,13 +269,13 @@ export default function BattleSessionRuntime({
             controlsRef={controlsRef}
             unitGroupsRef={unitGroupsRef}
             safeAreaRootRef={safeAreaRootRef}
-            focusUnitId={focusUnit?.id ?? null}
+            focusUnitId={cameraFocusUnitId}
           />
           <OrbitControls
             ref={controlsRef}
             makeDefault
             enableDamping
-            enablePan={focusUnit === null}
+            enablePan={cameraFocusUnitId === null}
             minZoom={BATTLE_CAMERA_CONFIG.minZoom}
             maxZoom={BATTLE_CAMERA_CONFIG.maxZoom}
             minPolarAngle={BATTLE_CAMERA_CONFIG.fixedPolarAngle}

@@ -102,6 +102,10 @@ AC-C25～C28 為 **PARTIAL — ACCEPTED / DEFERRED TO TD-010**；AC-C41、AC-C42
 
 **Status：IMPLEMENTED — PENDING REVIEW。** 獨立審查與 Product Owner 驗收尚未完成；M5-2B 未正式結案。M5 維持 37.5%，Overall 維持 43.75%，Completed Milestones 維持 4/10；TD-022 保持 OPEN。
 
+**焦點高度微調**：預設由畫面高度 64.5% 上移至 52%；水平定位與鎖定規則不變。1412×713 真實 WebGL 戰場實測開場輪盤中心約在畫面高度 50%。相機測試 7/7、Lint 與 Build 通過；Build 保留既有 chunk-size 警告。
+
+**MOVE 左鍵平移**：真實 WebGL 中左拖 145 px 後，角色標記同向移動約 145 px，放開後未被拉回且仍在 MOVE；取消移動後恢復原錨點。相機與正式路由測試 16/16、Lint、Build 通過；Build 保留既有 chunk-size 警告。待 Product Owner 驗收。
+
 **開場構圖／焦點鎖定調整**：依參考圖將 Active Unit 放在可用戰場區左下。旋轉／縮放保持鎖定；COMMAND 的空白點擊才解除焦點、隱藏角色 CG／HUD 並開放平移。場上角色／Timeline 或 PAS 換手可重新鎖定。真實 WebGL 在 1412×713 驗證開場構圖、旋轉／縮放、空白解除與角色／Timeline 回復，PAS Active Unit 未變。`npm test -- --test-concurrency=1` 297/297 PASS；預設並行模式重跑有一次逾時中止。Lint、Build 與 CRLF-aware Diff Check PASS；Build 保留既有 chunk-size 警告。以下保留相機初版的驗證紀錄；未涵蓋情境與 PO 驗收狀態不變。
 
 - **Repository Baseline**：branch `main`；HEAD／`origin/main` 均為 `8ae9f928ecf0712a3947c5c6a20d41733c8a90a7`。最新已驗證 CI／Pages Run `44722441270` 對應此已提交 HEAD，不包含目前未提交程式與文件異動。

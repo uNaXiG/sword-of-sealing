@@ -7,6 +7,6 @@ export const BATTLE_CAMERA_CONFIG = {
   transitionDamping: 7,
   focusHeight: 0.75,
   desiredFocusX: 0.55,
-  desiredFocusY: 0.645,
+  desiredFocusY: 0.52,
   viewportMargin: 20,
 } as const

@@ -703,10 +703,15 @@ test('Production Battle HUD follows the active unit and dispatches player comman
   assert.equal(container.querySelector('button[aria-label="移動"]'), null)
   await run(() => record.latest.selectUnit(record.latest.activeUnit.id))
   assert.ok(container.querySelector('button[aria-label="移動"]'))
+  const panEnabled = () => container.querySelector('[data-testid="orbit-controls"]').dataset.enablePan
+  assert.equal(panEnabled(), 'false')
   await run(() => container.querySelector('button[aria-label="移動"]').click())
   assert.equal(currentFor(record.session).latest.interactionMode, 'MOVE')
+  assert.equal(panEnabled(), 'true')
+  assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '奧黛')
   await run(() => container.querySelector('button[aria-label="取消移動"]').click())
   assert.equal(currentFor(record.session).latest.interactionMode, 'COMMAND')
+  assert.equal(panEnabled(), 'false')
   await run(() => container.querySelector('button[aria-label="待命"]').click())
 
   assert.equal(currentFor(record.session).latest.activeUnit.id, 'knight')
