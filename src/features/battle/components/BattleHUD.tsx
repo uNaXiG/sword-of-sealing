@@ -5,6 +5,7 @@ import {
   createAttackPreviewGrid,
   getBattleAssetUrl,
   getProgressPercentage,
+  selectBattleCombatFeedback,
   selectBattleHudCharacter,
   type BattleHudCharacter,
 } from '../battleHud'
@@ -18,10 +19,6 @@ type BattleHUDProps = {
   canConfirmAttack: boolean
   battleBusy: boolean
   pendingTurnCompletion: boolean
-  attackableTargetCount: number
-  selectedAttackTarget: BattleUnit | null
-  selectedAttackTargetDistance: number | null
-  activityMessage: string | null
   combatFeedback: string | null
   onCancelMoveMode: () => void
   onConfirmAttack: () => void
@@ -197,11 +194,7 @@ function ActionControls({
   )
 
   if (!canIssueCommands || !selectedUnit) {
-    return (
-      <div className="battle-hud__controls-hint" aria-live="polite">
-        {activeUnit?.faction === 'enemy' ? '敵方行動中' : '選取目前行動角色以使用指令'}
-      </div>
-    )
+    return null
   }
 
   if (!activeUnit) return null
@@ -234,16 +227,15 @@ export default function BattleHUD({
   canConfirmAttack,
   battleBusy,
   pendingTurnCompletion,
-  attackableTargetCount,
-  selectedAttackTarget,
-  selectedAttackTargetDistance,
-  activityMessage,
   combatFeedback,
   onCancelMoveMode,
   onConfirmAttack,
   onCancelAttack,
 }: BattleHUDProps) {
   const character = displayUnit ? selectBattleHudCharacter(displayUnit, BASE_URL) : null
+  const combatFeedbackText = selectBattleCombatFeedback({
+    combatFeedback,
+  })
 
   return (
     <div className="battle-hud">
@@ -252,6 +244,12 @@ export default function BattleHUD({
         </div>
         <a className="battle-hud__menu-link" href="#" aria-label="返回主選單">返回主選單</a>
       </header>
+
+      {combatFeedbackText && (
+        <div className="battle-hud__combat-banner" role="status" aria-live="polite">
+          {combatFeedbackText}
+        </div>
+      )}
 
       <div className="battle-hud__portrait-backdrop" aria-hidden="true" />
       <figure
@@ -313,17 +311,9 @@ export default function BattleHUD({
                 onConfirmAttack={onConfirmAttack}
                 onCancelAttack={onCancelAttack}
               />
-              {activityMessage && <p className="battle-hud__activity" role="status">{activityMessage}</p>}
-              {(combatFeedback || interactionMode === 'ATTACK') && (
-                <p className="battle-hud__combat-feedback" role="status">
-                  {combatFeedback ?? `合法目標：${attackableTargetCount}${selectedAttackTarget
-                    ? ` · 目標：${selectedAttackTarget.name} · 距離：${selectedAttackTargetDistance ?? '—'} 格`
-                    : ''}`}
-                </p>
-              )}
             </>
           ) : (
-            <p className="battle-hud__empty">等待戰鬥行動</p>
+            null
           )}
       </section>
     </div>

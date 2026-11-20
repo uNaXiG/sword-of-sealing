@@ -47,7 +47,7 @@ export default function TurnOrderTimeline({
               return (
                 <div className="turn-card-slot" key={`${entry.turnId}-${entry.unit.id}`} role="listitem">
                   <button
-                    className={`turn-card${entry.isActive ? ' turn-card--active' : ''}${isActivePreview ? ' turn-card--active-preview' : ''}${inspectedUnitId === entry.unit.id ? ' turn-card--inspected' : ''}`}
+                    className={`turn-card${entry.isActive ? ' turn-card--active' : ''}${isActivePreview ? ' turn-card--active-preview' : ''}${entry.unit.faction === 'enemy' ? ' turn-card--enemy' : ''}${inspectedUnitId === entry.unit.id ? ' turn-card--inspected' : ''}`}
                     type="button"
                     aria-label={label}
                     aria-pressed={inspectedUnitId === entry.unit.id}

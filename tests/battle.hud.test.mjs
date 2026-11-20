@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { JSDOM } from 'jsdom'
 import { Object3D, OrthographicCamera } from 'three'
 import { getAttackableTiles } from '../src/game/battle/battle.attack.ts'
@@ -18,6 +19,7 @@ import {
   selectBattleTimeline,
   selectBattleHudCharacter,
   selectInspectedUnit,
+  selectBattleCombatFeedback,
 } from '../src/features/battle/battleHud.ts'
 import { initializeTurnState, predictUpcomingTurns } from '../src/game/battle/battle.turn.ts'
 import { calculateTimelineCapacity, observeTimelineCapacity } from '../src/features/battle/battleTimelineLayout.ts'
@@ -220,6 +222,17 @@ test('radial menu projection follows the world anchor and clamps to the viewport
     landscapePosition[1] + 112 <= rect.top ||
     landscapePosition[1] - 112 >= rect.bottom
   )), false)
+
+  const k2 = { width: 2560, height: 1440 }
+  const k2Position = calculateRadialScreenPosition(
+    new Object3D(),
+    camera,
+    k2,
+  )
+  assert.ok(k2Position[0] >= 138)
+  assert.ok(k2Position[1] >= 138)
+  assert.ok(k2Position[0] <= k2.width - 138)
+  assert.ok(k2Position[1] <= k2.height - 138)
 })
 
 test('turn timeline uses PAS order and values, caps at eight, and never fills missing entries', () => {
@@ -249,6 +262,16 @@ test('turn timeline uses PAS order and values, caps at eight, and never fills mi
   assert.equal(missingValue[1].actionValue, null)
 })
 
+test('enemy timeline entries retain enemy faction for fixed red frame presentation', () => {
+  const turn = initializeTurnState(INITIAL_UNITS)
+  const upcoming = predictUpcomingTurns(turn, INITIAL_UNITS, 12)
+  const timeline = selectBattleTimeline(turn, INITIAL_UNITS, upcoming, '/')
+  const enemyEntries = timeline.filter((entry) => entry.unit.faction === 'enemy')
+
+  assert.ok(enemyEntries.length > 0)
+  assert.ok(enemyEntries.every((entry) => entry.unit.faction === 'enemy'))
+})
+
 test('timeline action values display as integers without changing underlying PAS values', () => {
   assert.equal(formatTimelineActionValue(0), '0')
   assert.equal(formatTimelineActionValue(33.33), '33')
@@ -258,12 +281,29 @@ test('timeline action values display as integers without changing underlying PAS
   assert.equal(formatTimelineActionValue(Number.NaN), '待補')
 })
 
+test('2K HUD keeps HP SP origins while restoring right-column spacing', () => {
+  const css = readFileSync(new URL('../src/features/battle/components/BattleHUD.css', import.meta.url), 'utf8')
+  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) 168px 168px/)
+  assert.match(css, /@media \(min-width: 2100px\)[\s\S]*\.battle-hud__resources \{\s*max-width: none;\s*margin-left: 0;\s*\}/)
+  assert.doesNotMatch(css, /選取目前角色以使用指令/)
+})
+
 test('resource bar percentages stay valid for depleted, excessive, and invalid input', () => {
   assert.equal(getProgressPercentage(30, 60), 50)
   assert.equal(getProgressPercentage(-10, 60), 0)
   assert.equal(getProgressPercentage(80, 60), 100)
   assert.equal(getProgressPercentage(Number.NaN, 60), 0)
   assert.equal(getProgressPercentage(10, 0), 0)
+})
+
+test('combat feedback is a presentation-only independent banner message', () => {
+  assert.equal(selectBattleCombatFeedback({
+    combatFeedback: '奧黛 對 哥布林 A 造成 23 點傷害',
+  }), '奧黛 對 哥布林 A 造成 23 點傷害')
+
+  assert.equal(selectBattleCombatFeedback({
+    combatFeedback: null,
+  }), null)
 })
 
 test('attack preview grid uses the same legal tiles as the battle attack rules', () => {

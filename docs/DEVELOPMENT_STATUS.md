@@ -12,24 +12,24 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `8b0aa67776c66cb4b0585a1ec887e598a1ca9d30` — M5-2A Patch 1 baseline; `HEAD` 與 Fetch 後 `origin/main` 一致 |
-| Latest Verified Repository CI Run | [44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) — SUCCESS（`main` / `ac074cd`）；此 CI 不涵蓋 M5-2A 工作樹異動 |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `2b46eeaf02135e413bbe59b674d4d95045a136a8` — M5-2A Formal Closure；`HEAD` 與 Fetch 後 `origin/main` 一致 |
+| Latest Verified Repository CI Run | [44714442975](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44714442975) — SUCCESS（`main` / `2b46eea`）；M5-2A GitHub CI |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Current Repository HEAD | `main` @ `8b0aa67776c66cb4b0585a1ec887e598a1ca9d30`；已 Fetch，與 `origin/main` tracking ref 一致 |
-| Latest Verified GitHub Pages Deployment | [Run 44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) — `Deploy to GitHub Pages` SUCCESS |
+| Current Repository HEAD | `main` @ `2b46eeaf02135e413bbe59b674d4d95045a136a8`；已 Fetch，與 `origin/main` tracking ref 一致 |
+| Latest Verified GitHub Pages Deployment | [Run 44714442975](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44714442975) — `Deploy to GitHub Pages` SUCCESS |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
 | M4-4B Conditional Closure Commit | `e299fa48e28d16e24aadba9cc7925bedf4d53895`；16 個異動檔案；Battle Core Modification 0 |
 | M4-4C Session Start Baseline | `main`／HEAD／`origin/main` `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；開始時工作樹乾淨 |
-| Current Working Tree | M5-2A Patch 1／Patch 2 程式、測試及文件異動未提交；`public/assets/images/battle/` 三張角色圖片已在基準 Commit 內，未修改；未 Commit／Push |
-| 最近完成項目 | M5-1 Battle HUD Redesign（含 UI Refinement Patch 1／2）：**COMPLETED — FORMALLY ACCEPTED**；M5-2A 已實作但待審查；M4-1～M4-4 既有正式結案狀態不變 |
-| 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **COMPLETED — FORMALLY ACCEPTED**；M5-2A **IMPLEMENTED — PENDING REVIEW**、M5-2B **PENDING**、M5-3／M5-4 PENDING，詳見 [ROADMAP.md](./ROADMAP.md) |
+| Current Working Tree | 本次正式結案文件同步異動另行保留；Closure Commit `2b46eea` 已由 HEAD／`origin/main` 確認；本次不執行 Commit／Push |
+| 最近完成項目 | M5-1 Battle HUD Redesign（含 UI Refinement Patch 1／2）：**COMPLETED — FORMALLY ACCEPTED**；M5-2A：**COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4-1～M4-4 既有正式結案狀態不變 |
+| 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **COMPLETED — FORMALLY ACCEPTED**；M5-2A **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-2B **PENDING — UP NEXT**、M5-3／M5-4 PENDING，詳見 [ROADMAP.md](./ROADMAP.md) |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | M4 進度 | 100%（4/4） |
-| M5 進度 | 25%（1/4 子階段完成） |
+| M5 進度 | 37.5%（M5-1 + M5-2A 各完成相應權重） |
 | 完整結案主要里程碑 | 4/10 |
-| 整體里程碑等權重進度 | 42.5%（4 個主要里程碑完成 + M5 的 25%；Roadmap Completion Percentage，不代表實際工時比例） |
+| 整體里程碑等權重進度 | 43.75%（4 個主要里程碑完成 + M5 的 37.5%；Roadmap Completion Percentage，不代表實際工時比例） |
 | M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED**；M4-3：**COMPLETED — FORMALLY ACCEPTED**；M4-4：**COMPLETED — FORMALLY ACCEPTED** |
 | M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
 | M4-3 狀態 | **COMPLETED — FORMALLY ACCEPTED**；Patch 1／2／3 與 TEST-M4-3-01 已完成；223/223 Automated Tests；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED |
@@ -98,6 +98,25 @@ AC-C25～C28 為 **PARTIAL — ACCEPTED / DEFERRED TO TD-010**；AC-C41、AC-C42
 - **Progress**：M5 定義四個子階段，M5-1 完成後為 **25%**；M1–M4 完成，M5–M10 其餘項目未完成；Overall **42.5%**，完整結案主要里程碑仍 **4/10**。M5-2 為下一個待開發子階段。
 - **Working Tree / Scope**：開始文件同步前工作樹乾淨；目前僅本文件同步相關 Markdown 異動，無 Production Source／Tests／Assets 修改。未暫存、未 Commit／Push。
 
+## M5-2A Formal Closure — 2026-11-20
+
+**Status：COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS。** M5-2A Patch 1／2 已通過 Product Owner Browser Acceptance 與 GitHub Independent Code Review；正式結案不代表角色死亡、終局 Restart 等 Browser Verification 全項已補驗。
+
+- **Verified Closure Baseline**：Branch `main`；Commit `2b46eeaf02135e413bbe59b674d4d95045a136a8`；HEAD 與 `origin/main` 一致。
+- **GitHub Evidence**：GitHub Actions Run [44714442975](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44714442975) SUCCESS；GitHub Pages Deployment SUCCESS；CI 不包含本次結案文件同步異動。
+- **Review / Acceptance**：GitHub Independent Code Review **APPROVED**；Product Owner Browser Acceptance **APPROVED**。
+- **Scope**：M5-2A 包含角色指令輪盤、單位檢視、水平行動順序軸、CG／肖像映射、回合交接及 2K／小螢幕 Presentation Refinement。Battle Core、PAS 排序與推進、Attack／Damage、AI、Outcome、Camera Controller 與使用者素材未由本次結案文件工作修改。
+- **Limitations**：TD-022 維持 OPEN；PAS 尚未提供可靠的 per-unit 已行動／未行動契約，不宣稱 gray-out 已完成。角色死亡、終局 Restart、部分長尾 Browser Verification 保留 PARTIAL／NOT VERIFIED；此類限制不因正式結案而回溯改寫為 PASS。
+- **Progress**：M5 為 37.5%，Overall 為 43.75%，Completed Milestones 維持 4/10。M5-2B 維持 **PENDING — UP NEXT**；UX-006 Active Unit Camera Framing 仍屬 M5-2B。
+- **Git Scope**：本次僅同步正式結案文件，不修改 Production Code、Tests、Assets 或 Camera Controller，不執行 Commit／Push。
+
+### 戰鬥提示收斂與 Timeline 敵軍紅框 — 2026-11-20
+
+- **Implementation**：將戰鬥橫幅收斂為 Confirmed Damage Result，只顯示「誰對誰造成多少傷害」；移除活動、ATTACK 目標、距離、實際扣除與死亡補充文字。Timeline 敵軍卡片固定紅色外框，未選取時固定、選取後紅框脈動且不改藍框。
+- **HUD Cleanup**：移除「選取目前角色以使用指令」及「敵方行動中／等待戰鬥行動」等 HUD 提示渲染；角色 HUD 只保留人物、資源、屬性與指令控制。右側攻擊範圍／攻擊力／防禦力／行動力靠右；HP／SP 使用相同寬度與左對齊基準。
+- **2K HP／SP Correction**：不改動 HP／SP 原本的左側渲染起點；僅以較長條長呈現相同數值欄位。2K 攻擊範圍與右側三屬性改用固定等距欄位，不把攻擊範圍拉向身份欄或破壞既有 column spacing。
+- **Verification**：桌面 1282×720、2K 2560×1440、手機 390×846 實測橫幅置中、頂部保留邊距且無水平溢位；2K HP／SP 實測同寬，右側資訊靠右；哥布林卡片實測紅色邊框，選取後紅框脈動、無藍色 outline，取消選取後脈動停止。傷害與敵軍 faction 回歸測試、Lint、Build、Diff Check 通過。
+
 ## M5-2A Battle Interaction UI — Implementation & Verification — 2026-11-20
 
 **Status：IMPLEMENTED — PENDING REVIEW。** Product Owner Acceptance 與正式結案尚未完成；M5-2B Camera System 未開始。M5 維持 25%，Completed Milestones 維持 4/10，Overall 維持 42.5%。
@@ -147,6 +166,11 @@ AC-C25～C28 為 **PARTIAL — ACCEPTED / DEFERRED TO TD-010**；AC-C41、AC-C42
 - **Verification**：真實 WebGL 驗證三張奧黛卡片同步脈動、切換檢視仍追蹤奧黛、Reduced Motion 靜止，以及五個扇形命中、中心命中 Canvas、Hover／鍵盤焦點與 Attack／Move 進入及取消。`npm test` 285/285、Lint、Build 和 CRLF-aware Diff Check 通過，保留既有 >500 kB chunk 警告。未提交，Product Owner 驗收待確認；里程碑狀態與進度不變。
 
 - **Timeline Action Value Display**：行動軸右下角只以整數格式呈現正式數值；底層 PAS／預測數值不變，不新增回合運算。瀏覽器確認顯示 `0、33、67、133`，格式化單元測試通過。
+
+### M5-2A 視覺微調 — 2K 桌面尺寸
+
+- **Implementation**：為寬度 2100px 以上且高度 1000px 以上的桌面版增加獨立 HUD／Timeline 放大規則。2560×1440 實測角色資訊欄約 973px、Timeline 約 754px、肖像圖標約 84px；狀態欄文字、資源條、屬性圖示及行動值同步放大。1920 以下及手機版規則保持原尺寸。
+- **Browser Verification**：2560×1440 無頁面水平溢位，HUD 與 Timeline 無重疊；小螢幕模式未套用 2K 放大規則。尚待使用者最終視覺驗收。
 
 以下 M5-1 初始實作與 Patch 1／2 區段保留當時的實作狀態、測試結果及 Browser 限制；其 PENDING／PARTIAL／NOT VERIFIED 記錄為歷史證據，現行結案決策以本記錄為準。
 
@@ -924,4 +948,4 @@ M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A End Condition Framework & B
 
 ## Current Next Milestone
 
-M4 **COMPLETED — FORMALLY ACCEPTED**；M1–M4 進度 100%。M5 — 戰鬥 UI／UX **IN PROGRESS（25%）**；M5-1 **COMPLETED — FORMALLY ACCEPTED**，M5-2 為 **NEXT — PENDING**，M5-3／M5-4 仍 PENDING。Completed Milestones 維持 4/10，Overall 為 42.5%。任務指引提及的 M5-5 尚未在目前 Roadmap 定義；不推測其需求或驗收。
+M4 **COMPLETED — FORMALLY ACCEPTED**；M1–M4 進度 100%。M5 — 戰鬥 UI／UX **IN PROGRESS（37.5%）**；M5-1 **COMPLETED — FORMALLY ACCEPTED**，M5-2A **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**，M5-2B **PENDING — UP NEXT**，M5-3／M5-4 仍 PENDING。Completed Milestones 維持 4/10，Overall 為 43.75%。任務指引提及的 M5-5 尚未在目前 Roadmap 定義；不推測其需求或驗收。

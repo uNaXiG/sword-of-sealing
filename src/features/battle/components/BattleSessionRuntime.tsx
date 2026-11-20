@@ -33,9 +33,9 @@ export default function BattleSessionRuntime({
 }) {
   const {
     outcome,
-    units, obstacles, selectedUnit, selectedAttackTarget, selectedAttackTargetDistance, lastAttackResult,
+    units, obstacles, selectedUnit, selectedAttackTarget, lastAttackResult,
     motion, lastMove, reachable, interactionMode, selectedAttackTargetId,
-    attackRange, attackableTargets, attackableTargetIds, attackableTargetCells,
+    attackRange, attackableTargetIds, attackableTargetCells,
     canUndoMove, canEnterMoveMode, canEnterAttackMode, canConfirmAttack, canStandby, battleBusy, selectUnit, clearSelection, standby, selectCell,
     finishMove, cancelMove, undoMove, setInteractionMode, cancelMoveMode, cancelAttack, confirmAttack,
     impactAttack, completeAttack, abortAttack, attackMotion, confirmedImpacts, deathMotions, defeatedUnits,
@@ -72,17 +72,8 @@ export default function BattleSessionRuntime({
       ?? defeatedUnits.find((record) => record.unit.id === lastAttackResult.targetId)?.unit
       ?? null
     : null
-  const activityMessage = attackMotion
-    ? `${units.find((unit) => unit.id === attackMotion.attackerId)?.name ?? '角色'}正在攻擊……`
-    : deathMotions.length > 0
-      ? units.length > 0 ? '正在結算死亡動畫……' : '正在結算戰鬥單位……'
-      : null
   const combatFeedback = lastAttackResult && attackResultAttacker && attackResultTarget
-    ? `${attackResultAttacker.name} 對 ${attackResultTarget.name} 造成 ${lastAttackResult.damage} 點傷害${
-      lastAttackResult.appliedDamage !== lastAttackResult.damage
-        ? `（實際扣除 ${lastAttackResult.appliedDamage} 點 HP）`
-        : ''
-    }${lastAttackResult.isDefeated ? `；${attackResultTarget.name}失去戰鬥能力。` : '。'}`
+    ? `${attackResultAttacker.name} 對 ${attackResultTarget.name} 造成 ${lastAttackResult.damage} 點傷害`
     : null
   const inspectedUnitId = inspection?.turnId === turn.turnId ? inspection.unitId : null
   const displayUnit = selectInspectedUnit(units, inspectedUnitId, activeUnit?.id ?? null)
@@ -238,10 +229,6 @@ export default function BattleSessionRuntime({
         canConfirmAttack={canConfirmAttack}
         battleBusy={battleBusy}
         pendingTurnCompletion={pendingTurnCompletion !== null}
-        attackableTargetCount={attackableTargets.length}
-        selectedAttackTarget={selectedAttackTarget}
-        selectedAttackTargetDistance={selectedAttackTargetDistance}
-        activityMessage={activityMessage}
         combatFeedback={combatFeedback}
         onCancelMoveMode={handleCancelMoveMode}
         onConfirmAttack={handleConfirmAttack}

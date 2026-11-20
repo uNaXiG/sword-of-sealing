@@ -689,6 +689,10 @@ test('Production Battle HUD follows the active unit and dispatches player comman
   assert.equal(record.unitPresentations.get('assassin').showActiveIndicator, true)
   assert.equal(record.unitPresentations.get('assassin').showNameAndHealth, false)
   assert.equal(record.unitPresentations.get('goblin').showNameAndHealth, true)
+  assert.equal(container.textContent.includes('選取目前角色以使用指令'), false)
+  assert.equal(container.textContent.includes('敵方行動中'), false)
+  assert.equal(container.querySelector('.battle-hud__controls-hint'), null)
+  assert.equal(container.querySelector('.battle-hud__empty'), null)
 
   const portrait = container.querySelector('.battle-hud__portrait-image')
   assert.match(portrait.src, /%E5%A5%B3%E4%B8%BB/)

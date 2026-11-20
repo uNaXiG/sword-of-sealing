@@ -61,6 +61,15 @@ export type BattleTimelineEntry = {
   portraitUrl: string | null
 }
 
+export function selectBattleCombatFeedback({
+  combatFeedback,
+}: {
+  combatFeedback: string | null
+}): string | null {
+  if (combatFeedback) return combatFeedback
+  return null
+}
+
 export function formatTimelineActionValue(actionValue: number | null): string {
   if (actionValue === null || !Number.isFinite(actionValue)) return '待補'
   return String(Math.round(actionValue))

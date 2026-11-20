@@ -2,6 +2,44 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — 2K HUD HP／SP 起點與右側欄位修正
+
+- HP／SP 保持原本左側渲染起點，只調整 2K 顯示長度；攻擊範圍維持與右側 ATK／MOV／DEF 相同的固定欄位與等距配置。
+
+## 2026-11-20 — 戰鬥提示收斂與 Timeline 敵軍紅框
+
+- 戰鬥提示只保留確認傷害的「誰對誰造成多少傷害」；移除攻擊中、合法目標、距離、實際扣除與失能補充文字。Timeline 所有敵軍肖像固定紅色外框，選取時不改藍框且不閃爍。
+
+## 2026-11-20 — 戰鬥提示獨立置頂顯示
+
+- 活動與攻擊目標提示由角色 HUD 移至畫面中央正上方獨立橫幅；半透明深藍呈現、保留安全邊距、支援 2K／手機尺寸。取消 ATTACK 或提示消失時橫幅同步移除。
+
+## 2026-11-20 — M5-2A Formal Closure & Documentation Synchronization (COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS)
+
+- **Closure Evidence**：`main` @ `2b46eeaf02135e413bbe59b674d4d95045a136a8`；GitHub Actions Run [44714442975](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44714442975) SUCCESS、GitHub Pages Deployment SUCCESS；GitHub Independent Code Review APPROVED；Product Owner Browser Acceptance APPROVED。
+- **Milestone**：M5-2A 正式結案為 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**。M5 由 25% 更新為 37.5%，Overall 由 42.5% 更新為 43.75%，Completed Milestones 維持 4/10。
+- **Next / Limitations**：M5-2B 維持 **PENDING — UP NEXT**；UX-006 歸屬 M5-2B。TD-022 維持 OPEN；角色死亡、終局 Restart 等 PARTIAL／NOT VERIFIED Browser Verification 保留。本次只同步文件，不 Commit／Push，也不修改 Production Code、Tests、Assets 或 Camera Controller。
+
+## 2026-11-20 — Timeline 整體配色淡化 (IMPLEMENTED — PENDING REVIEW)
+
+- Timeline 外框由深藍不透明色改為極淡中性玻璃色，降低容器與陰影視覺重量；肖像方塊仍為透明，邊框、行動值與脈動標示不變。
+
+## 2026-11-20 — 2K Timeline 再放大並恢復藍色辨識度 (IMPLEMENTED — PENDING REVIEW)
+
+- 2560×1440 下 Timeline 圖標由 84px 調整為 96px，容器實測約 850px；容器恢復低透明深藍玻璃色，肖像方塊仍保持透明。保留與 HUD 的無重疊與無水平溢位。
+
+## 2026-11-20 — 2K 角色 HUD 與輪盤軸心放大 (IMPLEMENTED — PENDING REVIEW)
+
+- 2560×1440 下角色狀態 HUD 實測約 1178×220px，資訊欄、資源條、屬性與按鈕同步放大；輪盤視覺直徑由 224px 調整為約 255px。手機版及一般桌面版尺寸維持原樣，兩者均無水平溢位。
+
+## 2026-11-20 — Timeline 肖像方塊透明化 (IMPLEMENTED — PENDING REVIEW)
+
+- 右下角 Timeline 的每個肖像圖標方塊改為完全透明背景，保留既有金／藍／一般邊框、脈動、Inspected 標示與行動值。
+
+## 2026-11-20 — 2K 桌面 HUD／Timeline 尺寸調整 (IMPLEMENTED — PENDING REVIEW)
+
+- 針對寬度 2100px 以上、高度 1000px 以上的桌面版放大角色資訊 HUD 與 Timeline；2K 實測 HUD 約 973px、Timeline 約 754px、圖標約 84px。小螢幕與既有操作規則不變。
+
 ## 2026-11-20 — Timeline 行動值整數顯示 (IMPLEMENTED — PENDING REVIEW)
 
 - Timeline 的右下角行動值改為僅在呈現層四捨五入為整數，正式 PAS／預測數值與回合演算法不變。真實瀏覽器確認顯示 `0、33、67、133`；新增格式化測試。
