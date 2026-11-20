@@ -2,6 +2,14 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-21 — M5-3 Formal Closure (COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS)
+
+- **Decision**：Independent Code Review CONDITIONAL APPROVAL；Product Owner 已確認實際瀏覽器操作並授權正式結案文件同步。M5-3 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**。
+- **Feature Baseline / CI**：Commit `7ebfc05b64c478d7ac5bc70ead8c3456f4c55ca1`；GitHub Actions Run [44811720952](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44811720952) SUCCESS；包含 M5-3 功能、測試與原始文件。正式結案文件 Commit 另行追蹤。
+- **Accepted Scope**：焦點／攻擊目標高亮、正式傷害衍生的 HUD 預覽與 `60 → 37/60` 文本、HUD 外攻擊控制、二次點擊確認、右鍵快捷、Undo 重入 MOVE、Reduced Motion。
+- **Limits**：Agent Browser PARTIAL；AC-P09／P17 PARTIAL；實體手機、終局 Restart、完整視覺回歸 NOT VERIFIED。保留 Three.js 與 Battle chunk-size 警告；右鍵移出 Canvas 的手勢邊界列為後續回歸。TD-022 OPEN。
+- **Progress**：M5 75%、Overall 47.5%、Completed Major Milestones 4/10；M5-4 PENDING — UP NEXT。以下 Implementation Snapshot 均保留為歷史紀錄，不代表目前狀態。
+
 ## 2026-11-21 — M5-3B Patch 1 HUD Integrated Damage Forecast (IMPLEMENTED — PENDING REVIEW)
 
 - **Implementation**：將正式傷害預覽整合到目標 HUD 的既有 HP 血條，區分預計剩餘、預計扣除與既有損失，致命傷害以目前 HP 為上限；淡紅區段使用 CSS 脈動並支援 Reduced Motion。移除獨立預覽面板與 HUD 內攻擊按鈕，HUD 外保留確認／取消，二次點擊及右鍵流程不變；修正右鍵取消後 R3F 空白事件誤隱藏 HUD。
