@@ -12,18 +12,18 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `ac074cda29ac7dad977d56e9fc720bb17e417205` — M5-1 Formal Closure source baseline |
-| Latest Verified Repository CI Run | [44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) — SUCCESS（`main` / `ac074cd`） |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `1955038135d8781f64312cdaeb29c5522842e7e7` — M5-2A session start; supplied baseline verified against local HEAD |
+| Latest Verified Repository CI Run | [44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) — SUCCESS（`main` / `ac074cd`）；此 CI 不涵蓋 M5-2A 工作樹異動 |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Current Repository HEAD | `main`／`origin/main` @ `ac074cda29ac7dad977d56e9fc720bb17e417205`；本次已核對 local HEAD 與 GitHub `main` 一致 |
+| Current Repository HEAD | `main`／本機 `origin/main` tracking ref @ `1955038135d8781f64312cdaeb29c5522842e7e7`；未 Fetch，不能據此宣稱遠端目前最新 |
 | Latest Verified GitHub Pages Deployment | [Run 44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) — `Deploy to GitHub Pages` SUCCESS |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
 | M4-4B Conditional Closure Commit | `e299fa48e28d16e24aadba9cc7925bedf4d53895`；16 個異動檔案；Battle Core Modification 0 |
 | M4-4C Session Start Baseline | `main`／HEAD／`origin/main` `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；開始時工作樹乾淨 |
-| Current Working Tree | Closure baseline 起始工作樹乾淨；目前僅有本次文件同步異動（README、DEVELOPMENT_STATUS、ROADMAP、CHANGELOG、UX_BACKLOG），尚未提交；無 Production Source／Tests／Assets 異動，未暫存、未 Commit／Push |
-| 最近完成項目 | M5-1 Battle HUD Redesign（含 UI Refinement Patch 1／2）：**COMPLETED — FORMALLY ACCEPTED**；M4-1～M4-4 既有正式結案狀態不變 |
-| 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **COMPLETED — FORMALLY ACCEPTED**；M5-2 **NEXT — PENDING**、M5-3／M5-4 PENDING，詳見 [ROADMAP.md](./ROADMAP.md) |
+| Current Working Tree | M5-2A 程式、測試及文件異動尚未提交；另有既存未追蹤 `public/assets/images/battle/` 角色圖片，未修改／暫存；未 Commit／Push |
+| 最近完成項目 | M5-1 Battle HUD Redesign（含 UI Refinement Patch 1／2）：**COMPLETED — FORMALLY ACCEPTED**；M5-2A 已實作但待審查；M4-1～M4-4 既有正式結案狀態不變 |
+| 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **COMPLETED — FORMALLY ACCEPTED**；M5-2A **IMPLEMENTED — PENDING REVIEW**、M5-2B **PENDING**、M5-3／M5-4 PENDING，詳見 [ROADMAP.md](./ROADMAP.md) |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | M4 進度 | 100%（4/4） |
@@ -97,6 +97,21 @@ AC-C25～C28 為 **PARTIAL — ACCEPTED / DEFERRED TO TD-010**；AC-C41、AC-C42
 - **Historical Verification Integrity**：保留 Patch 1／2 的 Agent Browser PARTIAL／NOT VERIFIED 項目與限制，不回溯改寫或宣稱未執行的 Browser／Automated Tests 通過。
 - **Progress**：M5 定義四個子階段，M5-1 完成後為 **25%**；M1–M4 完成，M5–M10 其餘項目未完成；Overall **42.5%**，完整結案主要里程碑仍 **4/10**。M5-2 為下一個待開發子階段。
 - **Working Tree / Scope**：開始文件同步前工作樹乾淨；目前僅本文件同步相關 Markdown 異動，無 Production Source／Tests／Assets 修改。未暫存、未 Commit／Push。
+
+## M5-2A Battle Interaction UI — Implementation & Verification — 2026-11-20
+
+**Status：IMPLEMENTED — PENDING REVIEW。** Product Owner Acceptance 與正式結案尚未完成；M5-2B Camera System 未開始。M5 維持 25%，Completed Milestones 維持 4/10，Overall 維持 42.5%。
+
+- **Environment / Baseline**：Windows；branch `main`；工作起始 HEAD／本機 `origin/main` tracking ref `1955038135d8781f64312cdaeb29c5522842e7e7`；未 Fetch，因此未確認遠端即時狀態。既有 GitHub Actions Run `44647602225` 是較早的 M5-1 baseline CI，不能代表本次未提交異動。
+- **Implementation**：加入五方向 Attack／Skill／Move-or-Cancel／Item／Standby 輪盤；Skill／Item disabled；既有 Undo 與 MOVE Mode Cancel 分流。Battle Runtime 的 `inspectedUnitId` 僅為本地呈現狀態；Timeline 與世界角色查看不改 `selectedUnitId`／Active Unit。右下角軸採正式 PAS Active Unit、`calculateActionValue()` 及 `predictUpcomingTurns()` 資料，最多八格、無虛構補位。CG keyed entry animation 支援 Reduced Motion；UI 使用既有圖示與 Asset Resolver。
+- **Asset Preflight**：規格所列 `public/images/battle/{女主,男主,哥布林}.png` 路徑不存在；同名素材實際在既存未追蹤 `public/assets/images/battle/`。以 Vite Base URL 從該路徑載入並在瀏覽器確認；依工作樹保護要求未修改／移動／暫存素材。正式 UI 圖示沿用 `public/assets/images/ui/` 現有檔案。
+- **PAS Contract Limitation**：PAS 有 Active Unit、正式 timeline 與未來預測時間值，但沒有每單位「本輪尚未／已行動」狀態。未猜測 gray-out；AC-A12 為 PARTIAL，已登錄 TD-022。M5-2A 不修改 Battle Core、PAS、AI、Reducer、Camera Controller 或 OrbitControls 契約。
+- **Automated Verification**：`npm test` 281/281 PASS；`npm run lint` PASS；`npm run build` PASS（保留既有 >500 kB Battle Chunk warning）；`git -c core.whitespace=cr-at-eol diff --check` PASS。純 `git diff --check` 將既有 CRLF 行尾誤判為 whitespace；使用符合 CRLF 的 repository check 設定驗證。
+- **Independent Code Review**：No significant issues found；此結果不代表 Product Owner Acceptance。使用者驗收仍 PENDING。
+- **Browser Verification**：使用真實 WebGL 戰場，不是 DOM Fixture。桌面 1281×720、手機直向 390×845、橫向 845×390；均無水平溢位。確認五個指令位置與 Skill／Item disabled、Move Mode Cancel、完成移動後 Undo、Attack Mode Cancel、Standby；Standby 後敵方 AI 回合移動並對迪歐造成 10 HP 傷害。Canvas 點擊迪歐／哥布林及 Timeline 點擊只更新檢視資料，PAS Active Unit／操作輪盤仍分別為當前 Active Unit。驗證八格上限、正式順位／時間值、三角色圖片、邊緣淡化與快速切換僅留一個 CG。Reduced Motion 下 CG `animation-name:none`；Browser Fixture 中攔截角色圖片請求後 HUD／Timeline Fallback 正常，解除攔截並 reload 後圖片復原。右鍵拖曳實際旋轉鏡頭。
+- **Browser Limitations**：Attack Mode 確認按鈕在實際畫面因合法目標數為 0 保持 Disabled，未於本次 Browser 完成確認攻擊；攻擊合法性／結算由既有 Automated Tests 覆蓋。未於 Browser 觸發角色死亡或終局 Restart；Route reload/re-entry 已確認檢視回到 Active Unit，但不等同終局 Restart 驗收。Product Owner Acceptance 未執行。
+- **Known Issue**：三張圖片的要求路徑未存在，改用實際提供且已確認可載入的 `public/assets/images/battle/`；需 Product Owner 確認資產位置符合預期。已行動友軍 gray-out 等待 TD-022 資料契約。
+- **Git**：未暫存、Commit、Push、Checkout 或修改任何使用者圖片；工作樹包含本任務程式／測試／文件異動與原有未追蹤圖片。
 
 以下 M5-1 初始實作與 Patch 1／2 區段保留當時的實作狀態、測試結果及 Browser 限制；其 PENDING／PARTIAL／NOT VERIFIED 記錄為歷史證據，現行結案決策以本記錄為準。
 

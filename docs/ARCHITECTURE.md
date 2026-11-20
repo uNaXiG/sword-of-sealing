@@ -118,7 +118,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 
 `BattleTurnState` 集中保存 `battleTime`、`round`、`turnId`、`activeUnitId` 與每個合格單位的 Remaining Distance／Velocity。PAS 使用均速 Remaining Distance Model 與 DES：只在取得或完成個體回合時推進虛擬 Battle Time，不由現實時間、Renderer 或 `useFrame` 驅動。
 
-純 Domain Functions 負責 AV、Round、最小抵達時間、確定性 Tie-break、同步 Distance 更新與 Preview；`battleReducer` 驗證 Active Unit 與 Turn ID，並獨占 Turn 生命週期。M5-1 HUD 只顯示 Derived Active Unit 資訊；未來 10 次行動仍由 Domain Preview 計算，但目前不渲染 Timeline，預覽資料不授予操作權。
+純 Domain Functions 負責 AV、Round、最小抵達時間、確定性 Tie-break、同步 Distance 更新與 Preview；`battleReducer` 驗證 Active Unit 與 Turn ID，並獨占 Turn 生命週期。M5-2A 的 Timeline 只投影正式 Active Unit、PAS 預測序列及其 Action Value／time offset；它不排序、不預測新回合、不修改 Turn，也不授予操作權。PAS 目前不提供每單位本輪已行動狀態，UI 不得從陣營、索引或選取推斷。
 
 ```mermaid
 flowchart LR
@@ -159,6 +159,10 @@ M4-3 的正式資料流包含 Pure AI Decision Layer、AI Command Gateway、Redu
 
 M5-1 Battle HUD 是 `BattleSessionRuntime` 中的 Presentation Layer。`BattleHUD` 接收 Hook 提供的 Active／Selected Unit、可用操作及 Session-owned callbacks；角色資料由 `battleHud.ts` 從正式 `BattleUnit` 投影，HP／SP 與屬性不另行維護。範圍縮圖呼叫 `getAttackableTiles()`，僅供靜態資訊呈現，不建立另一套合法目標或傷害規則；SP 只讀取正式資料，不消耗或產生效果。裝飾層不攔截棋盤 Pointer，僅按鈕與返回主選單連結接收輸入；所有操作仍經既有 Hook／Reducer 驗證。角色立繪依穩定單位 ID 選取，資產 URL 使用 Vite `BASE_URL`。
 
+M5-2A 在 `BattleSessionRuntime` 以本地 `inspectedUnitId` 維護暫態檢視；這不是 `BattleState` 欄位，不取代 `selectedUnitId`，亦不改寫 `turn.activeUnitId`／PAS。世界單位於 COMMAND 模式點擊時，只有現行 Active Unit 會沿用既有 `select` callback；其他角色僅更新檢視 ID。MOVE／ATTACK 的單位點擊仍沿用原有 Hook／Reducer 路徑，以保留移動及合法攻擊目標選取。Timeline 點擊只更新檢視 ID。單位失效時由展示 Selector 回退至有效 Active Unit 或存活單位；Battle Runtime Restart 的 React key 會清除此呈現狀態。
+
+`BattleActionRadialMenu` 只在現有 Active Player Unit 有選取權、且操作未鎖定時顯示。Attack／Move／Undo／Standby 使用既有 Hook callback 與 can* Selector；Skill／Item 僅為 disabled 控制項。COMMAND 模式下，合法 Undo Record 將 Move 位置替換為 Cancel；MOVE Mode 的取消仍只呼叫既有 cancel-move-mode。立繪切換以 keyed CG 節點重播 320ms 入場動畫；Reduced Motion 停用動畫。M5-2A 不修改 Camera Controller、Battle Core、PAS 或 Action Timeline 計算。
+
 TEST-M4-3-01 的 React Controller 整合邊界：
 
 ```text
@@ -185,7 +189,7 @@ HP / Attack Motion / Turn State
 
 此測試真實掛載 React Controller；Frame Scheduler 使用可控制時序與 delta 的測試替身；Lifecycle Runtime 與 Reducer 不被 Mock，Visual Components 以 Stub 隔離。這是 Node + jsdom 的 Controller／Reducer 整合測試，不涵蓋 WebGL Rendering、視覺驗收或完整 E2E。
 
-M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，其正式結案 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4-4C Addendum 1 **COMPLETED — ACCEPTED**。Verified M4 Formal Closure baseline 為 Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`／GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS，271/271 Tests、6/6 Production Route Integration、Lint、Build 與 Pages Deployment PASS。Product Owner BV-C01～C14 為 14/14 PASS；此驗收先於 VA1，與 Agent 原始 PARTIAL／NOT VERIFIED 結果分開記錄。RV-M4-4B-02 的 GPU Resource Verification 核准移交 TD-010；M4 為 100%、Overall 40%。M5-1 已實作但仍待獨立審查與 Product Owner 瀏覽器驗收；此狀態不代表 M5 或 M5-1 已正式結案。
+M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，其正式結案 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4-4C Addendum 1 **COMPLETED — ACCEPTED**。Verified M4 Formal Closure baseline 為 Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`／GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS，271/271 Tests、6/6 Production Route Integration、Lint、Build 與 Pages Deployment PASS。Product Owner BV-C01～C14 為 14/14 PASS；此驗收先於 VA1，與 Agent 原始 PARTIAL／NOT VERIFIED 結果分開記錄。RV-M4-4B-02 的 GPU Resource Verification 核准移交 TD-010；M4 為 100%、Overall 40%。M5-1 已 **COMPLETED — FORMALLY ACCEPTED**；M5-2A **IMPLEMENTED — PENDING REVIEW**，M5-2B 未開始。
 
 ## Battle State 與 Reducer
 

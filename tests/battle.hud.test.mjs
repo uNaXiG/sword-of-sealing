@@ -9,8 +9,11 @@ import {
   getBattleAssetUrl,
   getPortraitUrl,
   getProgressPercentage,
+  selectBattleTimeline,
   selectBattleHudCharacter,
+  selectInspectedUnit,
 } from '../src/features/battle/battleHud.ts'
+import { initializeTurnState, predictUpcomingTurns } from '../src/game/battle/battle.turn.ts'
 
 test('HUD derives named player portraits and status values from the selected BattleUnit', () => {
   const audrey = INITIAL_UNITS.find((unit) => unit.id === 'assassin')
@@ -29,10 +32,9 @@ test('HUD derives named player portraits and status values from the selected Bat
   assert.equal(character.attack, audrey.atk)
   assert.equal(character.defense, audrey.def)
   assert.equal(character.movement, audrey.movementPoints)
-  assert.equal(character.portraitUrl, getPortraitUrl('assassin', '/sword-of-sealing/'))
   assert.equal(
     character.portraitUrl,
-    '/sword-of-sealing/assets/images/cg/hero/%E5%A5%B3%E4%B8%BB-%E6%88%B0%E9%AC%A51.png',
+    '/sword-of-sealing/assets/images/battle/%E5%A5%B3%E4%B8%BB.png',
   )
   assert.deepEqual(
     BATTLE_ATTRIBUTE_PRESENTATION.map((attribute) => ({
@@ -48,16 +50,61 @@ test('HUD derives named player portraits and status values from the selected Bat
   )
 })
 
-test('enemy HUD data has no player portrait and asset paths preserve the Vite base path', () => {
+test('unit portraits map by class and asset paths preserve the Vite base path', () => {
+  const audrey = INITIAL_UNITS.find((unit) => unit.id === 'assassin')
+  const dio = INITIAL_UNITS.find((unit) => unit.id === 'knight')
   const goblin = INITIAL_UNITS.find((unit) => unit.id === 'goblin')
   const character = selectBattleHudCharacter(goblin, '/sword-of-sealing/')
 
   assert.equal(character.faction, 'enemy')
-  assert.equal(character.portraitUrl, null)
-  assert.equal(getPortraitUrl('goblin', '/sword-of-sealing/'), null)
+  assert.equal(
+    character.portraitUrl,
+    '/sword-of-sealing/assets/images/battle/%E5%93%A5%E5%B8%83%E6%9E%97.png',
+  )
+  assert.equal(getPortraitUrl(audrey, '/sword-of-sealing/'), '/sword-of-sealing/assets/images/battle/%E5%A5%B3%E4%B8%BB.png')
+  assert.equal(getPortraitUrl(dio, '/sword-of-sealing/'), '/sword-of-sealing/assets/images/battle/%E7%94%B7%E4%B8%BB.png')
+  assert.equal(getPortraitUrl({ ...audrey, id: 'enemy-assassin', faction: 'enemy' }, '/'), null)
   assert.equal(getBattleAssetUrl('/sword-of-sealing/', '/assets/images/ui/attack.png'), '/sword-of-sealing/assets/images/ui/attack.png')
   assert.equal(getBattleAssetUrl('/', 'assets/images/ui/move.png'), '/assets/images/ui/move.png')
   assert.equal(getBattleAssetUrl('/sword-of-sealing/', 'assets/images/ui/down.png'), '/sword-of-sealing/assets/images/ui/down.png')
+})
+
+test('inspected unit stays presentation-only and falls back when it is no longer alive', () => {
+  const active = INITIAL_UNITS.find((unit) => unit.id === 'assassin')
+  const enemy = INITIAL_UNITS.find((unit) => unit.id === 'goblin')
+  const fallenEnemy = { ...enemy, hp: 0 }
+
+  assert.equal(selectInspectedUnit(INITIAL_UNITS, enemy.id, active.id), enemy)
+  assert.equal(selectInspectedUnit([active, fallenEnemy], enemy.id, active.id), active)
+  assert.equal(selectInspectedUnit([fallenEnemy], enemy.id, active.id), null)
+  assert.equal(active.id, 'assassin')
+})
+
+test('turn timeline uses PAS order and values, caps at eight, and never fills missing entries', () => {
+  const turn = initializeTurnState(INITIAL_UNITS)
+  const upcoming = predictUpcomingTurns(turn, INITIAL_UNITS, 12)
+  const timeline = selectBattleTimeline(turn, INITIAL_UNITS, upcoming, '/sword-of-sealing/')
+
+  assert.equal(timeline.length, 8)
+  assert.equal(timeline[0].unit.id, turn.activeUnitId)
+  assert.equal(timeline[0].isActive, true)
+  assert.equal(timeline[0].actionValue, 0)
+  for (const [index, entry] of timeline.slice(1).entries()) {
+    assert.equal(entry.unit.id, upcoming[index].unitId)
+    assert.equal(entry.actionValue, upcoming[index].timeOffset)
+  }
+  const goblinEntries = timeline.filter((entry) => entry.unit.id.startsWith('goblin'))
+  assert.ok(goblinEntries.length > 0)
+  assert.equal(new Set(goblinEntries.map((entry) => entry.portraitUrl)).size, 1)
+
+  const singleUnit = selectBattleTimeline(turn, INITIAL_UNITS, [], '/')
+  assert.equal(singleUnit.length, 1)
+
+  const missingValue = selectBattleTimeline(turn, INITIAL_UNITS, [{
+    ...upcoming[0],
+    timeOffset: Number.NaN,
+  }], '/')
+  assert.equal(missingValue[1].actionValue, null)
 })
 
 test('resource bar percentages stay valid for depleted, excessive, and invalid input', () => {

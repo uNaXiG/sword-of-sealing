@@ -2,7 +2,7 @@
 
 狀態只反映已確認事實。Proposed 解法不代表已核准實作；未確認目標標為 TBD。
 
-**技術債統計（TD-001 至 TD-021）**：共 21 項；CLOSED 12、OPEN 8、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
+**技術債統計（TD-001 至 TD-022）**：共 22 項；CLOSED 12、OPEN 9、PARTIALLY RESOLVED 1。下列獨立 Bug 不計入。
 
 | ID | Description | Impact | Priority | Status | Suggested Resolution | Target |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -27,6 +27,7 @@
 | TD-019 | Development Enemy Standby Authorization | Development 限制目前主要位於 UI 入口；核心尚未具有正式 AI 指令來源授權模型 | Low | CLOSED — M4-3 FORMAL ACCEPTANCE | M4-3 移除 Development Enemy Standby；AI Gateway／private WeakSet Action Identity、Reducer Authorization Revalidation、Enemy Pre-impact Abort Contract、TEST-M4-3-01、223/223 Tests、GitHub CI、Product Owner Browser Acceptance 與獨立 Architecture／Code Review 均完成 | M4-3 |
 | TD-020 | Extended Scheduling Verification Coverage | 舊 10,000 次測試缺少獨立 Oracle 與長期數值誤差證據 | Medium | CLOSED | M4-2 加入固定速度 Oracle、Continuous Near-tie、Round Boundary、Preview 一致性、長期誤差與非負距離驗證 | M4-2 |
 | TD-021 | Existing Development Dependency Audit Advisories | Agent 回報 `npm audit` 有 7 個 Moderate advisories，主要涉及既有 dev-only `typescript-eslint`／`minimatch` 相依鏈；`npm audit --omit=dev` 為 0 vulnerabilities，非 Production Runtime Vulnerability | Low | OPEN | 另行評估受影響 transitive dependency 的相容更新，並重跑 audit、lint、tests、build | Dependency Maintenance |
+| TD-022 | PAS Per-unit Action-status Presentation Contract | PAS 提供 Active Unit 與正式預測序列，但沒有每單位「本輪尚未行動／已行動」狀態 | Low | OPEN | 先確認正式回合語意與資料契約；未確認前 UI 不依陣營、選取或 timeline index 推斷狀態／gray-out | TBD |
 
 ## 已結案 Bug
 

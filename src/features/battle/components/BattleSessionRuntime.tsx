@@ -16,6 +16,8 @@ import { useAttackAnimation } from '../hooks/useAttackAnimation'
 import { useDeathAnimation } from '../hooks/useDeathAnimation'
 import BattleHUD from './BattleHUD'
 import BattleResultOverlay from './BattleResultOverlay'
+import TurnOrderTimeline from './TurnOrderTimeline'
+import { selectInspectedUnit } from '../battleHud'
 
 function FitCamera() {
   const { size } = useThree()
@@ -40,6 +42,8 @@ export default function BattleSessionRuntime({
     consumeImpact, completeDeath, abortDeath,
     activeUnit,
     pendingTurnCompletion,
+    turn,
+    upcomingTurns,
   } = useBattleMovement()
   const { clockRef, onImpact, onComplete, onAbort } = useAttackAnimation(impactAttack, completeAttack, abortAttack)
   const {
@@ -48,6 +52,7 @@ export default function BattleSessionRuntime({
     onAbort: onDeathAbort,
   } = useDeathAnimation(completeDeath, abortDeath)
   const [hoveredCell, setHoveredCell] = useState<Cell | null>(null)
+  const [inspectedUnitId, setInspectedUnitId] = useState<string | null>(null)
   const [indicatorPortalElement, setIndicatorPortalElement] = useState<HTMLDivElement | null>(null)
   const indicatorPortal = useMemo<RefObject<HTMLElement> | null>(
     () => indicatorPortalElement ? { current: indicatorPortalElement } : null,
@@ -74,6 +79,7 @@ export default function BattleSessionRuntime({
         : ''
     }${lastAttackResult.isDefeated ? `；${attackResultTarget.name}失去戰鬥能力。` : '。'}`
     : null
+  const displayUnit = selectInspectedUnit(units, inspectedUnitId, activeUnit?.id ?? null)
   const clearBattleSelection = () => {
     setHoveredCell(null)
     clearSelection()
@@ -112,6 +118,12 @@ export default function BattleSessionRuntime({
     setHoveredCell(null)
     confirmAttack()
   }
+  const handleUnitSelect = (unitId: string) => {
+    const unit = units.find((candidate) => candidate.id === unitId)
+    if (unit && unit.hp > 0) setInspectedUnitId(unit.id)
+    if (interactionMode !== 'COMMAND' || unitId === activeUnit?.id) selectUnit(unitId)
+  }
+  const handleInspectUnit = (unitId: string) => setInspectedUnitId(unitId)
   const handleRestart = () => requestRestart(generation)
 
   return (
@@ -174,7 +186,7 @@ export default function BattleSessionRuntime({
               deathMotion={deathMotions.find((death) => death.unitId === unit.id) ?? null}
               deathClockRef={deathClockRef}
               battleBusy={battleBusy}
-              onSelect={selectUnit}
+              onSelect={handleUnitSelect}
               onMoveComplete={finishMove}
               onMoveCancelled={cancelMove}
             />
@@ -186,6 +198,7 @@ export default function BattleSessionRuntime({
       <div className="battle-world-indicator-layer" ref={setIndicatorPortalElement} aria-hidden="true" />
       <BattleHUD
         activeUnit={activeUnit}
+        displayUnit={displayUnit}
         selectedUnit={selectedUnit}
         interactionMode={interactionMode}
         canEnterMoveMode={canEnterMoveMode}
@@ -208,6 +221,14 @@ export default function BattleSessionRuntime({
         onCancelMoveMode={handleCancelMoveMode}
         onConfirmAttack={handleConfirmAttack}
         onCancelAttack={handleCancelAttack}
+      />
+      <TurnOrderTimeline
+        turn={turn}
+        units={units}
+        upcomingTurns={upcomingTurns}
+        inspectedUnitId={displayUnit?.id ?? null}
+        baseUrl={import.meta.env.BASE_URL}
+        onInspectUnit={handleInspectUnit}
       />
       {outcome !== null && (
         <BattleResultOverlay outcome={outcome} onRestart={handleRestart} />

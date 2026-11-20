@@ -1,11 +1,18 @@
 import { getAttackableTiles } from '../../game/battle/battle.attack.ts'
 import type { BattleUnit } from '../../game/battle/battle.types'
 import { CLASS_DEFINITIONS } from '../../game/classes/class.data.ts'
-import { ATTACK_PATTERN_NAMES } from '../../game/classes/class.types.ts'
+import { ATTACK_PATTERN_NAMES, type UnitClass } from '../../game/classes/class.types.ts'
+import { calculateActionValue } from '../../game/battle/battle.turn.ts'
+import type { BattleTurnState, TurnPreviewEntry } from '../../game/battle/battle.turn.types.ts'
+import { isUnitAlive } from '../../game/battle/battle.unit.ts'
 
-const CHARACTER_PORTRAITS: Readonly<Record<string, string>> = {
-  assassin: 'assets/images/cg/hero/女主-戰鬥1.png',
-  knight: 'assets/images/cg/hero/男主-戰鬥1.png',
+const PLAYER_PORTRAITS: Readonly<Record<string, string>> = {
+  assassin: 'assets/images/battle/女主.png',
+  knight: 'assets/images/battle/男主.png',
+}
+
+const ENEMY_PORTRAITS: Readonly<Partial<Record<UnitClass, string>>> = {
+  goblin: 'assets/images/battle/哥布林.png',
 }
 
 export const BATTLE_ATTRIBUTE_PRESENTATION = [
@@ -40,14 +47,27 @@ export type AttackPreviewCell = {
   kind: 'center' | 'attack' | 'empty'
 }
 
+export type BattleTimelineEntry = {
+  unit: BattleUnit
+  turnId: number
+  actionValue: number | null
+  isActive: boolean
+  portraitUrl: string | null
+}
+
 export function getBattleAssetUrl(baseUrl: string, assetPath: string): string {
   const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
   const path = assetPath.replace(/^\/+/, '').split('/').map(encodeURIComponent).join('/')
   return `${base}${path}`
 }
 
-export function getPortraitUrl(unitId: string, baseUrl: string): string | null {
-  const assetPath = CHARACTER_PORTRAITS[unitId]
+export function getPortraitUrl(
+  unit: Pick<BattleUnit, 'id' | 'class' | 'faction'>,
+  baseUrl: string,
+): string | null {
+  const assetPath = unit.faction === 'player'
+    ? PLAYER_PORTRAITS[unit.id]
+    : ENEMY_PORTRAITS[unit.class]
   return assetPath ? getBattleAssetUrl(baseUrl, assetPath) : null
 }
 
@@ -69,8 +89,62 @@ export function selectBattleHudCharacter(unit: BattleUnit, baseUrl: string): Bat
     attackPatternName: ATTACK_PATTERN_NAMES[unit.attackPattern],
     minAttackRange: unit.minAttackRange,
     attackRange: unit.attackRange,
-    portraitUrl: unit.faction === 'player' ? getPortraitUrl(unit.id, baseUrl) : null,
+    portraitUrl: getPortraitUrl(unit, baseUrl),
   }
+}
+
+export function selectInspectedUnit(
+  units: readonly BattleUnit[],
+  inspectedUnitId: string | null,
+  activeUnitId: string | null,
+): BattleUnit | null {
+  const inspectedUnit = inspectedUnitId
+    ? units.find((unit) => unit.id === inspectedUnitId && isUnitAlive(unit))
+    : undefined
+  if (inspectedUnit) return inspectedUnit
+
+  const activeUnit = activeUnitId
+    ? units.find((unit) => unit.id === activeUnitId && isUnitAlive(unit))
+    : undefined
+  return activeUnit ?? units.find(isUnitAlive) ?? null
+}
+
+export function selectBattleTimeline(
+  turn: BattleTurnState,
+  units: readonly BattleUnit[],
+  upcomingTurns: readonly TurnPreviewEntry[],
+  baseUrl: string,
+  maxItems = 8,
+): BattleTimelineEntry[] {
+  const limit = Math.min(8, Math.max(0, Math.floor(maxItems)))
+  if (limit === 0 || !turn.activeUnitId) return []
+
+  const activeUnit = units.find((unit) => unit.id === turn.activeUnitId && isUnitAlive(unit))
+  const activeTurnState = turn.timeline.find((entry) => entry.unitId === turn.activeUnitId)
+  if (!activeUnit || !activeTurnState) return []
+
+  const entries: BattleTimelineEntry[] = [{
+    unit: activeUnit,
+    turnId: turn.turnId,
+    actionValue: calculateActionValue(activeTurnState.remainingDistance, activeTurnState.velocity),
+    isActive: true,
+    portraitUrl: getPortraitUrl(activeUnit, baseUrl),
+  }]
+
+  for (const upcoming of upcomingTurns) {
+    if (entries.length >= limit) break
+    const unit = units.find((candidate) => candidate.id === upcoming.unitId && isUnitAlive(candidate))
+    if (!unit) continue
+    entries.push({
+      unit,
+      turnId: upcoming.turnId,
+      actionValue: Number.isFinite(upcoming.timeOffset) ? upcoming.timeOffset : null,
+      isActive: false,
+      portraitUrl: getPortraitUrl(unit, baseUrl),
+    })
+  }
+
+  return entries
 }
 
 export function getProgressPercentage(value: number, maximum: number): number {

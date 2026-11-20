@@ -8,10 +8,12 @@ import {
   selectBattleHudCharacter,
   type BattleHudCharacter,
 } from '../battleHud'
+import BattleActionRadialMenu from './BattleActionRadialMenu'
 import './BattleHUD.css'
 
 type BattleHUDProps = {
   activeUnit: BattleUnit | null
+  displayUnit: BattleUnit | null
   selectedUnit: BattleUnit | null
   interactionMode: InteractionMode
   canEnterMoveMode: boolean
@@ -230,6 +232,8 @@ function ActionControls({
     )
   }
 
+  if (!activeUnit) return null
+
   if (interactionMode === 'MOVE') {
     return (
       <div className="battle-hud__actions" aria-label="移動指令">
@@ -248,17 +252,24 @@ function ActionControls({
   }
 
   return (
-    <div className="battle-hud__actions" aria-label="角色指令">
-      {canEnterMoveMode && <ActionButton label="移動" icon="move.png" onClick={onMoveMode} />}
-      {canEnterAttackMode && <ActionButton label="攻擊" icon="attack.png" onClick={onAttackMode} />}
-      {hasUndoRecord && <ActionButton label="取消" icon="cancel.png" disabled={!canUndoMove} onClick={onUndoMove} />}
-      <ActionButton label="待命" icon="stay.png" disabled={!canStandby} onClick={onStandby} />
-    </div>
+    <BattleActionRadialMenu
+      activeUnit={activeUnit}
+      canEnterMoveMode={canEnterMoveMode}
+      canEnterAttackMode={canEnterAttackMode}
+      canStandby={canStandby}
+      canUndoMove={canUndoMove}
+      hasUndoRecord={hasUndoRecord}
+      onMoveMode={onMoveMode}
+      onAttackMode={onAttackMode}
+      onUndoMove={onUndoMove}
+      onStandby={onStandby}
+    />
   )
 }
 
 export default function BattleHUD({
   activeUnit,
+  displayUnit,
   selectedUnit,
   interactionMode,
   canEnterMoveMode,
@@ -282,7 +293,7 @@ export default function BattleHUD({
   onConfirmAttack,
   onCancelAttack,
 }: BattleHUDProps) {
-  const character = activeUnit ? selectBattleHudCharacter(activeUnit, BASE_URL) : null
+  const character = displayUnit ? selectBattleHudCharacter(displayUnit, BASE_URL) : null
 
   return (
     <div className="battle-hud">
@@ -292,11 +303,11 @@ export default function BattleHUD({
         <a className="battle-hud__menu-link" href="#" aria-label="返回主選單">返回主選單</a>
       </header>
 
-      <figure className="battle-hud__portrait" aria-label="目前行動角色立繪">
-        <CharacterPortrait character={character} />
+      <figure className="battle-hud__portrait" aria-label="目前檢視角色立繪">
+        <CharacterPortrait key={character?.id ?? 'empty'} character={character} />
       </figure>
 
-      <section className="battle-hud__status" aria-label="目前角色資訊" aria-live="polite">
+      <section className="battle-hud__status" aria-label="角色資訊" aria-live="polite">
           {character ? (
             <>
               <div className="battle-hud__status-content">
@@ -304,7 +315,7 @@ export default function BattleHUD({
                   <div className="battle-hud__identity-heading">
                     <h2>{character.displayName}</h2>
                     <span className={`battle-hud__faction battle-hud__faction--${character.faction}`}>
-                      {character.faction === 'enemy' ? '敵方回合' : '我方行動'}
+                      {character.id === activeUnit?.id ? '目前行動' : '檢視中'}
                     </span>
                   </div>
                   <p>{character.faction === 'enemy' ? '敵方' : '我方'} · {character.className}</p>

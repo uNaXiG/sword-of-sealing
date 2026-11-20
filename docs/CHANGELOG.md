@@ -2,6 +2,14 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M5-2A Battle Interaction UI (IMPLEMENTED — PENDING REVIEW)
+
+- **Implementation**：新增角色五方向操作輪盤、Inspection Presentation State、最多八格的橫向 PAS Timeline，以及角色 CG 切換動畫與 Reduced Motion 支援。Skill／Item 維持 Disabled；移動、Undo、Attack、Standby 沿用既有授權 callback。
+- **PAS / Assets**：Timeline 顯示正式 PAS 順序與行動時間值，不自行排序或補造單位。PAS 缺少單位每輪行動狀態，未實作友軍 gray-out，追蹤於 TD-022。指定 `public/images/battle/` 路徑不存在；沿用實際提供且未修改的 `public/assets/images/battle/` 三張素材。
+- **Verification**：`npm test` 281/281、Lint、Build 與 CRLF-aware Diff Check PASS；Build 保留既有 >500 kB chunk warning。真實 WebGL Browser 驗證涵蓋桌面／直向／橫向手機、輪盤／Move Undo／Standby／角色查看／Timeline／動畫／Reduced Motion／Fallback 與鏡頭既有操作；Attack 本次無合法目標，未完成瀏覽器確認攻擊。死亡及終局 Restart 未於瀏覽器驗證。
+- **Independent Review**：No significant issues found；Product Owner Acceptance 仍 PENDING。
+- **Status / Scope**：M5-2A **IMPLEMENTED — PENDING REVIEW**；M5 維持 25%，Overall 42.5%，M5-2B 未啟動。Battle Core／PAS／AI／Reducer／Camera Controller 與使用者圖片未修改；未 Commit／Push。詳細追溯與限制見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+
 ## 2026-11-20 — M5-1 Formal Closure (COMPLETED — FORMALLY ACCEPTED)
 
 - **Verified Baseline**：`main` HEAD `ac074cda29ac7dad977d56e9fc720bb17e417205`；GitHub Actions Run [44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) SUCCESS。
