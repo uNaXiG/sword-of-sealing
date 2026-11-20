@@ -12,30 +12,39 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `8e4f6bcf36a7ccd0382aafeb59c04606b563762a` — M5-3 起始與最新本機 `origin/main` tracking ref；CI 對應此 Commit |
-| Latest Verified Repository CI Run | [44763816555](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44763816555) — SUCCESS（`main` / `8e4f6bcf36a7ccd0382aafeb59c04606b563762a`）；build、Deploy to GitHub Pages 均 SUCCESS |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `7ebfc05b64c478d7ac5bc70ead8c3456f4c55ca1` — M5-3 Feature Commit；正式結案文件同步前已確認 |
+| Latest Verified Repository CI Run | [44811720952](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44811720952) — SUCCESS（`main` / `7ebfc05b64c478d7ac5bc70ead8c3456f4c55ca1`）；build、Deploy to GitHub Pages 均 SUCCESS |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Current Repository HEAD | `main` @ `8e4f6bcf36a7ccd0382aafeb59c04606b563762a`；與目前本機 `origin/main` tracking ref 一致 |
-| Latest Verified GitHub Pages Deployment | [Run 44763816555](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44763816555) — `build` 與 `deploy` jobs 均 SUCCESS |
+| Current Repository HEAD | M5-3 功能審查基準 `main` @ `7ebfc05b64c478d7ac5bc70ead8c3456f4c55ca1`；結案文件提交後 HEAD 將更新，請以 GitHub 為準 |
+| Latest Verified GitHub Pages Deployment | [Run 44811720952](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44811720952) — `build` 與 `deploy` jobs 均 SUCCESS |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
 | M4-4B Conditional Closure Commit | `e299fa48e28d16e24aadba9cc7925bedf4d53895`；16 個異動檔案；Battle Core Modification 0 |
 | M4-4C Session Start Baseline | `main`／HEAD／`origin/main` `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；開始時工作樹乾淨 |
-| Current Working Tree | Modified；包含 M5-3 Production Code、Tests 與文件；目前無 staged changes；未 Commit／Push；未提交異動不屬於 Run `44763816555` |
+| Current Working Tree | M5-3 Production Code、Tests 與原始文件已提交於 `7ebfc05b64c478d7ac5bc70ead8c3456f4c55ca1`；遠端工作樹狀態不適用，不能據此宣稱本機工作樹乾淨 |
 | 最近完成項目 | M5-1 Battle HUD Redesign（含 UI Refinement Patch 1／2）：**COMPLETED — FORMALLY ACCEPTED**；M5-2A：**COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M5-2B：**COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4-1～M4-4 既有正式結案狀態不變 |
-| 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **COMPLETED — FORMALLY ACCEPTED**；M5-2A **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-2B **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-3 **IMPLEMENTED — PENDING REVIEW**、M5-4 PENDING，詳見 [ROADMAP.md](./ROADMAP.md) |
+| 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **COMPLETED — FORMALLY ACCEPTED**；M5-2A **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-2B **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-3 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-4 PENDING — UP NEXT，詳見 [ROADMAP.md](./ROADMAP.md) |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | M4 進度 | 100%（4/4） |
-| M5 進度 | 50%（M5-1、M5-2A 與 M5-2B 均已正式結案；M5-3 已實作但尚未審查／驗收；M5-4 未完成） |
+| M5 進度 | 75%（M5-1、M5-2A、M5-2B、M5-3 已正式結案；M5-4 未完成） |
 | 完整結案主要里程碑 | 4/10 |
-| 整體里程碑等權重進度 | 45%（4 個主要里程碑完成 + M5 的 50%；Roadmap Completion Percentage，不代表實際工時比例） |
+| 整體里程碑等權重進度 | 47.5%（4 個主要里程碑完成 + M5 的 75%；Roadmap Completion Percentage，不代表實際工時比例） |
 | M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED**；M4-3：**COMPLETED — FORMALLY ACCEPTED**；M4-4：**COMPLETED — FORMALLY ACCEPTED** |
 | M4-2 狀態 | **COMPLETED — Formal Acceptance Approved**；Feature Commit 與對應 CI 已驗證 |
 | M4-3 狀態 | **COMPLETED — FORMALLY ACCEPTED**；Patch 1／2／3 與 TEST-M4-3-01 已完成；223/223 Automated Tests；Product Owner Browser Acceptance、Architecture Review、Code Review 均 APPROVED |
 | Code Review Findings | CR-M4-3-01／02／03 CLOSED；TEST-M4-3-01 CLOSED — PASS；TD-019 CLOSED |
 | M4-4 狀態 | **COMPLETED — FORMALLY ACCEPTED**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B／4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；VA1 **COMPLETED — ACCEPTED** |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
+
+## M5-3 Formal Closure Record (2026-11-21)
+
+- **Decision**：Independent Code Review **CONDITIONAL APPROVAL**；Product Owner 已確認瀏覽器操作符合預期並授權 Formal Closure Documentation Sync。M5-3 正式結案：**COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**。此決議不等於所有測試項目 PASS。
+- **Verified Feature Baseline**：Commit `7ebfc05b64c478d7ac5bc70ead8c3456f4c55ca1`；GitHub Actions Run [44811720952](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44811720952) **SUCCESS**（對應同一 Commit，包含本次 M5-3 功能與測試）。本結案文件後續 Commit 應另行追蹤，不與功能基準混淆。
+- **Accepted Scope**：M5-3A 焦點金色脈動及合法攻擊目標紅色高亮；M5-3B 正式傷害計算衍生 HUD HP 預覽（`60 → 37/60`、淡紅預計傷害區段、Reduced Motion）；M5-3C Undo 後重入 MOVE、COMMAND／MOVE／ATTACK 右鍵快捷及拖曳保護；HUD 外保留確認／取消入口與觸控取消途徑。Battle Core／PAS／AI／Reducer／Outcome／Camera Controller 未因本次功能改動。
+- **Verification**：Agent 回報 `npm test` 306/306 PASS、目標測試 31/31 PASS、Lint／Build／Diff Check PASS；GitHub CI SUCCESS。Product Owner Browser Acceptance APPROVED（限已確認的操作）。原始 Agent Browser Verification 仍為 PARTIAL；AC-P09／P17 PARTIAL，實體手機、Victory／Defeat Restart、完整跨裝置視覺回歸 NOT VERIFIED；Chromium 觸控模擬不得視為實體手機驗證。保留 Three.js deprecated／removed 與 Battle chunk >500 kB 警告。
+- **Review Follow-ups**：CR-M53-01 文件基準同步由本次結案處理；CR-M53-02 保留未驗證項目；CR-M53-03 右鍵移出 Canvas 放開之手勢邊界為 Non-blocking 後續回歸。TD-022 OPEN，不在本次範圍內。
+- **Progress / Next**：M5 75%；Overall 47.5%；Completed Major Milestones 4/10；M5-4 **PENDING — UP NEXT**。
 
 ## M5-3B Patch 1 — HUD Integrated Damage Forecast (2026-11-21)
 
@@ -992,4 +1001,4 @@ M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A End Condition Framework & B
 
 ## Current Next Milestone
 
-M4 **COMPLETED — FORMALLY ACCEPTED**；M1–M4 進度 100%。M5 — 戰鬥 UI／UX **IN PROGRESS（50%）**；M5-1 **COMPLETED — FORMALLY ACCEPTED**，M5-2A／M5-2B **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**，M5-3 **IMPLEMENTED — PENDING REVIEW**，M5-4 PENDING。Completed Milestones 維持 4/10，Overall 為 45%。任務指引提及 M5-5 尚未在目前 Roadmap 定義；不推測其需求或驗收。
+M4 **COMPLETED — FORMALLY ACCEPTED**；M1–M4 進度 100%。M5 — 戰鬥 UI／UX **IN PROGRESS（75%）**；M5-1 **COMPLETED — FORMALLY ACCEPTED**，M5-2A／M5-2B **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**，M5-3 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**，M5-4 PENDING — UP NEXT。Completed Milestones 維持 4/10，Overall 為 47.5%。任務指引提及 M5-5 尚未在目前 Roadmap 定義；不推測其需求或驗收。
