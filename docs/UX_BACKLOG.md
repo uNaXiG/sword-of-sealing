@@ -1,6 +1,6 @@
 # UI / UX Backlog
 
-以下需求目前均為 **PENDING**。UX-001～UX-005 的 Target Milestone 為 M5-3；UX-006 的 Target Milestone 為 M5-2B。M5-1／M5-2A 只實作既有操作的 HUD 呈現與 callback 接線，不提前實作這些 UX 項目。所有新快捷操作都須保留 UI 按鈕以支援手機與觸控。
+以下需求目前均為 **PENDING**。UX-001～UX-005 的 Target Milestone 為 M5-3；UX-006 的 Target Milestone 為 M5-2B。M5-1／M5-2A 只實作既有操作的 HUD 呈現與 callback 接線，不提前實作這些 UX 項目。M5-2A Patch 1 的取消 MOVE Mode、Undo Move 與 Cancel Attack 仍各自沿用既有 callback，沒有加入右鍵快捷或撤銷後自動重入 MOVE。所有新快捷操作都須保留 UI 按鈕以支援手機與觸控。
 
 ## UX-001：移動撤銷後自動進入 MOVE
 

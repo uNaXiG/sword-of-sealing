@@ -17,6 +17,7 @@ import { getUnitOverheadPresentation } from '../unitPresentation'
 import type { RefObject } from 'react'
 import type { AttackAnimationClockRef } from '../hooks/useAttackAnimation'
 import type { DeathAnimationClockMapRef } from '../hooks/useDeathAnimation'
+import BattleActionRadialOverlay from './BattleActionRadialOverlay'
 
 const unitColors: Record<BattleUnit['class'], { armor: string; accent: string; head: string }> = {
   knight: { armor: '#e2e8ec', accent: '#486e9b', head: '#edf1f3' },
@@ -46,6 +47,7 @@ export default function UnitPlaceholder({
   deathMotion,
   deathClockRef,
   battleBusy,
+  actionMenu,
   onSelect,
   onMoveComplete,
   onMoveCancelled,
@@ -64,6 +66,19 @@ export default function UnitPlaceholder({
   deathMotion: DeathMotion | null
   deathClockRef: DeathAnimationClockMapRef
   battleBusy: boolean
+  actionMenu: {
+    portal: RefObject<HTMLElement>
+    activeUnit: BattleUnit
+    canEnterMoveMode: boolean
+    canEnterAttackMode: boolean
+    canStandby: boolean
+    canUndoMove: boolean
+    hasUndoRecord: boolean
+    onMoveMode: () => void
+    onAttackMode: () => void
+    onUndoMove: () => void
+    onStandby: () => void
+  } | null
   onSelect: (unitId: string) => void
   onMoveComplete: (unitId: string, motionId: number) => void
   onMoveCancelled: (unitId: string, motionId: number) => void
@@ -162,6 +177,9 @@ export default function UnitPlaceholder({
       )}
       {overheadPresentation.showActiveIndicator && indicatorPortal && (
         <ActiveUnitIndicator portal={indicatorPortal} />
+      )}
+      {active && actionMenu && (
+        <BattleActionRadialOverlay {...actionMenu} />
       )}
       <group ref={selectionRing}>
         {active && (

@@ -29,6 +29,8 @@
 | TD-021 | Existing Development Dependency Audit Advisories | Agent 回報 `npm audit` 有 7 個 Moderate advisories，主要涉及既有 dev-only `typescript-eslint`／`minimatch` 相依鏈；`npm audit --omit=dev` 為 0 vulnerabilities，非 Production Runtime Vulnerability | Low | OPEN | 另行評估受影響 transitive dependency 的相容更新，並重跑 audit、lint、tests、build | Dependency Maintenance |
 | TD-022 | PAS Per-unit Action-status Presentation Contract | PAS 提供 Active Unit 與正式預測序列，但沒有每單位「本輪尚未行動／已行動」狀態 | Low | OPEN | 先確認正式回合語意與資料契約；未確認前 UI 不依陣營、選取或 timeline index 推斷狀態／gray-out | TBD |
 
+M5-2A Patch 1 只修正 Presentation Policy、Attack Target State 一致性與 UI 投影；未以灰化或其他 UI 變通補足 TD-022，該缺口維持 OPEN。
+
 ## 已結案 Bug
 
 - **M3-4-BUG-001 — CLOSED**：Revision 1 的固定 Sprite Anchor 未通過使用者視覺驗收。Revision 2 改用 Single CanvasTexture／Single Sprite，血槽與填充共用畫布座標。結案依據：[Revision 2 自動化回歸測試](../tests/unitLabel.test.mjs)及使用者瀏覽器驗收 8/8 PASS。

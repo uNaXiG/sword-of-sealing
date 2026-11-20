@@ -210,8 +210,6 @@ function selectAttackTarget(state: BattleState, targetId: string): BattleState {
 
 function selectUnitOrAttackTarget(state: BattleState, unitId: string): BattleState {
   if (state.interactionMode !== 'ATTACK') return selectPlayerUnit(state, unitId)
-  const unit = state.units.find((candidate) => candidate.id === unitId)
-  if (unit?.faction === 'player' && unit.id !== state.selectedUnitId) return selectPlayerUnit(state, unitId)
   return selectAttackTarget(state, unitId)
 }
 

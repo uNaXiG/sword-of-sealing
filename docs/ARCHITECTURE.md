@@ -159,9 +159,9 @@ M4-3 的正式資料流包含 Pure AI Decision Layer、AI Command Gateway、Redu
 
 M5-1 Battle HUD 是 `BattleSessionRuntime` 中的 Presentation Layer。`BattleHUD` 接收 Hook 提供的 Active／Selected Unit、可用操作及 Session-owned callbacks；角色資料由 `battleHud.ts` 從正式 `BattleUnit` 投影，HP／SP 與屬性不另行維護。範圍縮圖呼叫 `getAttackableTiles()`，僅供靜態資訊呈現，不建立另一套合法目標或傷害規則；SP 只讀取正式資料，不消耗或產生效果。裝飾層不攔截棋盤 Pointer，僅按鈕與返回主選單連結接收輸入；所有操作仍經既有 Hook／Reducer 驗證。角色立繪依穩定單位 ID 選取，資產 URL 使用 Vite `BASE_URL`。
 
-M5-2A 在 `BattleSessionRuntime` 以本地 `inspectedUnitId` 維護暫態檢視；這不是 `BattleState` 欄位，不取代 `selectedUnitId`，亦不改寫 `turn.activeUnitId`／PAS。世界單位於 COMMAND 模式點擊時，只有現行 Active Unit 會沿用既有 `select` callback；其他角色僅更新檢視 ID。MOVE／ATTACK 的單位點擊仍沿用原有 Hook／Reducer 路徑，以保留移動及合法攻擊目標選取。Timeline 點擊只更新檢視 ID。單位失效時由展示 Selector 回退至有效 Active Unit 或存活單位；Battle Runtime Restart 的 React key 會清除此呈現狀態。
+M5-2A 在 `BattleSessionRuntime` 以本地狀態維護暫態檢視，並記錄檢視發生時的 PAS `turnId`；這不是 `BattleState` 欄位，不取代 `selectedUnitId`，亦不改寫 `turn.activeUnitId`／PAS。回合推進時，舊檢視不再生效，HUD／CG 在新回合首次渲染即顯示正式 Active Unit。共用 Presentation Policy 禁止 MOVE Mode 的世界／Timeline 檢視切換；COMMAND 點擊非 Active Unit 只更新檢視，ATTACK 點擊仍提交正式目標選取。非法 ATTACK 目標由 Reducer 清除 `selectedAttackTargetId`，Cancel Attack 的 Session Boundary 同時回復 Active Unit 檢視。單位失效時由展示 Selector 回退至有效 Active Unit 或存活單位；Restart／Route Remount 會清除此呈現狀態。
 
-`BattleActionRadialMenu` 只在現有 Active Player Unit 有選取權、且操作未鎖定時顯示。Attack／Move／Undo／Standby 使用既有 Hook callback 與 can* Selector；Skill／Item 僅為 disabled 控制項。COMMAND 模式下，合法 Undo Record 將 Move 位置替換為 Cancel；MOVE Mode 的取消仍只呼叫既有 cancel-move-mode。立繪切換以 keyed CG 節點重播 320ms 入場動畫；Reduced Motion 停用動畫。M5-2A 不修改 Camera Controller、Battle Core、PAS 或 Action Timeline 計算。
+`BattleActionRadialMenu` 只在 `displayUnit.id === activeUnit.id`、Active Player 有選取權、COMMAND、未 Busy／Pending 且未結算時顯示。`BattleActionRadialOverlay` 以 Drei `Html` 錨定 Active Unit Group，使用 Camera Projection 追隨移動與 Orbit Controls；投影會避開 viewport 邊界及已量測的 HUD／Timeline Rect，不修改 Camera Controller。Attack／Move／Undo／Standby 使用既有 Hook callback 與 can* Selector；Skill／Item 僅為 disabled 控制項。Timeline 由 `ResizeObserver` 計算完整卡片容量，最多八格且沒有隱藏 Scrollbar。大型 `characterArtUrl` 與 Timeline `portraitUrl` 分離，友軍還原 M5-1 戰鬥 CG、敵方使用肖像。立繪切換以 keyed 節點重播 320ms 入場動畫；Reduced Motion 停用動畫。M5-2A 不修改 Camera Controller、Battle Core、PAS 或 Action Timeline 計算。
 
 TEST-M4-3-01 的 React Controller 整合邊界：
 

@@ -8,7 +8,6 @@ import {
   selectBattleHudCharacter,
   type BattleHudCharacter,
 } from '../battleHud'
-import BattleActionRadialMenu from './BattleActionRadialMenu'
 import './BattleHUD.css'
 
 type BattleHUDProps = {
@@ -16,12 +15,7 @@ type BattleHUDProps = {
   displayUnit: BattleUnit | null
   selectedUnit: BattleUnit | null
   interactionMode: InteractionMode
-  canEnterMoveMode: boolean
-  canEnterAttackMode: boolean
   canConfirmAttack: boolean
-  canStandby: boolean
-  canUndoMove: boolean
-  hasUndoRecord: boolean
   battleBusy: boolean
   pendingTurnCompletion: boolean
   attackableTargetCount: number
@@ -29,10 +23,6 @@ type BattleHUDProps = {
   selectedAttackTargetDistance: number | null
   activityMessage: string | null
   combatFeedback: string | null
-  onMoveMode: () => void
-  onAttackMode: () => void
-  onUndoMove: () => void
-  onStandby: () => void
   onCancelMoveMode: () => void
   onConfirmAttack: () => void
   onCancelAttack: () => void
@@ -51,7 +41,7 @@ function CharacterPortrait({ character }: { character: BattleHudCharacter | null
     )
   }
 
-  if (!character.portraitUrl || failedUrl === character.portraitUrl) {
+  if (!character.characterArtUrl || failedUrl === character.characterArtUrl) {
     return (
       <div className="battle-hud__portrait-fallback" aria-label={`${character.displayName}沒有可用立繪`}>
         <span>{character.faction === 'enemy' ? '敵方行動' : '立繪無法載入'}</span>
@@ -62,10 +52,10 @@ function CharacterPortrait({ character }: { character: BattleHudCharacter | null
   return (
     <img
       className="battle-hud__portrait-image"
-      src={character.portraitUrl}
+      src={character.characterArtUrl}
       alt={`${character.displayName}戰鬥立繪`}
       draggable={false}
-      onError={() => setFailedUrl(character.portraitUrl)}
+      onError={() => setFailedUrl(character.characterArtUrl)}
     />
   )
 }
@@ -181,18 +171,9 @@ function ActionControls({
   activeUnit,
   selectedUnit,
   interactionMode,
-  canEnterMoveMode,
-  canEnterAttackMode,
   canConfirmAttack,
-  canStandby,
-  canUndoMove,
-  hasUndoRecord,
   battleBusy,
   pendingTurnCompletion,
-  onMoveMode,
-  onAttackMode,
-  onUndoMove,
-  onStandby,
   onCancelMoveMode,
   onConfirmAttack,
   onCancelAttack,
@@ -200,18 +181,9 @@ function ActionControls({
   | 'activeUnit'
   | 'selectedUnit'
   | 'interactionMode'
-  | 'canEnterMoveMode'
-  | 'canEnterAttackMode'
   | 'canConfirmAttack'
-  | 'canStandby'
-  | 'canUndoMove'
-  | 'hasUndoRecord'
   | 'battleBusy'
   | 'pendingTurnCompletion'
-  | 'onMoveMode'
-  | 'onAttackMode'
-  | 'onUndoMove'
-  | 'onStandby'
   | 'onCancelMoveMode'
   | 'onConfirmAttack'
   | 'onCancelAttack'
@@ -251,20 +223,7 @@ function ActionControls({
     )
   }
 
-  return (
-    <BattleActionRadialMenu
-      activeUnit={activeUnit}
-      canEnterMoveMode={canEnterMoveMode}
-      canEnterAttackMode={canEnterAttackMode}
-      canStandby={canStandby}
-      canUndoMove={canUndoMove}
-      hasUndoRecord={hasUndoRecord}
-      onMoveMode={onMoveMode}
-      onAttackMode={onAttackMode}
-      onUndoMove={onUndoMove}
-      onStandby={onStandby}
-    />
-  )
+  return null
 }
 
 export default function BattleHUD({
@@ -272,12 +231,7 @@ export default function BattleHUD({
   displayUnit,
   selectedUnit,
   interactionMode,
-  canEnterMoveMode,
-  canEnterAttackMode,
   canConfirmAttack,
-  canStandby,
-  canUndoMove,
-  hasUndoRecord,
   battleBusy,
   pendingTurnCompletion,
   attackableTargetCount,
@@ -285,10 +239,6 @@ export default function BattleHUD({
   selectedAttackTargetDistance,
   activityMessage,
   combatFeedback,
-  onMoveMode,
-  onAttackMode,
-  onUndoMove,
-  onStandby,
   onCancelMoveMode,
   onConfirmAttack,
   onCancelAttack,
@@ -303,7 +253,11 @@ export default function BattleHUD({
         <a className="battle-hud__menu-link" href="#" aria-label="返回主選單">返回主選單</a>
       </header>
 
-      <figure className="battle-hud__portrait" aria-label="目前檢視角色立繪">
+      <div className="battle-hud__portrait-backdrop" aria-hidden="true" />
+      <figure
+        className={`battle-hud__portrait${character?.faction === 'enemy' ? ' battle-hud__portrait--enemy' : ''}`}
+        aria-label="目前檢視角色立繪"
+      >
         <CharacterPortrait key={character?.id ?? 'empty'} character={character} />
       </figure>
 
@@ -352,18 +306,9 @@ export default function BattleHUD({
                 activeUnit={activeUnit}
                 selectedUnit={selectedUnit}
                 interactionMode={interactionMode}
-                canEnterMoveMode={canEnterMoveMode}
-                canEnterAttackMode={canEnterAttackMode}
                 canConfirmAttack={canConfirmAttack}
-                canStandby={canStandby}
-                canUndoMove={canUndoMove}
-                hasUndoRecord={hasUndoRecord}
                 battleBusy={battleBusy}
                 pendingTurnCompletion={pendingTurnCompletion}
-                onMoveMode={onMoveMode}
-                onAttackMode={onAttackMode}
-                onUndoMove={onUndoMove}
-                onStandby={onStandby}
                 onCancelMoveMode={onCancelMoveMode}
                 onConfirmAttack={onConfirmAttack}
                 onCancelAttack={onCancelAttack}

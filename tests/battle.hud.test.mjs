@@ -1,12 +1,18 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { JSDOM } from 'jsdom'
+import { Object3D, OrthographicCamera } from 'three'
 import { getAttackableTiles } from '../src/game/battle/battle.attack.ts'
 import { INITIAL_UNITS } from '../src/game/battle/battle.data.ts'
 import { createBattleUnit } from '../src/game/classes/class.factory.ts'
 import {
   BATTLE_ATTRIBUTE_PRESENTATION,
   createAttackPreviewGrid,
+  canInspectUnit,
+  canShowBattleActionRadial,
+  formatTimelineActionValue,
   getBattleAssetUrl,
+  getCharacterArtUrl,
   getPortraitUrl,
   getProgressPercentage,
   selectBattleTimeline,
@@ -14,6 +20,8 @@ import {
   selectInspectedUnit,
 } from '../src/features/battle/battleHud.ts'
 import { initializeTurnState, predictUpcomingTurns } from '../src/game/battle/battle.turn.ts'
+import { calculateTimelineCapacity, observeTimelineCapacity } from '../src/features/battle/battleTimelineLayout.ts'
+import { calculateRadialScreenPosition } from '../src/features/battle/battleRadialMenuProjection.ts'
 
 test('HUD derives named player portraits and status values from the selected BattleUnit', () => {
   const audrey = INITIAL_UNITS.find((unit) => unit.id === 'assassin')
@@ -35,6 +43,10 @@ test('HUD derives named player portraits and status values from the selected Bat
   assert.equal(
     character.portraitUrl,
     '/sword-of-sealing/assets/images/battle/%E5%A5%B3%E4%B8%BB.png',
+  )
+  assert.equal(
+    character.characterArtUrl,
+    '/sword-of-sealing/assets/images/cg/hero/%E5%A5%B3%E4%B8%BB-%E6%88%B0%E9%AC%A51.png',
   )
   assert.deepEqual(
     BATTLE_ATTRIBUTE_PRESENTATION.map((attribute) => ({
@@ -63,6 +75,11 @@ test('unit portraits map by class and asset paths preserve the Vite base path', 
   )
   assert.equal(getPortraitUrl(audrey, '/sword-of-sealing/'), '/sword-of-sealing/assets/images/battle/%E5%A5%B3%E4%B8%BB.png')
   assert.equal(getPortraitUrl(dio, '/sword-of-sealing/'), '/sword-of-sealing/assets/images/battle/%E7%94%B7%E4%B8%BB.png')
+  assert.equal(
+    getCharacterArtUrl(dio, '/sword-of-sealing/'),
+    '/sword-of-sealing/assets/images/cg/hero/%E7%94%B7%E4%B8%BB-%E6%88%B0%E9%AC%A51.png',
+  )
+  assert.equal(character.characterArtUrl, character.portraitUrl)
   assert.equal(getPortraitUrl({ ...audrey, id: 'enemy-assassin', faction: 'enemy' }, '/'), null)
   assert.equal(getBattleAssetUrl('/sword-of-sealing/', '/assets/images/ui/attack.png'), '/sword-of-sealing/assets/images/ui/attack.png')
   assert.equal(getBattleAssetUrl('/', 'assets/images/ui/move.png'), '/assets/images/ui/move.png')
@@ -78,6 +95,131 @@ test('inspected unit stays presentation-only and falls back when it is no longer
   assert.equal(selectInspectedUnit([active, fallenEnemy], enemy.id, active.id), active)
   assert.equal(selectInspectedUnit([fallenEnemy], enemy.id, active.id), null)
   assert.equal(active.id, 'assassin')
+})
+
+test('inspection policy blocks MOVE mode and radial authorization requires the displayed active unit', () => {
+  const active = INITIAL_UNITS.find((unit) => unit.id === 'assassin')
+
+  assert.equal(canInspectUnit('COMMAND', false), true)
+  assert.equal(canInspectUnit('ATTACK', false), true)
+  assert.equal(canInspectUnit('MOVE', false), false)
+  assert.equal(canInspectUnit('COMMAND', true), false)
+  assert.equal(canShowBattleActionRadial({
+    activeUnit: active,
+    selectedUnitId: active.id,
+    displayUnitId: active.id,
+    interactionMode: 'COMMAND',
+    battleBusy: false,
+    pendingTurnCompletion: false,
+  }), true)
+  assert.equal(canShowBattleActionRadial({
+    activeUnit: active,
+    selectedUnitId: active.id,
+    displayUnitId: 'goblin',
+    interactionMode: 'COMMAND',
+    battleBusy: false,
+    pendingTurnCompletion: false,
+  }), false)
+  assert.equal(canShowBattleActionRadial({
+    activeUnit: active,
+    selectedUnitId: active.id,
+    displayUnitId: active.id,
+    interactionMode: 'ATTACK',
+    battleBusy: false,
+    pendingTurnCompletion: false,
+  }), false)
+})
+
+test('timeline capacity only exposes complete cards at desktop and compact sizes', () => {
+  assert.equal(calculateTimelineCapacity(68, 68, 6), 1)
+  assert.equal(calculateTimelineCapacity(401, 68, 6), 5)
+  assert.equal(calculateTimelineCapacity(585, 68, 6), 7)
+  assert.equal(calculateTimelineCapacity(586, 68, 6), 8)
+  assert.equal(calculateTimelineCapacity(317, 48, 6), 5)
+  assert.equal(calculateTimelineCapacity(318, 48, 6), 6)
+  assert.equal(calculateTimelineCapacity(1000, 68, 6), 8)
+  assert.equal(calculateTimelineCapacity(20, 68, 6), 0)
+
+  const dom = new JSDOM('<div id="available-space"></div>')
+  const element = dom.window.document.querySelector('#available-space')
+  element.style.setProperty('--turn-card-size', '68px')
+  element.style.setProperty('--turn-card-gap', '6px')
+  let width = 401
+  Object.defineProperty(element, 'clientWidth', { get: () => width })
+  let resizeCallback
+  let observed = false
+  let disconnected = false
+  let capacity = 0
+  const cleanup = observeTimelineCapacity(
+    element,
+    (nextCapacity) => { capacity = nextCapacity },
+    (callback) => {
+      resizeCallback = callback
+      return {
+        observe: () => { observed = true },
+        disconnect: () => { disconnected = true },
+      }
+    },
+  )
+
+  assert.equal(observed, true)
+  assert.equal(capacity, 5)
+  width = 215
+  resizeCallback([], {})
+  assert.equal(capacity, 2)
+  cleanup()
+  assert.equal(disconnected, true)
+})
+
+test('radial menu projection follows the world anchor and clamps to the viewport', () => {
+  const camera = new OrthographicCamera(-5, 5, 5, -5, 0.1, 100)
+  camera.position.set(0, 0, 10)
+  camera.lookAt(0, 0, 0)
+  camera.updateProjectionMatrix()
+  camera.updateMatrixWorld()
+  const object = new Object3D()
+  object.position.set(-3, 3, 0)
+  object.updateMatrixWorld()
+  const size = { width: 800, height: 600 }
+  const first = calculateRadialScreenPosition(object, camera, size)
+  object.position.set(4, -4, 0)
+  object.updateMatrixWorld()
+  const second = calculateRadialScreenPosition(object, camera, size)
+
+  assert.ok(first[0] >= 122 && first[0] <= 678)
+  assert.ok(first[1] >= 122 && first[1] <= 478)
+  assert.ok(second[0] > first[0])
+  assert.ok(second[1] > first[1])
+
+  const reserved = [{ left: 390, top: 30, right: 800, bottom: 120 }]
+  const avoided = calculateRadialScreenPosition(object, camera, size, undefined, reserved)
+  assert.ok(
+    avoided[0] + 112 <= reserved[0].left ||
+    avoided[0] - 112 >= reserved[0].right ||
+    avoided[1] + 112 <= reserved[0].top ||
+    avoided[1] - 112 >= reserved[0].bottom,
+  )
+
+  object.position.set(0, 0.85, 0)
+  object.updateMatrixWorld()
+  const landscape = { width: 845, height: 390 }
+  const landscapeReserved = [
+    { left: 482, top: 48, right: 838, bottom: 126 },
+    { left: 8, top: 270, right: 838, bottom: 382 },
+  ]
+  const landscapePosition = calculateRadialScreenPosition(
+    object,
+    camera,
+    landscape,
+    undefined,
+    landscapeReserved,
+  )
+  assert.equal(landscapeReserved.some((rect) => !(
+    landscapePosition[0] + 112 <= rect.left ||
+    landscapePosition[0] - 112 >= rect.right ||
+    landscapePosition[1] + 112 <= rect.top ||
+    landscapePosition[1] - 112 >= rect.bottom
+  )), false)
 })
 
 test('turn timeline uses PAS order and values, caps at eight, and never fills missing entries', () => {
@@ -105,6 +247,15 @@ test('turn timeline uses PAS order and values, caps at eight, and never fills mi
     timeOffset: Number.NaN,
   }], '/')
   assert.equal(missingValue[1].actionValue, null)
+})
+
+test('timeline action values display as integers without changing underlying PAS values', () => {
+  assert.equal(formatTimelineActionValue(0), '0')
+  assert.equal(formatTimelineActionValue(33.33), '33')
+  assert.equal(formatTimelineActionValue(66.67), '67')
+  assert.equal(formatTimelineActionValue(133.5), '134')
+  assert.equal(formatTimelineActionValue(null), '待補')
+  assert.equal(formatTimelineActionValue(Number.NaN), '待補')
 })
 
 test('resource bar percentages stay valid for depleted, excessive, and invalid input', () => {

@@ -1,5 +1,5 @@
 import { getAttackableTiles } from '../../game/battle/battle.attack.ts'
-import type { BattleUnit } from '../../game/battle/battle.types'
+import type { BattleUnit, InteractionMode } from '../../game/battle/battle.types'
 import { CLASS_DEFINITIONS } from '../../game/classes/class.data.ts'
 import { ATTACK_PATTERN_NAMES, type UnitClass } from '../../game/classes/class.types.ts'
 import { calculateActionValue } from '../../game/battle/battle.turn.ts'
@@ -9,6 +9,11 @@ import { isUnitAlive } from '../../game/battle/battle.unit.ts'
 const PLAYER_PORTRAITS: Readonly<Record<string, string>> = {
   assassin: 'assets/images/battle/女主.png',
   knight: 'assets/images/battle/男主.png',
+}
+
+const PLAYER_CHARACTER_ART: Readonly<Record<string, string>> = {
+  assassin: 'assets/images/cg/hero/女主-戰鬥1.png',
+  knight: 'assets/images/cg/hero/男主-戰鬥1.png',
 }
 
 const ENEMY_PORTRAITS: Readonly<Partial<Record<UnitClass, string>>> = {
@@ -39,6 +44,7 @@ export type BattleHudCharacter = {
   minAttackRange: number
   attackRange: number
   portraitUrl: string | null
+  characterArtUrl: string | null
 }
 
 export type AttackPreviewCell = {
@@ -55,6 +61,11 @@ export type BattleTimelineEntry = {
   portraitUrl: string | null
 }
 
+export function formatTimelineActionValue(actionValue: number | null): string {
+  if (actionValue === null || !Number.isFinite(actionValue)) return '待補'
+  return String(Math.round(actionValue))
+}
+
 export function getBattleAssetUrl(baseUrl: string, assetPath: string): string {
   const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
   const path = assetPath.replace(/^\/+/, '').split('/').map(encodeURIComponent).join('/')
@@ -67,6 +78,16 @@ export function getPortraitUrl(
 ): string | null {
   const assetPath = unit.faction === 'player'
     ? PLAYER_PORTRAITS[unit.id]
+    : ENEMY_PORTRAITS[unit.class]
+  return assetPath ? getBattleAssetUrl(baseUrl, assetPath) : null
+}
+
+export function getCharacterArtUrl(
+  unit: Pick<BattleUnit, 'id' | 'class' | 'faction'>,
+  baseUrl: string,
+): string | null {
+  const assetPath = unit.faction === 'player'
+    ? PLAYER_CHARACTER_ART[unit.id]
     : ENEMY_PORTRAITS[unit.class]
   return assetPath ? getBattleAssetUrl(baseUrl, assetPath) : null
 }
@@ -90,7 +111,38 @@ export function selectBattleHudCharacter(unit: BattleUnit, baseUrl: string): Bat
     minAttackRange: unit.minAttackRange,
     attackRange: unit.attackRange,
     portraitUrl: getPortraitUrl(unit, baseUrl),
+    characterArtUrl: getCharacterArtUrl(unit, baseUrl),
   }
+}
+
+export function canInspectUnit(interactionMode: InteractionMode, battleBusy: boolean): boolean {
+  return !battleBusy && interactionMode !== 'MOVE'
+}
+
+export function canShowBattleActionRadial({
+  activeUnit,
+  selectedUnitId,
+  displayUnitId,
+  interactionMode,
+  battleBusy,
+  pendingTurnCompletion,
+}: {
+  activeUnit: Pick<BattleUnit, 'id' | 'faction'> | null
+  selectedUnitId: string | null
+  displayUnitId: string | null
+  interactionMode: InteractionMode
+  battleBusy: boolean
+  pendingTurnCompletion: boolean
+}): boolean {
+  return Boolean(
+    activeUnit &&
+    activeUnit.faction === 'player' &&
+    activeUnit.id === selectedUnitId &&
+    activeUnit.id === displayUnitId &&
+    interactionMode === 'COMMAND' &&
+    !battleBusy &&
+    !pendingTurnCompletion,
+  )
 }
 
 export function selectInspectedUnit(

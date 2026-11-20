@@ -17,7 +17,7 @@ import { useDeathAnimation } from '../hooks/useDeathAnimation'
 import BattleHUD from './BattleHUD'
 import BattleResultOverlay from './BattleResultOverlay'
 import TurnOrderTimeline from './TurnOrderTimeline'
-import { selectInspectedUnit } from '../battleHud'
+import { canInspectUnit, canShowBattleActionRadial, selectInspectedUnit } from '../battleHud'
 
 function FitCamera() {
   const { size } = useThree()
@@ -52,11 +52,16 @@ export default function BattleSessionRuntime({
     onAbort: onDeathAbort,
   } = useDeathAnimation(completeDeath, abortDeath)
   const [hoveredCell, setHoveredCell] = useState<Cell | null>(null)
-  const [inspectedUnitId, setInspectedUnitId] = useState<string | null>(null)
+  const [inspection, setInspection] = useState<{ unitId: string; turnId: number } | null>(null)
   const [indicatorPortalElement, setIndicatorPortalElement] = useState<HTMLDivElement | null>(null)
+  const [actionPortalElement, setActionPortalElement] = useState<HTMLDivElement | null>(null)
   const indicatorPortal = useMemo<RefObject<HTMLElement> | null>(
     () => indicatorPortalElement ? { current: indicatorPortalElement } : null,
     [indicatorPortalElement],
+  )
+  const actionPortal = useMemo<RefObject<HTMLElement> | null>(
+    () => actionPortalElement ? { current: actionPortalElement } : null,
+    [actionPortalElement],
   )
   const preview = interactionMode === 'MOVE' && hoveredCell ? reachable.get(cellKey(hoveredCell)) ?? null : null
   const attackResultAttacker = lastAttackResult
@@ -79,7 +84,17 @@ export default function BattleSessionRuntime({
         : ''
     }${lastAttackResult.isDefeated ? `；${attackResultTarget.name}失去戰鬥能力。` : '。'}`
     : null
+  const inspectedUnitId = inspection?.turnId === turn.turnId ? inspection.unitId : null
   const displayUnit = selectInspectedUnit(units, inspectedUnitId, activeUnit?.id ?? null)
+  const canInspect = canInspectUnit(interactionMode, battleBusy)
+  const showActionRadial = canShowBattleActionRadial({
+    activeUnit,
+    selectedUnitId: selectedUnit?.id ?? null,
+    displayUnitId: displayUnit?.id ?? null,
+    interactionMode,
+    battleBusy,
+    pendingTurnCompletion: pendingTurnCompletion !== null,
+  })
   const clearBattleSelection = () => {
     setHoveredCell(null)
     clearSelection()
@@ -113,17 +128,22 @@ export default function BattleSessionRuntime({
   const handleCancelAttack = () => {
     setHoveredCell(null)
     cancelAttack()
+    setInspection(null)
   }
   const handleConfirmAttack = () => {
     setHoveredCell(null)
     confirmAttack()
   }
-  const handleUnitSelect = (unitId: string) => {
+  const handleInspectUnit = (unitId: string) => {
+    if (!canInspect) return
     const unit = units.find((candidate) => candidate.id === unitId)
-    if (unit && unit.hp > 0) setInspectedUnitId(unit.id)
+    if (unit && unit.hp > 0) setInspection({ unitId: unit.id, turnId: turn.turnId })
+  }
+  const handleUnitSelect = (unitId: string) => {
+    if (!canInspect) return
+    handleInspectUnit(unitId)
     if (interactionMode !== 'COMMAND' || unitId === activeUnit?.id) selectUnit(unitId)
   }
-  const handleInspectUnit = (unitId: string) => setInspectedUnitId(unitId)
   const handleRestart = () => requestRestart(generation)
 
   return (
@@ -186,6 +206,19 @@ export default function BattleSessionRuntime({
               deathMotion={deathMotions.find((death) => death.unitId === unit.id) ?? null}
               deathClockRef={deathClockRef}
               battleBusy={battleBusy}
+              actionMenu={showActionRadial && actionPortal && unit.id === activeUnit?.id ? {
+                portal: actionPortal,
+                activeUnit: unit,
+                canEnterMoveMode,
+                canEnterAttackMode,
+                canStandby,
+                canUndoMove,
+                hasUndoRecord: lastMove?.unitId === unit.id,
+                onMoveMode: handleMoveMode,
+                onAttackMode: handleAttackMode,
+                onUndoMove: handleUndoMove,
+                onStandby: handleStandby,
+              } : null}
               onSelect={handleUnitSelect}
               onMoveComplete={finishMove}
               onMoveCancelled={cancelMove}
@@ -196,17 +229,13 @@ export default function BattleSessionRuntime({
         </Canvas>
       </div>
       <div className="battle-world-indicator-layer" ref={setIndicatorPortalElement} aria-hidden="true" />
+      <div className="battle-world-action-layer" ref={setActionPortalElement} />
       <BattleHUD
         activeUnit={activeUnit}
         displayUnit={displayUnit}
         selectedUnit={selectedUnit}
         interactionMode={interactionMode}
-        canEnterMoveMode={canEnterMoveMode}
-        canEnterAttackMode={canEnterAttackMode}
         canConfirmAttack={canConfirmAttack}
-        canStandby={canStandby}
-        canUndoMove={canUndoMove}
-        hasUndoRecord={lastMove?.unitId === selectedUnit?.id}
         battleBusy={battleBusy}
         pendingTurnCompletion={pendingTurnCompletion !== null}
         attackableTargetCount={attackableTargets.length}
@@ -214,10 +243,6 @@ export default function BattleSessionRuntime({
         selectedAttackTargetDistance={selectedAttackTargetDistance}
         activityMessage={activityMessage}
         combatFeedback={combatFeedback}
-        onMoveMode={handleMoveMode}
-        onAttackMode={handleAttackMode}
-        onUndoMove={handleUndoMove}
-        onStandby={handleStandby}
         onCancelMoveMode={handleCancelMoveMode}
         onConfirmAttack={handleConfirmAttack}
         onCancelAttack={handleCancelAttack}
@@ -228,6 +253,7 @@ export default function BattleSessionRuntime({
         upcomingTurns={upcomingTurns}
         inspectedUnitId={displayUnit?.id ?? null}
         baseUrl={import.meta.env.BASE_URL}
+        canInspect={canInspect}
         onInspectUnit={handleInspectUnit}
       />
       {outcome !== null && (

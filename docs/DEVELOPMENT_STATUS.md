@@ -12,16 +12,16 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `1955038135d8781f64312cdaeb29c5522842e7e7` — M5-2A session start; supplied baseline verified against local HEAD |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `8b0aa67776c66cb4b0585a1ec887e598a1ca9d30` — M5-2A Patch 1 baseline; `HEAD` 與 Fetch 後 `origin/main` 一致 |
 | Latest Verified Repository CI Run | [44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) — SUCCESS（`main` / `ac074cd`）；此 CI 不涵蓋 M5-2A 工作樹異動 |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Current Repository HEAD | `main`／本機 `origin/main` tracking ref @ `1955038135d8781f64312cdaeb29c5522842e7e7`；未 Fetch，不能據此宣稱遠端目前最新 |
+| Current Repository HEAD | `main` @ `8b0aa67776c66cb4b0585a1ec887e598a1ca9d30`；已 Fetch，與 `origin/main` tracking ref 一致 |
 | Latest Verified GitHub Pages Deployment | [Run 44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) — `Deploy to GitHub Pages` SUCCESS |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
 | M4-4B Conditional Closure Commit | `e299fa48e28d16e24aadba9cc7925bedf4d53895`；16 個異動檔案；Battle Core Modification 0 |
 | M4-4C Session Start Baseline | `main`／HEAD／`origin/main` `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；開始時工作樹乾淨 |
-| Current Working Tree | M5-2A 程式、測試及文件異動尚未提交；另有既存未追蹤 `public/assets/images/battle/` 角色圖片，未修改／暫存；未 Commit／Push |
+| Current Working Tree | M5-2A Patch 1／Patch 2 程式、測試及文件異動未提交；`public/assets/images/battle/` 三張角色圖片已在基準 Commit 內，未修改；未 Commit／Push |
 | 最近完成項目 | M5-1 Battle HUD Redesign（含 UI Refinement Patch 1／2）：**COMPLETED — FORMALLY ACCEPTED**；M5-2A 已實作但待審查；M4-1～M4-4 既有正式結案狀態不變 |
 | 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **COMPLETED — FORMALLY ACCEPTED**；M5-2A **IMPLEMENTED — PENDING REVIEW**、M5-2B **PENDING**、M5-3／M5-4 PENDING，詳見 [ROADMAP.md](./ROADMAP.md) |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
@@ -112,6 +112,41 @@ AC-C25～C28 為 **PARTIAL — ACCEPTED / DEFERRED TO TD-010**；AC-C41、AC-C42
 - **Browser Limitations**：Attack Mode 確認按鈕在實際畫面因合法目標數為 0 保持 Disabled，未於本次 Browser 完成確認攻擊；攻擊合法性／結算由既有 Automated Tests 覆蓋。未於 Browser 觸發角色死亡或終局 Restart；Route reload/re-entry 已確認檢視回到 Active Unit，但不等同終局 Restart 驗收。Product Owner Acceptance 未執行。
 - **Known Issue**：三張圖片的要求路徑未存在，改用實際提供且已確認可載入的 `public/assets/images/battle/`；需 Product Owner 確認資產位置符合預期。已行動友軍 gray-out 等待 TD-022 資料契約。
 - **Git**：未暫存、Commit、Push、Checkout 或修改任何使用者圖片；工作樹包含本任務程式／測試／文件異動與原有未追蹤圖片。
+
+## M5-2A Patch 1 — Interaction Consistency & UI Refinement — 2026-11-20
+
+**Status：IMPLEMENTED — PENDING REVIEW。** Baseline 為 `main`／`origin/main` `8b0aa67776c66cb4b0585a1ec887e598a1ca9d30`；M5-2A 與 M5-2B 狀態不變，M5 維持 25%、Overall 42.5%。
+
+- **Interaction Consistency**：共享 Inspection Policy 禁止 MOVE Mode 的世界與 Timeline 檢視切換；COMMAND 檢視非 Active Unit 時世界錨點輪盤立即隱藏，重新檢視 Active Unit 後依原授權恢復。Cancel Attack 在 Session Presentation Boundary 回復 Active Unit。正式 Reducer 的 ATTACK 單位選取現在對非法目標清除 `selectedAttackTargetId`，Confirm Attack 立即 Disabled；重新選合法目標後可確認。移動後 Undo Record 不受檢視切換影響。
+- **UI Refinement**：Timeline 與 HUD 在桌面共同分配底部寬度；移除可見標題、順位及 Scrollbar。`ResizeObserver` 依實際容器寬度只渲染完整卡片，最多八格。友軍 Timeline 使用小肖像、HUD 大型展示恢復 M5-1 `assets/images/cg/hero/*-戰鬥1.png`；敵方 HUD 與 Timeline 使用哥布林肖像。輪盤由 Drei `Html` 錨定 Active Unit Group，投影跟隨角色與既有 OrbitControls，並以量測的 HUD／Timeline Rect 避免 UI 碰撞；Camera Controller 未修改。
+- **Automated Verification**：`npm test` 284/284 PASS、`npm run lint` PASS、`npm run build` PASS；Build 保留既有 1,028.41 kB Battle chunk >500 kB warning。`git -c core.whitespace=cr-at-eol diff --check` PASS。
+- **Independent Code Review**：初次 review 發現 Landscape Active Unit 切換可能與 Timeline 重疊；Patch 加入量測保留區與投影避讓後，Follow-up Review **No significant issues found**。Product Owner Acceptance 仍 PENDING。
+- **Real WebGL Browser Verification**：確認非 Active Unit 檢視隱藏輪盤；MOVE Mode 點友軍與 Timeline 均不改檢視；完成移動後檢視切換保留 Undo。ATTACK 先選哥布林 A 再點迪歐，HUD 顯示迪歐、正式目標清空、Confirm Disabled；Cancel 回復奧黛 CG 與輪盤；重新選敵人後實際造成 23 點傷害並切換 PAS Active Unit。輪盤在角色完成移動及右鍵旋轉、滾輪縮放、左鍵平移後重新投影。Desktop 1281×720 顯示 8 格；Mobile 390×845 顯示 6 格；Landscape 845×390 顯示 5 格，HUD／Timeline／輪盤無重疊與水平溢位。敵方使用哥布林肖像，Reduced Motion 為 `animation-name:none`，缺圖 Browser Fixture 後 Fallback 正常並可恢復。Route exit 移除 Action Portal，re-entry 建立單一 Portal。
+- **Browser Limitations**：Enemy AI 已實際推進，未於本次 Patch 1 Browser 觸發角色死亡或結果 Overlay；終局 Restart 只由既有 Automated Route／Session Tests 覆蓋，Browser BV-P07／BV-P15 維持 PARTIAL。Product Owner Acceptance 尚未執行。
+- **Scope / Git**：只修改 Presentation、最小 Attack Target Selection Consistency、Tests 與文件；未修改 PAS 排序／推進、AI 決策、傷害、Outcome、Camera Controller 或依賴。TD-022 維持 OPEN。未 Commit／Push，素材未修改。
+
+## M5-2A Patch 2 — Timeline Layout & CG Background Continuity — 2026-11-20
+
+**Status：IMPLEMENTED — PENDING REVIEW。** 以 Patch 1 未提交工作樹為基礎；M5-2A 維持待審查、M5-2B 未開始，M5 為 25%、Overall 為 42.5%。Product Owner Acceptance 未執行。
+
+- **Timeline Layout**：獨立的不可見容量量測區監聽實際可用內容寬度；時間軸依完整卡片數使用內容寬度並靠右排列，最多八格，空間不足只呈現完整的前 N 格。無橫向可捲動內容；保留正式 PAS 排序／行動值、Active／Inspected 標示及卡片檢視 callback。
+- **CG Background**：新增固定於 HUD 左側、與角色立繪容器分離的背景漸層層。友軍仍載入 M5-1 原始大型 CG，敵軍仍使用 Goblin 肖像；背景尺寸不隨陣營、圖片比例或快速切換改變，角色圖層動畫及 Reduced Motion 規則不變。
+- **Automated Verification**：`npm test` 284/284 PASS（包含 Timeline 桌面／緊湊尺寸的完整卡片邊界測試）；`npm run lint` PASS；`npm run build` PASS；`git -c core.whitespace=cr-at-eol diff --check` PASS。Build 的 Battle chunk 為 1,028.62 kB，既有 >500 kB warning 保留。
+- **Real WebGL Browser Verification**：桌面實際視口 1282×720 顯示 8 格，Timeline 約 608px 寬、右側約 16px 安全距離。直向手機 390×845 顯示 6 格、約 330px 寬；橫向 846×390 顯示 5 格、約 326px 寬；三者皆無頁面水平溢位。直向手機 HUD 與 Timeline 垂直分離；橫向版 Timeline 位於 HUD 上方。角色依序切換奧黛→哥布林→迪歐→哥布林，以及快速連續切換時，背景量測寬度維持約 820px、角色圖層僅有一張已掛載圖片，正式友軍 CG／敵軍肖像 URL 正確。Reduced Motion 下動畫名稱為 `none`；Move／Cancel Move、Attack／Cancel Attack、Timeline 點擊均正常。
+- **Browser Evidence / Limitations**：已擷取真實 WebGL 戰場的友軍奧黛與敵軍哥布林畫面。使用者提及的最新兩張參考截圖未隨本次 Session 提供；因此視覺檢查依正式文字規格與實際瀏覽器頁面完成，不能聲稱已逐像素比對該兩張圖。Agent Browser 驗證不等同 Product Owner Visual Acceptance，仍待使用者驗收。
+- **Scope / Git**：只調整 Timeline／CG Presentation、對應測試與本狀態文件；沒有修改 PAS、Battle Core、攻擊互動、Camera Controller、使用者圖片或依賴。Patch 1 與 Patch 2 異動均未 Commit／Push；TD-022 保持 OPEN。
+
+### M5-2A 追補修正 — 回合交接同步 HUD／CG
+
+- **Implementation**：暫態單位檢視只在原 PAS `turnId` 生效；攻擊結算後由正式 PAS 推進回合時，HUD／CG 同步切換至新的 Active Unit。回合內仍可手動檢視角色，不修改 PAS、Battle Core 或 Camera Controller；未提交，仍待 Product Owner 驗收。
+- **Verification**：真實 WebGL 戰場中，奧黛選取並攻擊哥布林 A，造成 23 點傷害；換手後 HUD、CG、輪盤與 Timeline 同步顯示迪歐。新增 Production Route 回歸測試，亦確認新回合仍可重新檢視哥布林 A，不影響 Active Unit。`npm test` 285/285、Lint、Build 與 CRLF-aware Diff Check 均通過；既有 Battle chunk >500 kB 警告保留。
+
+### M5-2A 視覺微調 — 行動軸光暈與中空輪盤
+
+- **Implementation**：Timeline 的目前行動金框與同一角色的預測卡片藍框共用脈動節奏；Reduced Motion 下改為靜態。半透明深藍輪盤以金線分隔五個扇形按鈕，中心保留 Canvas 點擊；原指令位置、權限與快捷操作範圍不變。
+- **Verification**：真實 WebGL 驗證三張奧黛卡片同步脈動、切換檢視仍追蹤奧黛、Reduced Motion 靜止，以及五個扇形命中、中心命中 Canvas、Hover／鍵盤焦點與 Attack／Move 進入及取消。`npm test` 285/285、Lint、Build 和 CRLF-aware Diff Check 通過，保留既有 >500 kB chunk 警告。未提交，Product Owner 驗收待確認；里程碑狀態與進度不變。
+
+- **Timeline Action Value Display**：行動軸右下角只以整數格式呈現正式數值；底層 PAS／預測數值不變，不新增回合運算。瀏覽器確認顯示 `0、33、67、133`，格式化單元測試通過。
 
 以下 M5-1 初始實作與 Patch 1／2 區段保留當時的實作狀態、測試結果及 Browser 限制；其 PENDING／PARTIAL／NOT VERIFIED 記錄為歷史證據，現行結案決策以本記錄為準。
 

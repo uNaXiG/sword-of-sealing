@@ -72,16 +72,44 @@ function createRouteIntegrationPlugin() {
       if (!id.startsWith('\0route-visual:')) return null
       if (id === '\0route-visual:UnitPlaceholder') {
         return `
-          import { useEffect } from 'react'
-          export default function UnitPlaceholder({ unit, activeUnitId }) {
+          import { createElement, useEffect } from 'react'
+          export default function UnitPlaceholder({ unit, activeUnitId, actionMenu, onSelect }) {
             useEffect(() => {
               return globalThis.__battleRouteRegistry?.registerUnitPresentation(
                 unit.id,
                 unit.faction,
                 activeUnitId,
+                onSelect,
               )
-            }, [unit.id, unit.faction, activeUnitId])
-            return null
+            }, [unit.id, unit.faction, activeUnitId, onSelect])
+            if (!actionMenu) return null
+            return createElement(
+              'nav',
+              { 'aria-label': unit.name + '角色指令' },
+              createElement('button', {
+                'aria-label': '攻擊',
+                disabled: !actionMenu.canEnterAttackMode,
+                onClick: actionMenu.onAttackMode,
+              }, '攻擊'),
+              createElement('button', {
+                'aria-label': '技能（尚未開放）',
+                disabled: true,
+              }, '技能'),
+              createElement('button', {
+                'aria-label': actionMenu.hasUndoRecord ? '取消' : '移動',
+                disabled: actionMenu.hasUndoRecord ? !actionMenu.canUndoMove : !actionMenu.canEnterMoveMode,
+                onClick: actionMenu.hasUndoRecord ? actionMenu.onUndoMove : actionMenu.onMoveMode,
+              }, actionMenu.hasUndoRecord ? '取消' : '移動'),
+              createElement('button', {
+                'aria-label': '道具（尚未開放）',
+                disabled: true,
+              }, '道具'),
+              createElement('button', {
+                'aria-label': '待命',
+                disabled: !actionMenu.canStandby,
+                onClick: actionMenu.onStandby,
+              }, '待命'),
+            )
           }
         `
       }
@@ -225,7 +253,10 @@ async function startMove(record) {
   return battle
 }
 
-async function startAttack(record) {
+async function startAttack(record, {
+  targetId,
+  selectTarget = (battle, target) => battle.selectAttackTarget(target.id),
+} = {}) {
   let battle = record.latest
   const activeUnitId = battle.activeUnit?.id
   assert.ok(activeUnitId, 'expected a player unit turn')
@@ -237,6 +268,7 @@ async function startAttack(record) {
       : unit)
     return battle.units.some((target) =>
       target.faction !== attacker.faction &&
+      (!targetId || target.id === targetId) &&
       canAttackTarget(hypotheticalUnits, activeUnitId, target.id),
     )
   })
@@ -253,9 +285,11 @@ async function startAttack(record) {
 
   await run(() => battle.setInteractionMode('ATTACK'))
   battle = currentFor(record.session).latest
-  const target = battle.attackableTargets[0]
+  const target = targetId
+    ? battle.attackableTargets.find((unit) => unit.id === targetId)
+    : battle.attackableTargets[0]
   assert.ok(target, 'completed legal movement should expose an attack target')
-  await run(() => battle.selectAttackTarget(target.id))
+  await run(() => selectTarget(battle, target))
   battle = currentFor(record.session).latest
   await run(() => battle.confirmAttack())
   battle = currentFor(record.session).latest
@@ -463,13 +497,14 @@ async function mountApp() {
       record.restartHandler = restartHandler
       record.renders += 1
     },
-    registerUnitPresentation(unitId, faction, activeUnitId) {
+    registerUnitPresentation(unitId, faction, activeUnitId, onSelect) {
       const record = this.current()
       if (!record) return undefined
       record.unitPresentations.set(unitId, {
         unitId,
         faction,
         activeUnitId,
+        select: () => onSelect(unitId),
         showNameAndHealth: faction === 'enemy',
         showActiveIndicator: unitId === activeUnitId,
       })
@@ -691,6 +726,38 @@ test('Production Battle HUD follows the active unit and dispatches player comman
 
   await unmountApp()
   assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
+})
+
+test('Production HUD and CG follow the next PAS turn after inspecting a surviving attack target', async () => {
+  await mountApp()
+  const record = await enterBattle()
+  const name = () => container.querySelector('.battle-hud__identity h2').textContent
+  const art = () => decodeURIComponent(container.querySelector('.battle-hud__portrait-image').src)
+  assert.equal(name(), '奧黛')
+
+  const attacking = await startAttack(record, {
+    targetId: 'goblin',
+    selectTarget: (_battle, target) => record.unitPresentations.get(target.id).select(),
+  })
+  const targetId = attacking.attackMotion.targetId
+  assert.equal(targetId, 'goblin')
+  assert.equal(name(), '哥布林 A')
+  assert.match(art(), /\/battle\/哥布林\.png$/)
+
+  const handoff = await advanceRuntimeBattle(record, 'DEFEAT', 10, (battle) =>
+    battle.turn.turnId !== attacking.turn.turnId,
+  )
+  assert.equal(handoff.stopped, true)
+  assert.equal(record.latest.activeUnit.id, 'knight')
+  assert.equal(record.latest.units.find((unit) => unit.id === targetId).hp, 37)
+  assert.equal(name(), '迪歐')
+  assert.match(art(), /\/cg\/hero\/男主-戰鬥1\.png$/)
+  assert.ok(container.querySelector('nav[aria-label="迪歐角色指令"]'))
+
+  await run(() => record.unitPresentations.get(targetId).select())
+  assert.equal(name(), '哥布林 A')
+  assert.equal(record.latest.activeUnit.id, 'knight')
+  await unmountApp()
 })
 
 test('Production Runtime Move and Player callbacks with colliding IDs stay bound to the old Session', async () => {

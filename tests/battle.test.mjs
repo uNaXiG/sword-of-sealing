@@ -4,6 +4,7 @@ import { INITIAL_UNITS } from '../src/game/battle/battle.data.ts'
 import { createBattleUnit } from '../src/game/classes/class.factory.ts'
 import { reachableForUnit, moveUnit } from '../src/game/battle/battle.movement.ts'
 import { canUndoLastMove, createBattleState as createCoreBattleState } from '../src/game/battle/battle.state.ts'
+import { canConfirmAttack } from '../src/game/battle/battle.action.ts'
 import { getOccupancy, unitAt } from '../src/game/battle/occupancy.ts'
 import { activateUnitFixture, battleReducerFixture as battleReducer } from './turn.fixture.mjs'
 
@@ -478,6 +479,11 @@ test('攻擊模式點擊敵軍只選目標，空格或非法目標清除目標�
   assert.equal(state.selectedAttackTargetId, null)
   assert.equal(state.lastMove, moveRecord)
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
+  state = battleReducer(state, { type: 'select', targetId: 'assassin' })
+  assert.equal(state.selectedAttackTargetId, null)
+  assert.equal(canConfirmAttack(state), false)
+  assert.equal(state.lastMove, moveRecord)
+  state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
   state = battleReducer(state, { type: 'cell', cell: { column: 7, row: 7 } })
   assert.equal(state.selectedUnitId, 'knight')
   assert.equal(state.selectedAttackTargetId, null)
@@ -583,12 +589,14 @@ test('確認前目標若已失效則拒絕攻擊且不確認移動', () => {
   assert.equal(rejected.units.find((unit) => unit.id === 'goblin').hp, goblinHp)
 })
 
-test('攻擊模式無法切換至非 Active Unit', () => {
+test('攻擊模式點擊非 Active Unit 保持攻擊者但清除舊目標', () => {
   let state = completeMoveAdjacentToGoblin()
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
   const rejected = battleReducer(state, { type: 'select', unitId: 'assassin' })
-  assert.equal(rejected, state)
+  assert.equal(rejected.selectedUnitId, 'knight')
+  assert.equal(rejected.selectedAttackTargetId, null)
+  assert.equal(rejected.interactionMode, 'ATTACK')
 })
 
 test('建立戰場時拒絕非正整數攻擊距離', () => {

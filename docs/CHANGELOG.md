@@ -2,6 +2,32 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — Timeline 行動值整數顯示 (IMPLEMENTED — PENDING REVIEW)
+
+- Timeline 的右下角行動值改為僅在呈現層四捨五入為整數，正式 PAS／預測數值與回合演算法不變。真實瀏覽器確認顯示 `0、33、67、133`；新增格式化測試。
+
+## 2026-11-20 — M5-2A 行動軸光暈與中空輪盤 (IMPLEMENTED — PENDING REVIEW)
+
+- 目前行動金框與同一角色的預測藍框同步脈動；輪盤改為半透明中空五區，保留指令授權，並提供滑鼠與鍵盤焦點回饋。驗證見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+
+## 2026-11-20 — M5-2A 回合交接 HUD／CG 修正 (IMPLEMENTED — PENDING REVIEW)
+
+- 暫態角色檢視不再跨 PAS 回合保留。真實 WebGL 驗證奧黛攻擊哥布林 A 後，HUD、CG、輪盤與 Timeline 同步切換至迪歐。回歸測試及驗證細節見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+
+## 2026-11-20 — M5-2A Patch 1 Interaction Consistency & UI Refinement (IMPLEMENTED — PENDING REVIEW)
+
+- **Baseline / Scope**：`main`／`origin/main` @ `8b0aa67776c66cb4b0585a1ec887e598a1ca9d30`；Patch 只調整 Presentation、最小 Attack Target State Consistency、Tests 與文件。M5-2B 未啟動，Camera Controller 未修改。
+- **Interaction / UI**：檢視非 Active Unit 時輪盤隱藏；MOVE Mode 禁止世界／Timeline 切換檢視；非法攻擊目標清除舊 Target，Cancel Attack 回復 Active Unit。Timeline 採 ResizeObserver 完整卡片容量、無標題／順位／Scrollbar；友軍還原大型 M5-1 CG、Timeline 使用小肖像；輪盤以 Active Unit 世界投影並避開 HUD／Timeline。
+- **Verification**：`npm test` 284/284、Lint、Build、CRLF-aware Diff Check PASS；Build 保留既有 >500 kB chunk warning。真實 WebGL 驗證 Move／Undo／Attack Target／Confirm／Cancel／AI、輪盤移動與鏡頭跟隨、Desktop/Mobile/Landscape、CG、Reduced Motion、Fallback 與 Route Re-entry。角色死亡／終局 Restart Browser 未驗證；M5-2A 仍待 Product Owner Acceptance。
+- **Independent Review**：Landscape Timeline collision finding 已修正並經 Follow-up Review；Product Owner Acceptance 仍 PENDING。
+
+## 2026-11-20 — M5-2A Patch 2 Timeline Layout & CG Background Continuity (IMPLEMENTED — PENDING REVIEW)
+
+- **Timeline**：ResizeObserver 改量測獨立的可用內容區，Timeline 依完整可容納卡片數收縮並貼齊右側；桌面最多 8 格，小螢幕僅顯示完整圖標，不保留隱藏可捲動項目。
+- **CG**：固定 HUD 背景漸層與友軍大型 CG／敵軍肖像分層，切換角色時背景尺寸不變；保留原始友軍 CG、敵方肖像、圖片載入 Fallback 及 Reduced Motion。
+- **Verification**：`npm test` 284/284、Lint、Build 與 CRLF-aware Diff Check PASS；Build 保留既有 >500 kB chunk warning。真實 WebGL Browser 驗證桌面 8 格、手機直向 6 格、橫向 5 格、角色切換／快速切換、Reduced Motion 與 Move／Attack Cancel；三種版面無水平溢位。已擷取奧黛及哥布林畫面；未取得 PO 訊息所提的參考截圖，故未宣稱完成圖像對照。Product Owner Visual Acceptance 仍待執行。
+- **Status / Scope**：M5-2A 維持 **IMPLEMENTED — PENDING REVIEW**；M5 為 25%、Overall 為 42.5%，M5-2B 未啟動。沒有修改 Battle Core／PAS／Camera Controller／圖片素材；Patch 1／2 均未 Commit／Push。細節見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+
 ## 2026-11-20 — M5-2A Battle Interaction UI (IMPLEMENTED — PENDING REVIEW)
 
 - **Implementation**：新增角色五方向操作輪盤、Inspection Presentation State、最多八格的橫向 PAS Timeline，以及角色 CG 切換動畫與 Reduced Motion 支援。Skill／Item 維持 Disabled；移動、Undo、Attack、Standby 沿用既有授權 callback。

@@ -7,6 +7,7 @@
 }
 .battle-canvas { position: absolute; inset: 0; }
 .battle-world-indicator-layer { position: absolute; z-index: 2; inset: 0; pointer-events: none; }
+.battle-world-action-layer { position: absolute; z-index: 7; inset: 0; pointer-events: none; }
 .battle-canvas canvas { display: block; touch-action: none; }
 .battle-error { display: grid; height: 100%; place-items: center; padding: 24px; color: #263e4d; text-align: center; }
 
