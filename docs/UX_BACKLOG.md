@@ -1,6 +1,6 @@
 # UI / UX Backlog
 
-以下需求目前均為 **PENDING**。UX-001～UX-005 的 Target Milestone 為 M5-3；UX-006 的 Target Milestone 為 M5-2B。M5-1／M5-2A 只實作既有操作的 HUD 呈現與 callback 接線，不提前實作這些 UX 項目。M5-2A 已正式結案，UX-006 仍明確歸屬 M5-2B，不在本結案範圍內提前實作。M5-2A Patch 1 的取消 MOVE Mode、Undo Move 與 Cancel Attack 仍各自沿用既有 callback，沒有加入右鍵快捷或撤銷後自動重入 MOVE。所有新快捷操作都須保留 UI 按鈕以支援手機與觸控。
+UX-001～UX-005 目前均為 **PENDING**，Target Milestone 為 M5-3；UX-006 已在 M5-2B 實作，仍待獨立審查與 Product Owner 驗收。M5-1／M5-2A 只實作既有操作的 HUD 呈現與 callback 接線，不提前實作 M5-3 的快捷操作。M5-2A 已正式結案；相機取景需求歸屬 M5-2B。M5-2A Patch 1 的取消 MOVE Mode、Undo Move 與 Cancel Attack 仍各自沿用既有 callback，沒有加入右鍵快捷或撤銷後自動重入 MOVE。所有新快捷操作都須保留 UI 按鈕以支援手機與觸控。
 
 ## UX-001：移動撤銷後自動進入 MOVE
 
@@ -55,7 +55,7 @@
 ## UX-006：Active Unit Camera Framing
 
 - **ID**：UX-006
-- **Scope**：檢視目前行動角色的鏡頭構圖與取景；具體行為及驗收條件待 M5-2 規格確認。
+- **Scope**：開場讓 Active Unit 位於可用戰場區的第三象限（左下）。鎖定時跟隨角色的實際世界位置，旋轉／縮放不解除鎖定。COMMAND 點擊棋盤外空白或無角色與障礙物的格子才解除鎖定，隱藏角色 CG、HUD 與輪盤，保留行動軸。場上角色／行動軸檢視及 PAS 換手會恢復聚焦；不改變正式選取與指令權限。取景需避開 HUD／Timeline，支援 Reduced Motion。
 - **Target Milestone**：M5-2B
-- **Dependencies**：待 M5-2 規格確認。
-- **Status**：PENDING
+- **Dependencies**：M5-2B Presentation Focus 與世界 Group Registry。
+- **Status**：IMPLEMENTED — PENDING REVIEW；Browser Verification 尚有未驗證項目，詳見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。

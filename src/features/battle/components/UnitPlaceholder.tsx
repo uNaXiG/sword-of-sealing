@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Color, MeshStandardMaterial, type Group, type Mesh } from 'three'
 import { ATTACK_ANIMATION_PROFILES } from '../../../game/battle/battle.animation'
@@ -48,6 +48,7 @@ export default function UnitPlaceholder({
   deathClockRef,
   battleBusy,
   actionMenu,
+  registerUnitGroup,
   onSelect,
   onMoveComplete,
   onMoveCancelled,
@@ -66,6 +67,7 @@ export default function UnitPlaceholder({
   deathMotion: DeathMotion | null
   deathClockRef: DeathAnimationClockMapRef
   battleBusy: boolean
+  registerUnitGroup: (unitId: string, group: Group | null) => void
   actionMenu: {
     portal: RefObject<HTMLElement>
     activeUnit: BattleUnit
@@ -102,6 +104,10 @@ export default function UnitPlaceholder({
   const materialEmissiveIntensity = useRef(new WeakMap<MeshStandardMaterial, number>())
   const materialOpacity = useRef(new WeakMap<MeshStandardMaterial, number>())
   const impactElapsed = useRef(new Map<number, number>())
+  const setGroupRef = useCallback((value: Group | null) => {
+    group.current = value
+    registerUnitGroup(unit.id, value)
+  }, [registerUnitGroup, unit.id])
 
   useEffect(() => {
     const generation = ++effectGeneration.current
@@ -169,7 +175,7 @@ export default function UnitPlaceholder({
   })
 
   return (
-    <group ref={group} position={cellPosition(unit.position)}>
+    <group ref={setGroupRef} position={cellPosition(unit.position)}>
       {overheadPresentation.showNameAndHealth && (
         <group ref={labelRoot}>
           <UnitLabel unit={unit} />

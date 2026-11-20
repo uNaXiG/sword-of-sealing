@@ -27,16 +27,8 @@ type BattleHUDProps = {
 
 const BASE_URL = import.meta.env.BASE_URL
 
-function CharacterPortrait({ character }: { character: BattleHudCharacter | null }) {
+function CharacterPortrait({ character }: { character: BattleHudCharacter }) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null)
-
-  if (!character) {
-    return (
-      <div className="battle-hud__portrait-fallback" aria-label="等待行動角色">
-        <span>等待行動</span>
-      </div>
-    )
-  }
 
   if (!character.characterArtUrl || failedUrl === character.characterArtUrl) {
     return (
@@ -251,17 +243,16 @@ export default function BattleHUD({
         </div>
       )}
 
-      <div className="battle-hud__portrait-backdrop" aria-hidden="true" />
-      <figure
-        className={`battle-hud__portrait${character?.faction === 'enemy' ? ' battle-hud__portrait--enemy' : ''}`}
-        aria-label="目前檢視角色立繪"
-      >
-        <CharacterPortrait key={character?.id ?? 'empty'} character={character} />
-      </figure>
-
-      <section className="battle-hud__status" aria-label="角色資訊" aria-live="polite">
-          {character ? (
-            <>
+      {character && (
+        <>
+          <div className="battle-hud__portrait-backdrop" aria-hidden="true" />
+          <figure
+            className={`battle-hud__portrait${character.faction === 'enemy' ? ' battle-hud__portrait--enemy' : ''}`}
+            aria-label="目前檢視角色立繪"
+          >
+            <CharacterPortrait key={character.id} character={character} />
+          </figure>
+          <section className="battle-hud__status" aria-label="角色資訊" aria-live="polite">
               <div className="battle-hud__status-content">
                 <div className="battle-hud__identity">
                   <div className="battle-hud__identity-heading">
@@ -311,11 +302,9 @@ export default function BattleHUD({
                 onConfirmAttack={onConfirmAttack}
                 onCancelAttack={onCancelAttack}
               />
-            </>
-          ) : (
-            null
-          )}
-      </section>
+          </section>
+        </>
+      )}
     </div>
   )
 }

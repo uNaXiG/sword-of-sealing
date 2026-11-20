@@ -59,9 +59,10 @@
 
 ## M5 與規劃中：未來系統
 
-- M5 — 戰鬥 UI／UX：**IN PROGRESS**；M5-1 Battle HUD Redesign 已 **COMPLETED — FORMALLY ACCEPTED**；M5-2A Battle Interaction UI 已 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**，M5-2B Battle Camera System 維持 **PENDING — UP NEXT**。M5 進度為 37.5%、Overall 43.75%、Completed Milestones 4/10。
+- M5 — 戰鬥 UI／UX：**IN PROGRESS**；M5-1 Battle HUD Redesign 已 **COMPLETED — FORMALLY ACCEPTED**；M5-2A Battle Interaction UI 已 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M5-2B Battle Camera System 為 **IMPLEMENTED — PENDING REVIEW**。M5 進度仍為 37.5%、Overall 43.75%、Completed Milestones 4/10，未將待審查實作計為正式完成。
 - M5-1 HUD 僅呈現 Active Unit 的立繪、HP／SP、圖示化 ATK／MOV／DEF、靜態攻擊幾何縮圖與目前允許的操作；目前沒有狀態效果資料，因此不顯示空容器或假效果。世界座標向下箭頭跟隨 PAS Active Unit；我方頭頂名稱／HP 標籤隱藏，敵方標籤保留，正式 Unit HP／Combat State 不變。其 View Model 不持有第二份戰鬥狀態；操作仍由既有 Hook／Reducer 決定。初始我方 roster 為奧黛與迪歐，保留其 ID、職業資料、既有格位、三隻哥布林及其他職業 Registry／Factory。
 - M5-2A Patch 1 的指令輪盤錨定 3D Active Unit，只透過既有權限 Selector 與 callbacks 執行 Move／Attack／Undo／Standby；Skill／Item disabled。檢視非 Active Unit 時輪盤隱藏；MOVE Mode 禁止世界／Timeline 切換檢視；非法攻擊目標清除先前目標且 Cancel Attack 回復 Active Unit。行動軸依可用容器寬度顯示完整圖標與 PAS 時間值，沒有標題、順位或 Scrollbar。友軍 HUD 使用原 M5-1 大型 CG，Timeline 使用小型肖像，敵方 HUD 使用肖像。每單位本輪已行動狀態仍無資料契約，因此不臆測 gray-out。M5-2A 不修改鏡頭控制；Camera Follow／Framing 留在 M5-2B。
+- M5-2B 開場依參考圖採固定俯角的斜視構圖，將焦點角色放在可用戰場區的第三象限（左下）。右鍵旋轉與滾輪縮放保持鎖定；COMMAND 點擊棋盤外空白或未佔用格才解除鎖定、隱藏角色 CG／HUD 並開放左鍵平移。點擊角色、行動軸肖像或 PAS 換手會恢復聚焦；MOVE／ATTACK 保留原有格子與目標操作。詳見 [UX-006](./UX_BACKLOG.md#ux-006active-unit-camera-framing)。
 - 指令輪盤採半透明深藍中空圓環，以金色線條分隔五個可辨識的指令區；中心讓戰場指標輸入穿透，可用區域在滑鼠懸停、鍵盤聚焦或按下時提供回饋。行動順序軸以金框標示當前行動卡片，以藍框標示友軍／中立的預測卡片；兩者同步柔和脈動，不隨檢視對象改變。敵軍固定紅色外框；未選取時不閃爍，選取後紅框脈動且不改藍框。Reduced Motion 保留靜態紅框。
 - 戰鬥橫幅只顯示確認傷害，例如「奧黛 對 哥布林 A 造成 23 點傷害」；不顯示攻擊中、合法目標、距離、實際扣除或死亡補充文字。橫幅置於畫面中央正上方，保留頂部安全邊距、不攔截戰場輸入，角色 HUD 不承載提示文字。
 - 2K 角色 HUD 的 HP／SP 保持原渲染起點，只調整條長；攻擊範圍與右側三屬性維持固定欄位與等距。

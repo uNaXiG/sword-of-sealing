@@ -2,6 +2,17 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M5-2B 開場取景與焦點鎖定
+
+- 開場以可用戰場區左下為焦點。旋轉／縮放不解除鎖定；COMMAND 點擊空白才解除，並隱藏角色 CG／HUD。選取角色或 PAS 換手恢復焦點，不變更戰鬥權限。驗證見 [Development Status](./DEVELOPMENT_STATUS.md)。
+
+## 2026-11-20 — M5-2B Battle Camera System（IMPLEMENTED — PENDING REVIEW）
+
+- **Implementation**：加入單一 R3F 相機控制器、集中相機設定與投影／阻尼數學；PAS 換手聚焦新 Active Unit，Presentation 檢視聚焦被檢視角色，並跟隨實際移動中的 Unit Group。保留固定俯角、既有 OrbitControls 手動平移／旋轉／縮放、手動操作中止自動跟隨、安全區避讓與 Reduced Motion。ATTACK 目標點擊更新角色檢視資料但不發出一般檢視相機請求；不修改 PAS、Battle Core、AI 或 Outcome。
+- **Regression / Automated Verification**：維持 ATTACK 目標檢視與 PAS 換手 HUD／CG 同步；新增 Camera Math 與 React-mounted Controller 整合測試，覆蓋 ResizeObserver／R3F 尺寸更新先後不同時的重新取景。`npm test` 296/296 PASS，`npm run lint` PASS，`npm run build` PASS（BattleScene chunk 1,035.66 kB，既有 >500 kB 警告），CRLF-aware Diff Check PASS。
+- **Browser Verification**：真實 WebGL 戰場確認 Timeline 檢視迪歐時 HUD／CG 聚焦迪歐、Active Unit 仍為奧黛且輪盤隱藏；點回 Active Unit 恢復輪盤。COMMAND 點擊 3D 敵人改變 Inspected Unit、不改 PAS。實際 Move／Undo 後輪盤隨單位回到原位；左平移、右旋轉、滾輪縮放時輪盤持續投影於角色周圍。Standby 後 PAS 切換至迪歐，HUD／CG／輪盤同步更新；迪歐 Standby 後觀察到敵方 AI 對迪歐造成 5 點傷害，敵方行動後回到奧黛。主選單 Route Re-entry 後確認 1 個 Canvas 與各 1 個 Portal、HUD／Active 重設。真實 WebGL viewport 由 2560×1440 縮至 1280×720、再調至 1920×1080，輪盤持續錨定至新安全區的 Active Unit 投影；量測的頁面均無水平溢位。另量測 1280×720、1920×1080、2560×1440、390×845、845×390 viewport；此為桌面真實瀏覽器調整 viewport，不代表實體手機驗收。
+- **Limits / Status**：Browser 中的 Reduced Motion、攻擊取消／目標點擊相機邊界、敵方 AI 移動時的相機跟隨、角色死亡、終局 Restart 及全部相機安全區／邊界情境尚未完整驗證；Observer disposal 由 lifecycle／React integration 測試覆蓋但非 Browser 驗證。詳細狀態見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。M5-2B 維持 **IMPLEMENTED — PENDING REVIEW**，未經獨立審查或 Product Owner 驗收；M5 37.5%、Overall 43.75%、Completed Milestones 4/10 不變。TD-022 保持 OPEN。未 Commit／Push。
+
 ## 2026-11-20 — 2K HUD HP／SP 起點與右側欄位修正
 
 - HP／SP 保持原本左側渲染起點，只調整 2K 顯示長度；攻擊範圍維持與右側 ATK／MOV／DEF 相同的固定欄位與等距配置。

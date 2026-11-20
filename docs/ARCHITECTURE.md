@@ -163,6 +163,10 @@ M5-2A 在 `BattleSessionRuntime` 以本地狀態維護暫態檢視，並記錄�
 
 `BattleActionRadialMenu` 只在 `displayUnit.id === activeUnit.id`、Active Player 有選取權、COMMAND、未 Busy／Pending 且未結算時顯示。`BattleActionRadialOverlay` 以 Drei `Html` 錨定 Active Unit Group，使用 Camera Projection 追隨移動與 Orbit Controls；投影會避開 viewport 邊界及已量測的 HUD／Timeline Rect，不修改 Camera Controller。Attack／Move／Undo／Standby 使用既有 Hook callback 與 can* Selector；Skill／Item 僅為 disabled 控制項。Timeline 由 `ResizeObserver` 計算完整卡片容量，最多八格且沒有隱藏 Scrollbar。大型 `characterArtUrl` 與 Timeline `portraitUrl` 分離，友軍還原 M5-1 戰鬥 CG、敵方使用肖像。立繪切換以 keyed 節點重播 320ms 入場動畫；Reduced Motion 停用動畫。M5-2A 不修改 Camera Controller、Battle Core、PAS 或 Action Timeline 計算。
 
+M5-2B 由 `BattleSessionRuntime` 依目前回合的檢視狀態推導相機焦點；無有效檢視時使用 PAS Active Unit。COMMAND 空白點擊只清除當回合的呈現焦點並移除角色 HUD／CG，不寫入正式戰鬥選取；合法檢視或 PAS 換手時恢復焦點。ATTACK 的世界目標檢視只影響 HUD／CG，不換鏡頭目標。`UnitPlaceholder` 註冊實際外層 Group，`BattleCameraController` 在 OrbitControls 更新後讀取其世界位置並維持鎖定，不將逐幀資料寫入 React／Battle State。旋轉／縮放保留鎖定；無焦點才開放手動平移。
+
+`battleCameraConfig.ts` 集中管理固定俯角、初始方位／距離、Zoom bounds、Focus Height 與轉場阻尼。安全取景依 Canvas、立繪／HUD／Timeline DOM Rect 計算，由 ResizeObserver、視窗與 R3F 尺寸變化更新；相機及 OrbitControls target 平移同一向量，保留相對 Offset、俯角及 Zoom。開場首幀直接取景，Reduced Motion 下切換焦點也不執行平滑轉場。Observer、視窗 listeners 與 R3F frame subscription 隨 Controller unmount 清理。M5-2B 不修改 PAS、Battle Core、攻擊合法性、AI 或 Outcome。
+
 戰鬥橫幅是獨立 Presentation Layer，不寫入角色 HUD 或 BattleState。`BattleHUD` 只負責角色資訊、資源與指令控制；`combatFeedbackText` 僅由 Confirmed Combat Result 投影為單一頂部橫幅，攻擊中、目標選取與目標距離不建立提示。橫幅使用畫面中央定位、safe-area 頂部邊距及 pointer-events none，不攔截戰場或角色操作。角色 HUD 不渲染閒置提示或空狀態文字。
 
 Timeline 根據正式 `unit.faction` 套用敵軍固定紅框。未選取時紅框保持固定；選取敵軍時只啟用紅色脈動，不改為藍色 Inspected outline。Inspected／Active presentation 不可改寫敵軍紅框；Reduced Motion 停用敵軍脈動。

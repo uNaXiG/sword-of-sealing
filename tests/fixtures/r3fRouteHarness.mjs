@@ -5,7 +5,7 @@ let activeCanvases = 0
 let canvasMounts = 0
 let canvasCleanups = 0
 
-export function Canvas({ children }) {
+export function Canvas({ children, onPointerMissed }) {
   useEffect(() => {
     activeCanvases += 1
     canvasMounts += 1
@@ -17,7 +17,12 @@ export function Canvas({ children }) {
 
   const sceneComponents = Children.toArray(children)
     .filter((child) => typeof child.type !== 'string')
-  return createElement('div', { 'data-testid': 'route-canvas' }, sceneComponents)
+  return createElement('div', {
+    'data-testid': 'route-canvas',
+    onClick: (event) => {
+      if (event.target === event.currentTarget) onPointerMissed?.(event)
+    },
+  }, sceneComponents)
 }
 
 export function useThree(selector) {
