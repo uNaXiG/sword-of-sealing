@@ -1,6 +1,6 @@
 # UI / UX Backlog
 
-UX-001～UX-005 目前均為 **PENDING**，Target Milestone 為 M5-3；UX-006 已在 M5-2B 實作，仍待獨立審查與 Product Owner 驗收。M5-1／M5-2A 只實作既有操作的 HUD 呈現與 callback 接線，不提前實作 M5-3 的快捷操作。M5-2A 已正式結案；相機取景需求歸屬 M5-2B。M5-2A Patch 1 的取消 MOVE Mode、Undo Move 與 Cancel Attack 仍各自沿用既有 callback，沒有加入右鍵快捷或撤銷後自動重入 MOVE。所有新快捷操作都須保留 UI 按鈕以支援手機與觸控。
+UX-001～UX-005 目前均為 **PENDING**，Target Milestone 為 M5-3；UX-006 已在 M5-2B 實作並正式結案。M5-1／M5-2A 只實作既有操作的 HUD 呈現與 callback 接線，不提前實作 M5-3 的快捷操作。M5-2A 已正式結案；相機取景需求歸屬 M5-2B。M5-2A Patch 1 的取消 MOVE Mode、Undo Move 與 Cancel Attack 仍各自沿用既有 callback，沒有加入右鍵快捷或撤銷後自動重入 MOVE。所有新快捷操作都須保留 UI 按鈕以支援手機與觸控。
 
 ## UX-001：移動撤銷後自動進入 MOVE
 
@@ -59,4 +59,4 @@ UX-001～UX-005 目前均為 **PENDING**，Target Milestone 為 M5-3；UX-006 �
 - **Target Milestone**：M5-2B
 - **MOVE Mode**：左鍵拖曳平移，暫停相機自動取景，但保留角色選取與 CG／HUD；單擊仍可選擇合法移動格。離開 MOVE 後恢復角色取景。
 - **Dependencies**：M5-2B Presentation Focus 與世界 Group Registry。
-- **Status**：IMPLEMENTED — PENDING REVIEW；Browser Verification 尚有未驗證項目，詳見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+- **Status**：COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS；既有死亡、終局 Restart 等瀏覽器限制保留，詳見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。

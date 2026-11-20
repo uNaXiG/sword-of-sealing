@@ -2,6 +2,14 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M5-2B Formal Closure
+
+- **Closure**：M5-2B 已通過 Independent Code Review 與 Product Owner Browser Acceptance，正式結案為 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**。
+- **Baseline**：Commit `6f6bc2f4bee95a5a3cca66710999035ae99eb4fa`、GitHub Actions Run [44762610196](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44762610196) SUCCESS；`build` 與 `deploy` jobs 均 SUCCESS。
+- **Contract**：初始斜視焦點約畫面高度 52% 且依 UI Safe Area 避讓；COMMAND 鎖定追蹤、右鍵旋轉與滾輪縮放不解除鎖定；空白解除隱藏 CG／HUD／輪盤；角色、Timeline 與 PAS 換手恢復聚焦；MOVE 可左鍵平移，退出後恢復鎖定。
+- **Progress**：M5 50%、Overall 45%、Completed Milestones 4/10；M5-3 為 PENDING — UP NEXT；TD-022 保持 OPEN。
+- **Scope**：僅同步文件，不修改 Production Code、Tests、Assets 或 Camera Controller，不 Commit／Push。
+
 ## 2026-11-20 — M5-2B MOVE 左鍵平移
 
 - 選擇移動格時暫停自動取景，允許左鍵拖曳戰場而不清除角色 CG／HUD；離開 MOVE 後恢復角色取景。
