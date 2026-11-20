@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ArrowRight } from 'lucide-react'
 import type { BattleUnit, InteractionMode } from '../../../game/battle/battle.types'
 import {
   BATTLE_ATTRIBUTE_PRESENTATION,
@@ -7,6 +8,7 @@ import {
   getProgressPercentage,
   selectBattleCombatFeedback,
   selectBattleHudCharacter,
+  type BattleDamageForecast,
   type BattleHudCharacter,
 } from '../battleHud'
 import './BattleHUD.css'
@@ -16,13 +18,11 @@ type BattleHUDProps = {
   displayUnit: BattleUnit | null
   selectedUnit: BattleUnit | null
   interactionMode: InteractionMode
-  canConfirmAttack: boolean
+  damageForecast: BattleDamageForecast | null
   battleBusy: boolean
   pendingTurnCompletion: boolean
   combatFeedback: string | null
   onCancelMoveMode: () => void
-  onConfirmAttack: () => void
-  onCancelAttack: () => void
 }
 
 const BASE_URL = import.meta.env.BASE_URL
@@ -54,30 +54,52 @@ function ResourceBar({
   value,
   maximum,
   variant,
+  forecast = null,
 }: {
   label: string
   value: number
   maximum: number
   variant: 'hp' | 'sp'
+  forecast?: BattleDamageForecast | null
 }) {
   const safeMaximum = Number.isFinite(maximum) && maximum > 0 ? maximum : 1
-  const safeValue = Number.isFinite(value) ? Math.min(safeMaximum, Math.max(0, value)) : 0
+  const displayValue = forecast ? forecast.remainingHp : value
+  const safeValue = Number.isFinite(displayValue) ? Math.min(safeMaximum, Math.max(0, displayValue)) : 0
 
   return (
     <div className={`battle-hud__resource battle-hud__resource--${variant}`}>
       <div className="battle-hud__resource-label">
         <span>{label}</span>
-        <span>{value} / {maximum}</span>
+        {forecast ? (
+          <span className="battle-hud__resource-forecast">
+            <span>{forecast.currentHp}</span>
+            <ArrowRight className="battle-hud__resource-forecast-arrow" size={14} aria-hidden="true" />
+            <span className="battle-hud__resource-forecast-value">{displayValue}/{maximum}</span>
+          </span>
+        ) : (
+          <span>{displayValue} / {maximum}</span>
+        )}
       </div>
       <div
-        className="battle-hud__resource-track"
+        className={`battle-hud__resource-track${forecast ? ' battle-hud__resource-track--forecast' : ''}`}
         role="progressbar"
-        aria-label={`${label} ${value} / ${maximum}`}
+        aria-label={`${label} ${displayValue} / ${maximum}`}
         aria-valuemin={0}
         aria-valuemax={safeMaximum}
         aria-valuenow={safeValue}
+        aria-valuetext={forecast ? `預計 ${displayValue} / ${maximum}，目前 ${forecast.currentHp}，預計傷害 ${forecast.damage}` : undefined}
       >
-        <span style={{ width: `${getProgressPercentage(value, maximum)}%` }} />
+        <span
+          className="battle-hud__resource-fill"
+          style={{ width: `${forecast ? forecast.remainingPercentage : getProgressPercentage(value, maximum)}%` }}
+        />
+        {forecast && (
+          <span
+            className="battle-hud__resource-damage"
+            style={{ width: `${forecast.damagePercentage}%` }}
+            aria-hidden="true"
+          />
+        )}
       </div>
     </div>
   )
@@ -134,12 +156,10 @@ function AttackPatternPreview({ character }: { character: BattleHudCharacter }) 
 function ActionButton({
   label,
   icon,
-  disabled = false,
   onClick,
 }: {
   label: string
   icon: string
-  disabled?: boolean
   onClick: () => void
 }) {
   return (
@@ -147,7 +167,6 @@ function ActionButton({
       className="battle-hud__action"
       type="button"
       aria-label={label}
-      disabled={disabled}
       onClick={onClick}
     >
       <img src={getBattleAssetUrl(BASE_URL, `assets/images/ui/${icon}`)} alt="" aria-hidden="true" />
@@ -160,22 +179,16 @@ function ActionControls({
   activeUnit,
   selectedUnit,
   interactionMode,
-  canConfirmAttack,
   battleBusy,
   pendingTurnCompletion,
   onCancelMoveMode,
-  onConfirmAttack,
-  onCancelAttack,
 }: Pick<BattleHUDProps,
   | 'activeUnit'
   | 'selectedUnit'
   | 'interactionMode'
-  | 'canConfirmAttack'
   | 'battleBusy'
   | 'pendingTurnCompletion'
   | 'onCancelMoveMode'
-  | 'onConfirmAttack'
-  | 'onCancelAttack'
 >) {
   const canIssueCommands = Boolean(
     activeUnit &&
@@ -199,15 +212,6 @@ function ActionControls({
     )
   }
 
-  if (interactionMode === 'ATTACK') {
-    return (
-      <div className="battle-hud__actions" aria-label="攻擊指令">
-        <ActionButton label="確認攻擊" icon="attack.png" disabled={!canConfirmAttack} onClick={onConfirmAttack} />
-        <ActionButton label="取消攻擊" icon="cancel.png" onClick={onCancelAttack} />
-      </div>
-    )
-  }
-
   return null
 }
 
@@ -216,15 +220,14 @@ export default function BattleHUD({
   displayUnit,
   selectedUnit,
   interactionMode,
-  canConfirmAttack,
+  damageForecast,
   battleBusy,
   pendingTurnCompletion,
   combatFeedback,
   onCancelMoveMode,
-  onConfirmAttack,
-  onCancelAttack,
 }: BattleHUDProps) {
   const character = displayUnit ? selectBattleHudCharacter(displayUnit, BASE_URL) : null
+  const hpForecast = damageForecast?.targetId === character?.id ? damageForecast : null
   const combatFeedbackText = selectBattleCombatFeedback({
     combatFeedback,
   })
@@ -263,7 +266,14 @@ export default function BattleHUD({
                   </div>
                   <p>{character.faction === 'enemy' ? '敵方' : '我方'} · {character.className}</p>
                   <div className="battle-hud__resources">
-                    <ResourceBar label="HP" value={character.currentHp} maximum={character.maxHp} variant="hp" />
+                    <ResourceBar
+                      key={hpForecast ? 'forecast' : 'actual'}
+                      label="HP"
+                      value={character.currentHp}
+                      maximum={character.maxHp}
+                      variant="hp"
+                      forecast={hpForecast}
+                    />
                     <ResourceBar label="SP" value={character.currentSp} maximum={character.maxSp} variant="sp" />
                   </div>
                 </div>
@@ -295,12 +305,9 @@ export default function BattleHUD({
                 activeUnit={activeUnit}
                 selectedUnit={selectedUnit}
                 interactionMode={interactionMode}
-                canConfirmAttack={canConfirmAttack}
                 battleBusy={battleBusy}
                 pendingTurnCompletion={pendingTurnCompletion}
                 onCancelMoveMode={onCancelMoveMode}
-                onConfirmAttack={onConfirmAttack}
-                onCancelAttack={onCancelAttack}
               />
           </section>
         </>

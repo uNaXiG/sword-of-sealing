@@ -8,6 +8,8 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { canAttackTarget, getAttackDistance } from '../src/game/battle/battle.attack.ts'
 import { ATTACK_ANIMATION_PROFILES, getImpactMs } from '../src/game/battle/battle.animation.ts'
+import { INITIAL_UNITS } from '../src/game/battle/battle.data.ts'
+import { selectBattleDamageForecast } from '../src/features/battle/battleHud.ts'
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const appPath = resolve(projectRoot, 'src/App.tsx')
@@ -22,6 +24,7 @@ let vite
 let dom
 let createRoot
 let App
+let BattleHUD
 let frameHarness
 let routeHarness
 let container
@@ -70,18 +73,28 @@ function createRouteIntegrationPlugin() {
     },
     load(id) {
       if (!id.startsWith('\0route-visual:')) return null
+      if (id === '\0route-visual:GridMap') {
+        return `
+          import { useEffect } from 'react'
+          export default function GridMap({ onSelect }) {
+            useEffect(() => globalThis.__battleRouteRegistry?.registerGridSelection(onSelect), [onSelect])
+            return null
+          }
+        `
+      }
       if (id === '\0route-visual:UnitPlaceholder') {
         return `
           import { createElement, useEffect } from 'react'
-          export default function UnitPlaceholder({ unit, activeUnitId, actionMenu, onSelect }) {
+          export default function UnitPlaceholder({ unit, activeUnitId, selectedHighlight, actionMenu, onSelect }) {
             useEffect(() => {
               return globalThis.__battleRouteRegistry?.registerUnitPresentation(
                 unit.id,
                 unit.faction,
                 activeUnitId,
+                selectedHighlight,
                 onSelect,
               )
-            }, [unit.id, unit.faction, activeUnitId, onSelect])
+            }, [unit.id, unit.faction, activeUnitId, selectedHighlight, onSelect])
             if (!actionMenu) return null
             return createElement(
               'nav',
@@ -232,6 +245,32 @@ async function run(callback) {
   }
 }
 
+async function rightClickCanvas() {
+  const canvas = container.querySelector('[data-testid="route-canvas"]')
+  const createPointerEvent = (type) => {
+    const event = new dom.window.MouseEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      button: 2,
+      clientX: 20,
+      clientY: 20,
+    })
+    Object.defineProperty(event, 'pointerId', { value: 1 })
+    return event
+  }
+  await run(() => {
+    canvas.dispatchEvent(createPointerEvent('pointerdown'))
+    canvas.dispatchEvent(createPointerEvent('pointerup'))
+  })
+  await run(() => canvas.dispatchEvent(new dom.window.MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    button: 2,
+    clientX: 20,
+    clientY: 20,
+  })))
+}
+
 function currentFor(session) {
   return routeRegistry.records.find((record) => record.session === session)
 }
@@ -255,7 +294,9 @@ async function startMove(record) {
 
 async function startAttack(record, {
   targetId,
+  minimumTargets = 1,
   selectTarget = (battle, target) => battle.selectAttackTarget(target.id),
+  confirmAttack = true,
 } = {}) {
   let battle = record.latest
   const activeUnitId = battle.activeUnit?.id
@@ -266,11 +307,11 @@ async function startAttack(record, {
     const hypotheticalUnits = battle.units.map((unit) => unit.id === activeUnitId
       ? { ...unit, position }
       : unit)
-    return battle.units.some((target) =>
+    const targets = battle.units.filter((target) =>
       target.faction !== attacker.faction &&
-      (!targetId || target.id === targetId) &&
       canAttackTarget(hypotheticalUnits, activeUnitId, target.id),
     )
+    return targets.length >= minimumTargets && (!targetId || targets.some((target) => target.id === targetId))
   })
   assert.ok(reachableAttackTile, 'production scenario should allow a legal move into attack range')
 
@@ -291,9 +332,11 @@ async function startAttack(record, {
   assert.ok(target, 'completed legal movement should expose an attack target')
   await run(() => selectTarget(battle, target))
   battle = currentFor(record.session).latest
-  await run(() => battle.confirmAttack())
-  battle = currentFor(record.session).latest
-  assert.ok(battle.attackMotion, 'the configured production reducer should start the attack')
+  if (confirmAttack) {
+    await run(() => battle.confirmAttack())
+    battle = currentFor(record.session).latest
+    assert.ok(battle.attackMotion, 'the configured production reducer should start the attack')
+  }
   return battle
 }
 
@@ -497,18 +540,27 @@ async function mountApp() {
       record.restartHandler = restartHandler
       record.renders += 1
     },
-    registerUnitPresentation(unitId, faction, activeUnitId, onSelect) {
+    registerUnitPresentation(unitId, faction, activeUnitId, selectedHighlight, onSelect) {
       const record = this.current()
       if (!record) return undefined
       record.unitPresentations.set(unitId, {
         unitId,
         faction,
         activeUnitId,
+        selectedHighlight,
         select: () => onSelect(unitId),
         showNameAndHealth: faction === 'enemy',
         showActiveIndicator: unitId === activeUnitId,
       })
       return () => record.unitPresentations.delete(unitId)
+    },
+    registerGridSelection(onSelect) {
+      const record = this.current()
+      if (!record) return undefined
+      record.selectGridCell = onSelect
+      return () => {
+        if (record.selectGridCell === onSelect) record.selectGridCell = null
+      }
     },
     captureAI(state, dispatch) {
       const activeUnit = state.units.find((unit) => unit.id === state.turn.activeUnitId)
@@ -567,6 +619,7 @@ before(async () => {
   })
   await vite.ssrLoadModule(battleScenePath)
   App = (await vite.ssrLoadModule(appPath)).default
+  BattleHUD = (await vite.ssrLoadModule(resolve(projectRoot, 'src', 'features', 'battle', 'components', 'BattleHUD.tsx'))).default
   frameHarness = await vite.ssrLoadModule(frameHarnessPath)
   routeHarness = await vite.ssrLoadModule(routeHarnessPath)
 
@@ -687,6 +740,7 @@ test('Production Battle HUD follows the active unit and dispatches player comman
     ['atk.png', 'mov.png', 'def.png'],
   )
   assert.equal(record.unitPresentations.get('assassin').showActiveIndicator, true)
+  assert.equal(record.unitPresentations.get('assassin').selectedHighlight, true)
   assert.equal(record.unitPresentations.get('assassin').showNameAndHealth, false)
   assert.equal(record.unitPresentations.get('goblin').showNameAndHealth, true)
   assert.equal(container.textContent.includes('選取目前角色以使用指令'), false)
@@ -719,6 +773,7 @@ test('Production Battle HUD follows the active unit and dispatches player comman
   assert.match(container.querySelector('.battle-hud__portrait-image').src, /%E7%94%B7%E4%B8%BB/)
   assert.equal(record.unitPresentations.get('assassin').showActiveIndicator, false)
   assert.equal(record.unitPresentations.get('knight').showActiveIndicator, true)
+  assert.equal(record.unitPresentations.get('knight').selectedHighlight, true)
 
   await run(() => container.querySelector('button[aria-label="待命"]').click())
   const enemyTurn = await advanceRuntimeBattle(
@@ -737,6 +792,217 @@ test('Production Battle HUD follows the active unit and dispatches player comman
   assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
 })
 
+test('right-click cancels ATTACK, undoes a completed move, and returns to MOVE after Undo', async () => {
+  await mountApp()
+  const record = await enterBattle()
+
+  await run(() => container.querySelector('button[aria-label="攻擊"]').click())
+  assert.equal(currentFor(record.session).latest.interactionMode, 'ATTACK')
+  await rightClickCanvas()
+  assert.equal(currentFor(record.session).latest.interactionMode, 'COMMAND')
+  assert.equal(currentFor(record.session).latest.selectedAttackTargetId, null)
+  assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '奧黛')
+  assert.ok(container.querySelector('button[aria-label="攻擊"]'))
+
+  const initialPosition = record.latest.activeUnit.position
+  let battle = await startMove(record)
+  await rightClickCanvas()
+  assert.ok(currentFor(record.session).latest.motion, 'right-click must not interrupt a blocking Move Motion')
+  battle = currentFor(record.session).latest
+  await run(() => battle.finishMove(battle.motion.unitId, battle.motion.motionId))
+  battle = currentFor(record.session).latest
+  assert.equal(battle.interactionMode, 'COMMAND')
+  assert.notDeepEqual(battle.activeUnit.position, initialPosition)
+  assert.ok(battle.canUndoMove)
+
+  await rightClickCanvas()
+  battle = currentFor(record.session).latest
+  assert.equal(battle.interactionMode, 'MOVE')
+  assert.deepEqual(battle.activeUnit.position, initialPosition)
+  assert.equal(battle.canUndoMove, false)
+
+  await rightClickCanvas()
+  assert.equal(currentFor(record.session).latest.interactionMode, 'COMMAND')
+  assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '奧黛')
+  await unmountApp()
+})
+
+test('HUD displays bounded forecast segments without changing HP or SP', async () => {
+  await mountApp()
+  const attacker = INITIAL_UNITS.find((unit) => unit.id === 'assassin')
+  const goblin = INITIAL_UNITS.find((unit) => unit.id === 'goblin')
+  const renderHud = async (target, forecast) => {
+    await run(() => root.render(createElement(BattleHUD, {
+      activeUnit: attacker,
+      displayUnit: target,
+      selectedUnit: attacker,
+      interactionMode: 'ATTACK',
+      damageForecast: forecast,
+      battleBusy: false,
+      pendingTurnCompletion: false,
+      combatFeedback: null,
+      onCancelMoveMode: () => {},
+    })))
+  }
+
+  for (const [hp, remaining, damage] of [[60, 37, 23], [40, 17, 23], [3, 0, 3]]) {
+    const target = { ...goblin, hp }
+    await renderHud(target, selectBattleDamageForecast(attacker, target))
+    const hpResource = container.querySelector('.battle-hud__resource--hp')
+    const track = hpResource.querySelector('[role="progressbar"]')
+    const green = Number.parseFloat(track.querySelector('.battle-hud__resource-fill').style.width)
+    const red = Number.parseFloat(track.querySelector('.battle-hud__resource-damage').style.width)
+    const forecastText = hpResource.querySelector('.battle-hud__resource-forecast')
+    assert.equal(forecastText.children[0].textContent, String(hp))
+    assert.equal(forecastText.querySelector('.battle-hud__resource-forecast-value').textContent, `${remaining}/60`)
+    assert.ok(forecastText.querySelector('.battle-hud__resource-forecast-arrow').matches('svg'))
+    assert.ok(Math.abs(green - remaining / 60 * 100) < 1e-10)
+    assert.ok(Math.abs(red - damage / 60 * 100) < 1e-10)
+    assert.equal(track.getAttribute('aria-valuenow'), String(remaining))
+    assert.match(track.getAttribute('aria-valuetext'), new RegExp(`目前 ${hp}`))
+    assert.equal(container.querySelector('.battle-hud__resource--sp .battle-hud__resource-label span:last-child').textContent, '15 / 15')
+    assert.equal(target.hp, hp)
+  }
+
+  const otherTarget = INITIAL_UNITS.find((unit) => unit.id === 'goblin-b')
+  await renderHud(goblin, selectBattleDamageForecast(attacker, otherTarget))
+  assert.equal(container.querySelector('.battle-hud__resource--hp .battle-hud__resource-label span:last-child').textContent, '60 / 60')
+  assert.equal(container.querySelector('.battle-hud__resource-damage'), null)
+  assert.equal(container.querySelector('.battle-hud__status button[aria-label="確認攻擊"]'), null)
+  assert.equal(container.querySelector('.battle-hud__status button[aria-label="取消攻擊"]'), null)
+  await unmountApp()
+})
+
+test('HUD forecast follows legal targets, inspection, invalid selection, cancel and route re-entry', async () => {
+  await mountApp()
+  const record = await enterBattle()
+  let battle = await startAttack(record, {
+    targetId: 'goblin',
+    minimumTargets: 2,
+    confirmAttack: false,
+    selectTarget: (_battle, target) => record.unitPresentations.get(target.id).select(),
+  })
+  const otherTarget = battle.attackableTargets.find((unit) => unit.id !== 'goblin')
+  assert.ok(otherTarget)
+  const hpText = () => container.querySelector('.battle-hud__resource--hp .battle-hud__resource-label span:last-child').textContent
+  const name = () => container.querySelector('.battle-hud__identity h2').textContent
+
+  assert.equal(name(), '哥布林 A')
+  assert.equal(container.querySelector('.battle-hud__resource-forecast-value').textContent, '37/60')
+  assert.equal(battle.units.find((unit) => unit.id === 'goblin').hp, 60)
+  assert.ok(container.querySelector('.battle-hud__resource-damage'))
+  assert.equal(container.querySelector('.battle-damage-forecast'), null)
+  assert.equal(container.querySelector('.battle-hud__status button[aria-label="確認攻擊"]'), null)
+  assert.equal(container.querySelector('.battle-hud__status button[aria-label="取消攻擊"]'), null)
+  assert.ok(container.querySelector('nav[aria-label="攻擊操作"]'))
+
+  await run(() => record.unitPresentations.get(otherTarget.id).select())
+  battle = currentFor(record.session).latest
+  assert.equal(battle.selectedAttackTargetId, otherTarget.id)
+  assert.equal(name(), otherTarget.name)
+  assert.equal(container.querySelector('.battle-hud__resource-forecast-value').textContent, '37/60')
+  assert.equal(battle.units.find((unit) => unit.id === otherTarget.id).hp, 60)
+
+  const capacity = container.querySelector('.turn-timeline-capacity')
+  Object.defineProperty(capacity, 'clientWidth', { value: 640 })
+  await run(() => dom.window.dispatchEvent(new dom.window.Event('resize')))
+  await run(() => container.querySelector('button[aria-label*="迪歐"]').click())
+  assert.equal(currentFor(record.session).latest.selectedAttackTargetId, otherTarget.id)
+  assert.equal(name(), '迪歐')
+  assert.equal(hpText(), '100 / 100')
+  assert.equal(container.querySelector('.battle-hud__resource-damage'), null)
+
+  await run(() => container.querySelector(`button[aria-label*="${otherTarget.name}"]`).click())
+  assert.equal(container.querySelector('.battle-hud__resource-forecast-value').textContent, '37/60')
+  await run(() => record.unitPresentations.get('knight').select())
+  assert.equal(currentFor(record.session).latest.selectedAttackTargetId, null)
+  assert.equal(hpText(), '100 / 100')
+  assert.equal(container.querySelector('.battle-hud__resource-damage'), null)
+
+  await run(() => record.unitPresentations.get('goblin').select())
+  assert.equal(container.querySelector('.battle-hud__resource-forecast-value').textContent, '37/60')
+  await rightClickCanvas()
+  assert.equal(currentFor(record.session).latest.interactionMode, 'COMMAND')
+  assert.equal(name(), '奧黛')
+  assert.equal(hpText(), '75 / 75')
+  assert.equal(container.querySelector('.battle-hud__resource-damage'), null)
+
+  await run(() => currentFor(record.session).latest.setInteractionMode('ATTACK'))
+  await run(() => record.unitPresentations.get('goblin').select())
+  assert.equal(container.querySelector('.battle-hud__resource-forecast-value').textContent, '37/60')
+  await run(() => container.querySelector('nav[aria-label="攻擊操作"] button:last-child').click())
+  assert.equal(currentFor(record.session).latest.interactionMode, 'COMMAND')
+  assert.equal(name(), '奧黛')
+  assert.equal(hpText(), '75 / 75')
+  assert.equal(container.querySelector('.battle-hud__resource-damage'), null)
+  assert.equal(container.querySelector('nav[aria-label="攻擊操作"]'), null)
+
+  await leaveBattle()
+  await enterBattle()
+  assert.equal(container.querySelector('.battle-hud__resource-damage'), null)
+  assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '奧黛')
+  await unmountApp()
+})
+
+test('attack target first click shows HUD forecast and second click confirms formal damage', async () => {
+  await mountApp()
+  const record = await enterBattle()
+  const battle = await startAttack(record, {
+    targetId: 'goblin',
+    confirmAttack: false,
+    selectTarget: (_battle, target) => record.unitPresentations.get(target.id).select(),
+  })
+
+  assert.equal(battle.selectedAttackTargetId, 'goblin')
+  assert.equal(battle.attackMotion, null)
+  assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '哥布林 A')
+  assert.equal(container.querySelector('.battle-hud__resource-forecast-value').textContent, '37/60')
+  assert.ok(container.querySelector('.battle-hud__resource-damage'))
+  assert.equal(battle.units.find((unit) => unit.id === 'goblin').hp, 60)
+
+  await run(() => record.unitPresentations.get('goblin').select())
+  const confirmed = currentFor(record.session).latest
+  assert.ok(confirmed.attackMotion)
+  assert.equal(container.querySelector('.battle-hud__resource-damage'), null)
+  assert.equal(container.querySelector('.battle-hud__resource--hp .battle-hud__resource-label span:last-child').textContent, '60 / 60')
+  const impactMs = getImpactMs(ATTACK_ANIMATION_PROFILES[confirmed.attackMotion.animationType])
+  await run(() => frameHarness.advanceFrame((impactMs + 1) / 1000))
+  assert.equal(currentFor(record.session).latest.units.find((unit) => unit.id === 'goblin').hp, 37)
+  await unmountApp()
+})
+
+test('grid target selection shows the same HUD forecast and confirms on the second click', async () => {
+  await mountApp()
+  const record = await enterBattle()
+  const battle = await startAttack(record, {
+    targetId: 'goblin',
+    confirmAttack: false,
+    selectTarget: (_battle, target) => record.selectGridCell(target.position),
+  })
+  assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '哥布林 A')
+  assert.equal(container.querySelector('.battle-hud__resource-forecast-value').textContent, '37/60')
+  await run(() => record.selectGridCell(battle.selectedAttackTarget.position))
+  assert.ok(currentFor(record.session).latest.attackMotion)
+  assert.equal(container.querySelector('.battle-hud__resource-damage'), null)
+  await unmountApp()
+})
+
+test('external confirm action preserves the formal attack callback', async () => {
+  await mountApp()
+  const record = await enterBattle()
+  await startAttack(record, {
+    targetId: 'goblin',
+    confirmAttack: false,
+    selectTarget: (_battle, target) => record.unitPresentations.get(target.id).select(),
+  })
+  const controls = container.querySelector('nav[aria-label="攻擊操作"]')
+  assert.ok(!container.querySelector('.battle-hud__status').contains(controls))
+  await run(() => controls.querySelector('button:first-child').click())
+  assert.ok(currentFor(record.session).latest.attackMotion)
+  assert.equal(container.querySelector('.battle-hud__resource-damage'), null)
+  await unmountApp()
+})
+
 test('A blank Canvas click hides only character presentation; timeline and model clicks restore it', async () => {
   await mountApp()
   const record = await enterBattle()
@@ -752,15 +1018,20 @@ test('A blank Canvas click hides only character presentation; timeline and model
   assert.equal(container.querySelector('button[aria-label="待命"]'), null)
   assert.equal(record.latest.activeUnit.id, 'assassin')
   assert.equal(record.latest.selectedUnit.id, 'assassin')
+  assert.equal(record.unitPresentations.get('assassin').selectedHighlight, false)
   assert.ok(container.querySelector('.turn-timeline'))
   await run(() => inspectKnight.click())
   assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '迪歐')
+  assert.equal(record.unitPresentations.get('knight').selectedHighlight, true)
   await run(() => record.unitPresentations.get('assassin').select())
   assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '奧黛')
+  assert.equal(record.unitPresentations.get('assassin').selectedHighlight, true)
+  assert.equal(record.unitPresentations.get('knight').selectedHighlight, false)
   await run(() => container.querySelector('button[aria-label="移動"]').click())
   await run(() => canvas.click())
   assert.equal(record.latest.interactionMode, 'MOVE')
   assert.ok(container.querySelector('.battle-hud__status'))
+  assert.equal(record.unitPresentations.get('assassin').selectedHighlight, true)
   await unmountApp()
 })
 

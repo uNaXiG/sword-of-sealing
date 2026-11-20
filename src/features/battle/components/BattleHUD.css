@@ -247,7 +247,19 @@
   letter-spacing: .07em;
 }
 
+.battle-hud__resource-forecast {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.battle-hud__resource-forecast-arrow,
+.battle-hud__resource-forecast-value {
+  color: #f0a3a3;
+}
+
 .battle-hud__resource-track {
+  display: flex;
   height: 10px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, .25);
@@ -256,16 +268,32 @@
 
 .battle-hud__resource-track > span {
   display: block;
+  flex: 0 0 auto;
   height: 100%;
   transition: width .22s ease-out;
 }
 
-.battle-hud__resource--hp .battle-hud__resource-track > span {
+.battle-hud__resource--hp .battle-hud__resource-fill {
   background: linear-gradient(90deg, #4d9b61, #86d584);
 }
 
-.battle-hud__resource--sp .battle-hud__resource-track > span {
+.battle-hud__resource--sp .battle-hud__resource-fill {
   background: linear-gradient(90deg, #397bad, #77c4ed);
+}
+
+.battle-hud__resource-track--forecast > span {
+  transition: none;
+}
+
+.battle-hud__resource-damage {
+  background: #f0a3a3;
+  opacity: .8;
+  animation: battle-hud-forecast-pulse 1.25s ease-in-out infinite;
+}
+
+@keyframes battle-hud-forecast-pulse {
+  0%, 100% { opacity: .65; }
+  50% { opacity: 1; }
 }
 
 .battle-hud__attack-preview {
@@ -373,14 +401,9 @@
   pointer-events: none;
 }
 
-.battle-hud__action:hover:not(:disabled) {
+.battle-hud__action:hover {
   border-color: #f0d58e;
   background: linear-gradient(180deg, rgba(82, 115, 138, .98), rgba(53, 83, 104, .98));
-}
-
-.battle-hud__action:disabled {
-  opacity: .48;
-  cursor: not-allowed;
 }
 
 .battle-action-radial {
@@ -1110,6 +1133,7 @@
   }
 
   .battle-hud__portrait-image,
+  .battle-hud__resource-damage,
   .turn-timeline-list,
   .turn-card--enemy.turn-card--inspected {
     animation: none;

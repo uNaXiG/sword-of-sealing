@@ -97,8 +97,8 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/classes/` | 職業型別、Registry、驗證與 Factory |
 | `features/battle/hooks/useBattleMovement.ts` | State Hook、Derived State 與 Action 介面 |
 | `features/battle/hooks/useBattleAI.ts` | Enemy Active Turn Controller、受控 Intent 提交、Move／Attack Lifecycle 進階與有限 Recovery |
-| `features/battle/battleHud.ts` | BattleUnit 到 HUD View Model 的純轉換、資產 URL、資源百分比與正式攻擊範圍縮圖 |
-| `features/battle/components/BattleHUD.tsx` | Active Unit 角色資訊、HP／SP、屬性圖示與 Session callback 控制 |
+| `features/battle/battleHud.ts` | BattleUnit 到 HUD View Model 的純轉換、資產 URL、資源百分比、正式傷害預覽與攻擊範圍縮圖 |
+| `features/battle/components/BattleHUD.tsx` | 檢視角色資訊、HP／SP 與傷害預覽、屬性圖示及 MOVE 取消入口 |
 | `features/battle/unitPresentation.ts` | 依 faction 與 PAS Active Unit ID 選擇 overhead label／active indicator 呈現 |
 | `features/battle/components/ActiveUnitIndicator.tsx` | 將 active indicator 投影至單位世界座標的 Drei Html 呈現 |
 | `features/battle/hooks/useAttackAnimation.ts` | 單一動畫時鐘介面 |
@@ -167,9 +167,11 @@ M5-2B 由 `BattleSessionRuntime` 依目前回合的檢視狀態推導相機焦�
 
 `battleCameraConfig.ts` 集中管理固定俯角、初始方位／距離、Zoom bounds、Focus Height 與轉場阻尼。安全取景依 Canvas、立繪／HUD／Timeline DOM Rect 計算，由 ResizeObserver、視窗與 R3F 尺寸變化更新；相機及 OrbitControls target 平移同一向量，保留相對 Offset、俯角及 Zoom。開場首幀直接取景，Reduced Motion 下切換焦點也不執行平滑轉場。Observer、視窗 listeners 與 R3F frame subscription 隨 Controller unmount 清理。M5-2B 不修改 PAS、Battle Core、攻擊合法性、AI 或 Outcome。
 
-戰鬥橫幅是獨立 Presentation Layer，不寫入角色 HUD 或 BattleState。`BattleHUD` 只負責角色資訊、資源與指令控制；`combatFeedbackText` 僅由 Confirmed Combat Result 投影為單一頂部橫幅，攻擊中、目標選取與目標距離不建立提示。橫幅使用畫面中央定位、safe-area 頂部邊距及 pointer-events none，不攔截戰場或角色操作。角色 HUD 不渲染閒置提示或空狀態文字。
+戰鬥橫幅是獨立 Presentation Layer，不寫入角色 HUD 或 BattleState。`BattleHUD` 呈現角色資訊與資源並保留 MOVE 取消入口；`combatFeedbackText` 僅由 Confirmed Combat Result 投影為單一頂部橫幅，攻擊中、目標選取與目標距離不建立提示。橫幅使用畫面中央定位、safe-area 頂部邊距及 pointer-events none，不攔截戰場或角色操作。角色 HUD 不渲染閒置提示或空狀態文字。
 
 Timeline 根據正式 `unit.faction` 套用敵軍固定紅框。未選取時紅框保持固定；選取敵軍時只啟用紅色脈動，不改為藍色 Inspected outline。Inspected／Active presentation 不可改寫敵軍紅框；Reduced Motion 停用敵軍脈動。
+
+M5-3 的 `BattleSessionRuntime` 只在 ATTACK 與正式 Confirm Guard 有效時，以 `selectBattleDamageForecast()` 呼叫既有 `calculatePhysicalDamage()`，衍生目標 ID、正式 HP、預計傷害與剩餘 HP。`BattleHUD` 僅在檢視角色 ID 與目標相符時重用既有 HP ResourceBar：綠色為預計剩餘、淡紅色為已 clamp 的預計扣除、背景為原有損失；預覽文字顯示「目前 HP → 預計剩餘 HP／上限」，箭頭使用 lucide outline icon，箭頭與預計值同色。這些數字是 Display HP，不寫入 `BattleUnit` 或 `BattleState`。淡紅脈動使用 CSS 並遵循 Reduced Motion；切換、取消、確認、死亡、換手或重建 Session 時不保留過期預覽。攻擊確認／取消按鈕位於 HUD 外；二次點擊與右鍵仍使用 Runtime 原有 callbacks，R3F 的 `onPointerMissed` 只對主要按鍵解除 COMMAND 焦點，避免右鍵取消後誤隱藏 HUD。
 
 TEST-M4-3-01 的 React Controller 整合邊界：
 
@@ -197,7 +199,7 @@ HP / Attack Motion / Turn State
 
 此測試真實掛載 React Controller；Frame Scheduler 使用可控制時序與 delta 的測試替身；Lifecycle Runtime 與 Reducer 不被 Mock，Visual Components 以 Stub 隔離。這是 Node + jsdom 的 Controller／Reducer 整合測試，不涵蓋 WebGL Rendering、視覺驗收或完整 E2E。
 
-M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，其正式結案 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4-4C Addendum 1 **COMPLETED — ACCEPTED**。Verified M4 Formal Closure baseline 為 Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`／GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS，271/271 Tests、6/6 Production Route Integration、Lint、Build 與 Pages Deployment PASS。Product Owner BV-C01～C14 為 14/14 PASS；此驗收先於 VA1，與 Agent 原始 PARTIAL／NOT VERIFIED 結果分開記錄。RV-M4-4B-02 的 GPU Resource Verification 核准移交 TD-010；M4 為 100%、Overall 40%。M5-1 已 **COMPLETED — FORMALLY ACCEPTED**；M5-2A 已 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M5-2B 已 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**。M5 為 50%、Overall 為 45%、Completed Milestones 維持 4/10，M5-3 為 PENDING — UP NEXT。Closure Baselines 分別為 M5-2A Commit `2b46eeaf02135e413bbe59b674d4d95045a136a8`／Run `44714442975`，及 M5-2B Commit `6f6bc2f4bee95a5a3cca66710999035ae99eb4fa`／Run `44762610196`，兩項 CI／Pages 均 SUCCESS。
+M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，其正式結案 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4-4C Addendum 1 **COMPLETED — ACCEPTED**。Verified M4 Formal Closure baseline 為 Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`／GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS，271/271 Tests、6/6 Production Route Integration、Lint、Build 與 Pages Deployment PASS。Product Owner BV-C01～C14 為 14/14 PASS；此驗收先於 VA1，與 Agent 原始 PARTIAL／NOT VERIFIED 結果分開記錄。RV-M4-4B-02 的 GPU Resource Verification 核准移交 TD-010；M4 為 100%、Overall 40%。M5-1 已 **COMPLETED — FORMALLY ACCEPTED**；M5-2A 已 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M5-2B 已 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**。M5 為 50%、Overall 為 45%、Completed Milestones 維持 4/10，M5-3 為 **IMPLEMENTED — PENDING REVIEW**。Closure Baselines 分別為 M5-2A Commit `2b46eeaf02135e413bbe59b674d4d95045a136a8`／Run `44714442975`，及 M5-2B Commit `6f6bc2f4bee95a5a3cca66710999035ae99eb4fa`／Run `44762610196`，兩項 CI／Pages 均 SUCCESS。
 
 ## Battle State 與 Reducer
 

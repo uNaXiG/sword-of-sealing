@@ -2,6 +2,20 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-21 — M5-3B Patch 1 HUD Integrated Damage Forecast (IMPLEMENTED — PENDING REVIEW)
+
+- **Implementation**：將正式傷害預覽整合到目標 HUD 的既有 HP 血條，區分預計剩餘、預計扣除與既有損失，致命傷害以目前 HP 為上限；淡紅區段使用 CSS 脈動並支援 Reduced Motion。移除獨立預覽面板與 HUD 內攻擊按鈕，HUD 外保留確認／取消，二次點擊及右鍵流程不變；修正右鍵取消後 R3F 空白事件誤隱藏 HUD。
+- **Presentation Addendum**：HP 預覽文字顯示「目前 HP → 預計剩餘 HP／上限」（例：`60 → 37/60`），箭頭使用 lucide outline icon；真實 WebGL 瀏覽器確認箭頭與預計 HP 的 computed color 相同。HUD／Production Route 目標測試、Lint 與 Build 本次重新通過。
+- **Verification**：`npm test` 重跑 306/306 PASS，單程序完整測試 306/306、HUD／Production Route 目標測試 31/31、Lint 與 Build PASS；首輪預設並行測試因 Route worker 停滯逾 5 分鐘而中止，後續重跑通過。Build 保留 >500 kB Battle chunk warning。真實 WebGL 驗證滿血／已損血／致命預覽及正式傷害、目標切換／非法選取、觸控模擬、右鍵拖曳、Reduced Motion、指定三種 viewport 與 Route Re-entry；Browser 整體仍 PARTIAL，終局 Restart 及實體手機未驗證。細節見 [Development Status](./DEVELOPMENT_STATUS.md)。
+- **Status / Scope**：M5-3 維持 IMPLEMENTED — PENDING REVIEW；M5 50%、Overall 45%、Completed Milestones 4/10、TD-022 OPEN。未修改 Battle Core／PAS／AI／Reducer／Outcome／正式傷害規則／Camera Controller／Assets；未 Commit／Push，既有基準 CI 不涵蓋未提交工作。
+
+## 2026-11-21 — M5-3 Attack Interaction (IMPLEMENTED — PENDING REVIEW)
+
+- **Implementation**：加入以正式 Presentation Focus／攻擊合法目標為依據的 3D 高亮；首次點選合法目標顯示正式傷害與剩餘 HP，第二次點擊同目標或保留的「確認攻擊」按鈕才發動。完成移動後 Undo 自動進入 MOVE；右鍵在 COMMAND 撤銷、MOVE 取消模式、ATTACK 取消攻擊；右鍵拖曳超過 5px 不觸發快捷操作。UX-003 依 Product Owner 裁定更新為雙擊同一目標確認。
+- **Automated Verification**：`npm test` 301/301 PASS；HUD／Production Route 目標測試 26/26 PASS；`npm run lint` PASS；`npm run build` PASS，保留 >500 kB Battle chunk warning。`git -c core.whitespace=cr-at-eol diff --check` PASS。
+- **Browser Verification**：實際 WebGL 戰場載入並觀察 HUD、輪盤、Timeline、高亮、移動及右鍵 Undo 後自動回 MOVE；ATTACK 右鍵取消與 MOVE 右鍵取消已確認；390×845 viewport 的 document width 為 390px、無水平溢位。合法目標傷害預覽／二次點擊、右鍵拖曳、Reduced Motion 與其他 viewport 尚未完成，整體 Browser Verification 為 PARTIAL。
+- **Scope / Status**：未修改 Battle Reducer、PAS、AI、Outcome、傷害公式、Camera Controller 或 Assets；TD-022 仍 OPEN。M5-3 **IMPLEMENTED — PENDING REVIEW**，Product Owner Acceptance 未完成；M5 50%、Overall 45%、Completed Milestones 4/10 不變。工作樹未提交／推送；基準 CI Run `44763816555` 對應 `8e4f6bcf36a7ccd0382aafeb59c04606b563762a`，不含本次異動。
+
 ## 2026-11-20 — M5-2B Formal Closure
 
 - **Closure**：M5-2B 已通過 Independent Code Review 與 Product Owner Browser Acceptance，正式結案為 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**。

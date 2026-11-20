@@ -18,9 +18,12 @@ import {
   getProgressPercentage,
   selectBattleTimeline,
   selectBattleHudCharacter,
+  selectBattleDamageForecast,
   selectInspectedUnit,
   selectBattleCombatFeedback,
 } from '../src/features/battle/battleHud.ts'
+import { calculatePhysicalDamage } from '../src/game/battle/battle.damage.ts'
+import { attachBattleContextShortcut } from '../src/features/battle/battlePointerInteraction.ts'
 import { initializeTurnState, predictUpcomingTurns } from '../src/game/battle/battle.turn.ts'
 import { calculateTimelineCapacity, observeTimelineCapacity } from '../src/features/battle/battleTimelineLayout.ts'
 import { calculateRadialScreenPosition } from '../src/features/battle/battleRadialMenuProjection.ts'
@@ -97,6 +100,83 @@ test('inspected unit stays presentation-only and falls back when it is no longer
   assert.equal(selectInspectedUnit([active, fallenEnemy], enemy.id, active.id), active)
   assert.equal(selectInspectedUnit([fallenEnemy], enemy.id, active.id), null)
   assert.equal(active.id, 'assassin')
+})
+
+test('damage forecast uses the formal damage calculation and reports bounded remaining HP', () => {
+  const attacker = INITIAL_UNITS.find((unit) => unit.id === 'assassin')
+  const target = { ...INITIAL_UNITS.find((unit) => unit.id === 'goblin'), hp: 3 }
+  const expected = calculatePhysicalDamage(attacker, target)
+  const forecast = selectBattleDamageForecast(attacker, target)
+
+  assert.deepEqual(forecast, {
+    targetId: target.id,
+    damage: expected.damage,
+    currentHp: target.hp,
+    remainingHp: expected.remainingHp,
+    remainingPercentage: 0,
+    damagePercentage: 5,
+  })
+  assert.equal(forecast.remainingHp, 0)
+})
+
+test('damage forecast segments exclude previously lost HP and clamp to the current HP', () => {
+  const attacker = INITIAL_UNITS.find((unit) => unit.id === 'assassin')
+  const goblin = INITIAL_UNITS.find((unit) => unit.id === 'goblin')
+  const full = selectBattleDamageForecast(attacker, goblin)
+  const wounded = selectBattleDamageForecast(attacker, { ...goblin, hp: 40 })
+  const overMaximum = selectBattleDamageForecast(attacker, { ...goblin, hp: 80 })
+  const invalidMaximum = selectBattleDamageForecast(attacker, { ...goblin, maxHp: 0 })
+
+  assert.equal(full.remainingHp, 37)
+  assert.ok(Math.abs(full.remainingPercentage - 37 / 60 * 100) < 1e-10)
+  assert.ok(Math.abs(full.damagePercentage - 23 / 60 * 100) < 1e-10)
+  assert.equal(wounded.remainingHp, 17)
+  assert.ok(Math.abs(wounded.remainingPercentage - 17 / 60 * 100) < 1e-10)
+  assert.ok(Math.abs(wounded.damagePercentage - 23 / 60 * 100) < 1e-10)
+  assert.ok(overMaximum.remainingPercentage + overMaximum.damagePercentage <= 100)
+  assert.equal(invalidMaximum.remainingPercentage, 0)
+  assert.equal(invalidMaximum.damagePercentage, 0)
+})
+
+test('right-click shortcut distinguishes a stationary click from a camera drag', () => {
+  const dom = new JSDOM('<canvas></canvas>')
+  const canvas = dom.window.document.querySelector('canvas')
+  const calls = []
+  const cleanup = attachBattleContextShortcut(canvas, () => calls.push('right-click'))
+  const dispatchPointer = (type, { button = 2, pointerId = 1, x = 10, y = 10 } = {}) => {
+    const event = new dom.window.MouseEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      button,
+      clientX: x,
+      clientY: y,
+    })
+    Object.defineProperty(event, 'pointerId', { value: pointerId })
+    canvas.dispatchEvent(event)
+  }
+
+  dispatchPointer('pointerdown')
+  dispatchPointer('pointerup')
+  assert.deepEqual(calls, ['right-click'])
+
+  dispatchPointer('pointerdown')
+  dispatchPointer('pointermove', { x: 15 })
+  dispatchPointer('pointerup', { x: 15 })
+  assert.deepEqual(calls, ['right-click', 'right-click'])
+
+  dispatchPointer('pointerdown')
+  dispatchPointer('pointermove', { x: 16 })
+  dispatchPointer('pointerup', { x: 16 })
+  assert.deepEqual(calls, ['right-click', 'right-click'])
+
+  const contextMenu = new dom.window.MouseEvent('contextmenu', { cancelable: true })
+  canvas.dispatchEvent(contextMenu)
+  assert.equal(contextMenu.defaultPrevented, true)
+  cleanup()
+  dispatchPointer('pointerdown')
+  dispatchPointer('pointerup')
+  assert.deepEqual(calls, ['right-click', 'right-click'])
+  dom.window.close()
 })
 
 test('inspection policy blocks MOVE mode and radial authorization requires the displayed active unit', () => {

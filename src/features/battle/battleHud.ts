@@ -5,6 +5,7 @@ import { ATTACK_PATTERN_NAMES, type UnitClass } from '../../game/classes/class.t
 import { calculateActionValue } from '../../game/battle/battle.turn.ts'
 import type { BattleTurnState, TurnPreviewEntry } from '../../game/battle/battle.turn.types.ts'
 import { isUnitAlive } from '../../game/battle/battle.unit.ts'
+import { calculatePhysicalDamage } from '../../game/battle/battle.damage.ts'
 
 const PLAYER_PORTRAITS: Readonly<Record<string, string>> = {
   assassin: 'assets/images/battle/女主.png',
@@ -59,6 +60,35 @@ export type BattleTimelineEntry = {
   actionValue: number | null
   isActive: boolean
   portraitUrl: string | null
+}
+
+export type BattleDamageForecast = {
+  targetId: string
+  damage: number
+  currentHp: number
+  remainingHp: number
+  remainingPercentage: number
+  damagePercentage: number
+}
+
+export function selectBattleDamageForecast(
+  attacker: BattleUnit,
+  target: BattleUnit,
+): BattleDamageForecast {
+  const result = calculatePhysicalDamage(attacker, target)
+  const currentPercentage = getProgressPercentage(result.previousHp, target.maxHp)
+  const remainingPercentage = Math.min(
+    currentPercentage,
+    getProgressPercentage(result.remainingHp, target.maxHp),
+  )
+  return {
+    targetId: target.id,
+    damage: result.damage,
+    currentHp: result.previousHp,
+    remainingHp: result.remainingHp,
+    remainingPercentage,
+    damagePercentage: currentPercentage - remainingPercentage,
+  }
 }
 
 export function selectBattleCombatFeedback({

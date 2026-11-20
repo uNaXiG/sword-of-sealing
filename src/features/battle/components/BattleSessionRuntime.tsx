@@ -1,7 +1,7 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, OrthographicCamera } from '@react-three/drei'
 import { MOUSE, type Object3D } from 'three'
-import { useCallback, useMemo, useRef, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import GridMap from './GridMap'
 import UnitPlaceholder from './UnitPlaceholder'
@@ -19,10 +19,11 @@ import { useDeathAnimation } from '../hooks/useDeathAnimation'
 import BattleHUD from './BattleHUD'
 import BattleResultOverlay from './BattleResultOverlay'
 import TurnOrderTimeline from './TurnOrderTimeline'
-import { canInspectUnit, canShowBattleActionRadial, selectInspectedUnit } from '../battleHud'
+import { canInspectUnit, canShowBattleActionRadial, selectBattleDamageForecast, selectInspectedUnit } from '../battleHud'
 import BattleCameraController from './BattleCameraController'
 import { calculateInitialCameraPosition, calculateInitialCameraZoom } from '../battleCameraMath'
 import { BATTLE_CAMERA_CONFIG } from '../battleCameraConfig'
+import { attachBattleContextShortcut } from '../battlePointerInteraction'
 
 function BattleOrthographicCamera() {
   const { size } = useThree()
@@ -100,6 +101,9 @@ export default function BattleSessionRuntime({
   const displayUnit = focusUnit && attackInspection?.turnId === turn.turnId
     ? selectInspectedUnit(units, attackInspection.unitId, focusUnit.id)
     : focusUnit
+  const damageForecast = interactionMode === 'ATTACK' && canConfirmAttack && selectedUnit && selectedAttackTarget
+    ? selectBattleDamageForecast(selectedUnit, selectedAttackTarget)
+    : null
   const cameraFocusUnitId = interactionMode === 'MOVE' ? null : focusUnit?.id ?? null
   const canInspect = canInspectUnit(interactionMode, battleBusy)
   const showActionRadial = canShowBattleActionRadial({
@@ -117,20 +121,11 @@ export default function BattleSessionRuntime({
     setAttackInspection(null)
     setUnfocusedTurnId(turn.turnId)
   }
-  const handleCellClick = (cell: Cell) => {
-    if (interactionMode === 'COMMAND' &&
-      !units.some((unit) => sameCell(unit.position, cell)) &&
-      !obstacles.some((obstacle) => sameCell(obstacleCell(obstacle), cell))
-    ) {
-      handleBlankClick()
-      return
-    }
-    selectCell(cell)
-  }
-  const handleUndoMove = () => {
+  const handleUndoMove = useCallback(() => {
     setHoveredCell(null)
     undoMove()
-  }
+    setInteractionMode('MOVE')
+  }, [setInteractionMode, undoMove])
   const handleObstacleClick = (cell: Cell) => {
     if (interactionMode === 'ATTACK') {
       setHoveredCell(null)
@@ -153,12 +148,12 @@ export default function BattleSessionRuntime({
     setHoveredCell(null)
     standby()
   }
-  const handleCancelAttack = () => {
+  const handleCancelAttack = useCallback(() => {
     setHoveredCell(null)
     cancelAttack()
     setInspection(null)
     setAttackInspection(null)
-  }
+  }, [cancelAttack])
   const handleConfirmAttack = () => {
     setHoveredCell(null)
     confirmAttack()
@@ -180,9 +175,44 @@ export default function BattleSessionRuntime({
       if (unit && unit.hp > 0) {
         setAttackInspection({ unitId: unit.id, turnId: turn.turnId })
       }
+      if (selectedAttackTargetId === unitId && canConfirmAttack) {
+        handleConfirmAttack()
+        return
+      }
     }
     if (interactionMode !== 'COMMAND' || unitId === activeUnit?.id) selectUnit(unitId)
   }
+  const handleCellClick = (cell: Cell) => {
+    const occupant = units.find((unit) => sameCell(unit.position, cell))
+    if (interactionMode === 'ATTACK' && occupant) {
+      handleUnitSelect(occupant.id)
+      return
+    }
+    if (interactionMode === 'COMMAND' &&
+      !occupant &&
+      !obstacles.some((obstacle) => sameCell(obstacleCell(obstacle), cell))
+    ) {
+      handleBlankClick()
+      return
+    }
+    selectCell(cell)
+  }
+  const handleRightClick = useCallback(() => {
+    if (battleBusy || outcome !== null || pendingTurnCompletion !== null) return
+    if (interactionMode === 'MOVE') {
+      setHoveredCell(null)
+      cancelMoveMode()
+    } else if (interactionMode === 'ATTACK') {
+      handleCancelAttack()
+    } else if (interactionMode === 'COMMAND' && canUndoMove) {
+      handleUndoMove()
+    }
+  }, [battleBusy, cancelMoveMode, canUndoMove, handleCancelAttack, handleUndoMove, interactionMode, outcome, pendingTurnCompletion])
+  useEffect(() => {
+    const pointerSurface = safeAreaRootRef.current?.querySelector('.battle-canvas')
+    if (!(pointerSurface instanceof HTMLElement)) return
+    return attachBattleContextShortcut(pointerSurface, handleRightClick)
+  }, [handleRightClick])
   const handleRestart = () => requestRestart(generation)
 
   return (
@@ -191,7 +221,9 @@ export default function BattleSessionRuntime({
         <Canvas
           orthographic
           shadows
-          onPointerMissed={handleBlankClick}
+          onPointerMissed={(event) => {
+            if (event.button === 0) handleBlankClick()
+          }}
           fallback={<div className="battle-error">無法啟用 WebGL，請使用支援 WebGL 的瀏覽器。</div>}
         >
           <color attach="background" args={['#c8e3eb']} />
@@ -233,6 +265,7 @@ export default function BattleSessionRuntime({
               key={unit.id}
               unit={unit}
               selected={unit.id === selectedUnit?.id}
+              selectedHighlight={unit.id === focusUnit?.id}
               activeUnitId={activeUnit?.id ?? null}
               indicatorPortal={indicatorPortal}
               attackableTarget={attackableTargetIds.has(unit.id)}
@@ -291,14 +324,20 @@ export default function BattleSessionRuntime({
         displayUnit={displayUnit}
         selectedUnit={selectedUnit}
         interactionMode={interactionMode}
-        canConfirmAttack={canConfirmAttack}
+        damageForecast={damageForecast}
         battleBusy={battleBusy}
         pendingTurnCompletion={pendingTurnCompletion !== null}
         combatFeedback={combatFeedback}
         onCancelMoveMode={handleCancelMoveMode}
-        onConfirmAttack={handleConfirmAttack}
-        onCancelAttack={handleCancelAttack}
       />
+      {interactionMode === 'ATTACK' && activeUnit?.faction === 'player' &&
+        selectedUnit?.id === activeUnit.id && !battleBusy &&
+        pendingTurnCompletion === null && outcome === null && (
+          <nav className="battle-attack-controls" aria-label="攻擊操作">
+            <button type="button" disabled={!canConfirmAttack} onClick={handleConfirmAttack}>確認攻擊</button>
+            <button type="button" onClick={handleCancelAttack}>取消攻擊</button>
+          </nav>
+        )}
       <TurnOrderTimeline
         turn={turn}
         units={units}

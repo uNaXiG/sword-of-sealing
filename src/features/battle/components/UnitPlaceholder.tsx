@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Color, MeshStandardMaterial, type Group, type Mesh } from 'three'
+import { Color, MeshBasicMaterial, MeshStandardMaterial, type Group, type Mesh } from 'three'
 import { ATTACK_ANIMATION_PROFILES } from '../../../game/battle/battle.animation'
 import type {
   AttackMotion,
@@ -35,6 +35,7 @@ function isCurrentGeneration(generationRef: { current: number }, generation: num
 export default function UnitPlaceholder({
   unit,
   selected,
+  selectedHighlight,
   activeUnitId,
   indicatorPortal,
   attackableTarget,
@@ -55,6 +56,7 @@ export default function UnitPlaceholder({
 }: {
   unit: BattleUnit
   selected: boolean
+  selectedHighlight: boolean
   activeUnitId: string | null
   indicatorPortal: RefObject<HTMLElement> | null
   attackableTarget: boolean
@@ -92,14 +94,24 @@ export default function UnitPlaceholder({
   const deathPivot = useRef<Group>(null)
   const labelRoot = useRef<Group>(null)
   const selectionRing = useRef<Group>(null)
+  const selectedHighlightRing = useRef<Mesh>(null)
+  const selectedHighlightMaterial = useRef<MeshBasicMaterial>(null)
+  const reducedMotion = useRef(false)
+  const highlightElapsed = useRef(0)
+  const [hoveredAttackTarget, setHoveredAttackTarget] = useState(false)
   const progress = useRef(0)
   const completed = useRef(false)
   const effectGeneration = useRef(0)
-  const ringColor = selectedAttackTarget ? '#fff1a8'
-    : attackableTarget ? '#f05252'
-      : selected ? '#ffe475'
+  const ringColor = selectedAttackTarget ? '#f0444c'
+    : hoveredAttackTarget && attackableTarget ? '#ff8585'
+      : attackableTarget ? '#d95b56'
+        : selectedHighlight ? '#f2ce68'
+          : selected ? '#ffe475'
         : unit.faction === 'enemy' ? '#e27063' : '#91c9ef'
-  const ringRadius = selectedAttackTarget ? 0.52 : attackableTarget ? 0.48 : selected ? 0.43 : 0.36
+  const ringRadius = selectedAttackTarget ? 0.55
+    : hoveredAttackTarget && attackableTarget ? 0.53
+      : attackableTarget ? 0.48
+        : selected ? 0.43 : 0.36
   const materialEmissive = useRef(new WeakMap<MeshStandardMaterial, Color>())
   const materialEmissiveIntensity = useRef(new WeakMap<MeshStandardMaterial, number>())
   const materialOpacity = useRef(new WeakMap<MeshStandardMaterial, number>())
@@ -127,6 +139,15 @@ export default function UnitPlaceholder({
       })
     }
   }, [path, motionId, unit.id, unit.position, onMoveCancelled])
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => { reducedMotion.current = preference.matches }
+    update()
+    preference.addEventListener('change', update)
+    return () => preference.removeEventListener('change', update)
+  }, [])
 
   useFrame((_, delta) => {
     if (path && group.current && !completed.current) {
@@ -172,6 +193,17 @@ export default function UnitPlaceholder({
       deathClockRef.current,
       materialOpacity.current,
     )
+    if (selectedHighlightMaterial.current) {
+      if (selectedHighlight && !reducedMotion.current) {
+        highlightElapsed.current += Math.max(0, delta)
+        const pulse = (Math.sin(highlightElapsed.current * Math.PI * 2 / 1.25) + 1) / 2
+        selectedHighlightMaterial.current.opacity = 0.62 + pulse * 0.28
+        selectedHighlightRing.current?.scale.setScalar(0.98 + pulse * 0.04)
+      } else {
+        selectedHighlightMaterial.current.opacity = 0.82
+        selectedHighlightRing.current?.scale.setScalar(1)
+      }
+    }
   })
 
   return (
@@ -194,6 +226,23 @@ export default function UnitPlaceholder({
             <meshBasicMaterial color="#82f0c3" />
           </mesh>
         )}
+        {selectedHighlight && (
+          <mesh
+            ref={selectedHighlightRing}
+            position={[0, 0.115, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            raycast={() => null}
+          >
+            <ringGeometry args={[0.61, 0.68, 40]} />
+            <meshBasicMaterial
+              ref={selectedHighlightMaterial}
+              color="#f4cf67"
+              transparent
+              depthWrite={false}
+              opacity={0.82}
+            />
+          </mesh>
+        )}
         <mesh position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[0.31, ringRadius, 32]} />
           <meshBasicMaterial color={ringColor} />
@@ -204,6 +253,10 @@ export default function UnitPlaceholder({
       <group
         position={[0, 0.08, 0]}
         rotation={[0, Math.PI / 4, 0]}
+        onPointerOver={() => {
+          if (attackableTarget) setHoveredAttackTarget(true)
+        }}
+        onPointerOut={() => setHoveredAttackTarget(false)}
         onClick={(event) => {
           event.stopPropagation()
           if (!battleBusy) onSelect(unit.id)

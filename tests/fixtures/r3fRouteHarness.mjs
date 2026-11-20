@@ -22,6 +22,9 @@ export function Canvas({ children, onPointerMissed }) {
     onClick: (event) => {
       if (event.target === event.currentTarget) onPointerMissed?.(event)
     },
+    onContextMenu: (event) => {
+      if (event.target === event.currentTarget) onPointerMissed?.(event.nativeEvent)
+    },
   }, sceneComponents)
 }
 

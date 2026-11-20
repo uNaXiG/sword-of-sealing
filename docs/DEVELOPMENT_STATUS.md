@@ -1,6 +1,6 @@
 # Development Status
 
-最後確認日期：2026-11-20。
+最後確認日期：2026-11-21。
 
 ## 狀態語彙
 
@@ -12,22 +12,22 @@
 
 | 項目 | 狀態 |
 | --- | --- |
-| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `6f6bc2f4bee95a5a3cca66710999035ae99eb4fa` — Latest M5-2B Battle Camera Repository Baseline；`HEAD` 與 Fetch 後 `origin/main` 一致 |
-| Latest Verified Repository CI Run | [44762610196](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44762610196) — SUCCESS（`main` / `6f6bc2f4bee95a5a3cca66710999035ae99eb4fa`）；build、Deploy to GitHub Pages 均 SUCCESS |
+| Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `8e4f6bcf36a7ccd0382aafeb59c04606b563762a` — M5-3 起始與最新本機 `origin/main` tracking ref；CI 對應此 Commit |
+| Latest Verified Repository CI Run | [44763816555](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44763816555) — SUCCESS（`main` / `8e4f6bcf36a7ccd0382aafeb59c04606b563762a`）；build、Deploy to GitHub Pages 均 SUCCESS |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Current Repository HEAD | `main` @ `6f6bc2f4bee95a5a3cca66710999035ae99eb4fa`；已 Fetch，與 `origin/main` tracking ref 一致 |
-| Latest Verified GitHub Pages Deployment | [Run 44762610196](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44762610196) — `build` 與 `deploy` jobs 均 SUCCESS |
+| Current Repository HEAD | `main` @ `8e4f6bcf36a7ccd0382aafeb59c04606b563762a`；與目前本機 `origin/main` tracking ref 一致 |
+| Latest Verified GitHub Pages Deployment | [Run 44763816555](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44763816555) — `build` 與 `deploy` jobs 均 SUCCESS |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
 | M4-4B Conditional Closure Commit | `e299fa48e28d16e24aadba9cc7925bedf4d53895`；16 個異動檔案；Battle Core Modification 0 |
 | M4-4C Session Start Baseline | `main`／HEAD／`origin/main` `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；開始時工作樹乾淨 |
-| Current Working Tree | Modified；本次僅同步 M5-2B 正式結案文件；目前無 staged changes；未 Commit／Push；HEAD 與 `origin/main` 均為 `6f6bc2f4bee95a5a3cca66710999035ae99eb4fa` |
+| Current Working Tree | Modified；包含 M5-3 Production Code、Tests 與文件；目前無 staged changes；未 Commit／Push；未提交異動不屬於 Run `44763816555` |
 | 最近完成項目 | M5-1 Battle HUD Redesign（含 UI Refinement Patch 1／2）：**COMPLETED — FORMALLY ACCEPTED**；M5-2A：**COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M5-2B：**COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4-1～M4-4 既有正式結案狀態不變 |
-| 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **COMPLETED — FORMALLY ACCEPTED**；M5-2A **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-2B **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-3 **PENDING — UP NEXT**、M5-4 PENDING，詳見 [ROADMAP.md](./ROADMAP.md) |
+| 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **COMPLETED — FORMALLY ACCEPTED**；M5-2A **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-2B **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**、M5-3 **IMPLEMENTED — PENDING REVIEW**、M5-4 PENDING，詳見 [ROADMAP.md](./ROADMAP.md) |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | M4 進度 | 100%（4/4） |
-| M5 進度 | 50%（M5-1、M5-2A 與 M5-2B 均已正式結案；M5-3／M5-4 未完成） |
+| M5 進度 | 50%（M5-1、M5-2A 與 M5-2B 均已正式結案；M5-3 已實作但尚未審查／驗收；M5-4 未完成） |
 | 完整結案主要里程碑 | 4/10 |
 | 整體里程碑等權重進度 | 45%（4 個主要里程碑完成 + M5 的 50%；Roadmap Completion Percentage，不代表實際工時比例） |
 | M4 結案狀態 | M4-1：**COMPLETED — Conditional Closure**；M4-1 Patch 1：**COMPLETED**；M4-2：**COMPLETED — Formal Acceptance Approved**；M4-2 Patch 1：**COMPLETED**；M4-3：**COMPLETED — FORMALLY ACCEPTED**；M4-4：**COMPLETED — FORMALLY ACCEPTED** |
@@ -36,6 +36,30 @@
 | Code Review Findings | CR-M4-3-01／02／03 CLOSED；TEST-M4-3-01 CLOSED — PASS；TD-019 CLOSED |
 | M4-4 狀態 | **COMPLETED — FORMALLY ACCEPTED**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B／4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；VA1 **COMPLETED — ACCEPTED** |
 | M3 Closure Documentation | 已提交至 `9c8e623` 並通過 Repository CI |
+
+## M5-3B Patch 1 — HUD Integrated Damage Forecast (2026-11-21)
+
+- **Presentation Addendum**：HP 預覽數字採「目前 HP → 預計剩餘 HP／上限」格式（例：`60 → 37/60`）；箭頭為 lucide outline icon，箭頭與預計 HP 使用相同淡紅色。真實 WebGL 瀏覽器確認 `60 → 37/60`、兩者 computed color 同為 `rgb(240, 163, 163)`；本次 HUD／Production Route 目標測試、Lint 與 Build 均重新通過。
+- **Status / Scope**：IMPLEMENTED — PENDING REVIEW；保留既有 M5-3 未提交工作。未修改 Battle Core、PAS、AI、Reducer、Outcome、傷害公式、Camera Controller 或 Assets；Independent Code Review 與 Product Owner Acceptance 尚未完成。M5 50%、Overall 45%、Completed Milestones 4/10 不變，TD-022 仍 OPEN。
+- **Implementation**：正式傷害 Selector 衍生目標 ID、目前與預計剩餘 HP，只有目標與 HUD 檢視角色一致時套用至既有 HP 血條。綠色代表預計剩餘、淡紅色代表預計扣除、背景代表既有損失；比例 clamp，致命傷害不超出目前 HP。淡紅區段以 1.25 秒 CSS 脈動，Reduced Motion 靜止。獨立預覽面板及 HUD 內攻擊按鈕已移除；HUD 外保留確認／取消入口，既有二次點擊與右鍵流程不變。修正 R3F 右鍵空白事件誤解除焦點，主要按鍵的空白解除仍保留。
+- **Automated Tests — PASS**：`npm test` 重新執行 306/306 PASS；`npm test -- --test-concurrency=1` 306/306 PASS；HUD 與 Production Route 目標測試 31/31 PASS；`npm run lint`、`npm run build` 與 CRLF-aware `git diff --check` PASS，Build 的 Battle chunk 約 1,036.24 kB，既有 >500 kB 警告保留。預設並行 `npm test` 的首輪有一個 Route worker 停滯逾 5 分鐘而中止；後續單程序與預設並行重跑均通過。
+- **Integration Verification — PASS（Node Fixture）**：Production Route 使用 jsdom 與 R3F 視覺替身，涵蓋 HP 不變、滿血／已損血／致命比例、目標切換、非目標檢視、非法目標、確認、取消、Route Re-entry 及 R3F 右鍵空白事件回歸；此證據不代替 WebGL 或使用者驗收。
+- **Browser Verification — PARTIAL（真實 WebGL，無 Browser Fixture）**：以正常遊戲流程驗證哥布林 A 從 60 預覽為 37、實際受傷 23 後為 37；再由迪歐對 37 HP 預覽為 22（綠 36.67%、紅 25%、其餘為原損失），正式造成 15；奧黛對 22 HP 的致命預覽為 0／60、紅色 36.67%，確認後死亡並清除預覽。已驗證目標 A／B 切換、非法目標清除、右鍵／HUD 外取消、右鍵拖曳不取消、滑輪縮放、MOVE 左拖平移／Undo、焦點金環與合法／Hover／選定紅環、Reduced Motion、回合換手及 Route Re-entry。1920×1080、1280×720、390×845 的 HUD／Timeline／攻擊入口無量測重疊與水平溢位；390×845 另以 Chromium 觸控模擬完成取消與兩次點擊確認，不代表實體手機測試。既有 `THREE.Clock` deprecated 與 `PCFSoftShadowMap` removed 警告仍存在。
+- **AC evidence**：AC-P01～P08、P10～P16、P18 已由上述測試及實際操作覆蓋；AC-P09／P17 僅確認上述裝置尺寸與操作範圍，其他設備、布局與完整回歸仍待驗證。個別情境與最終使用者驗收不得由自動測試代替。
+- **Limitations / Git**：終局 Victory／Defeat 後 Restart 與實體手機操作本次 NOT VERIFIED；單次哥布林死亡驗證不取代原有完整死亡／終局 Browser 限制。未 Commit／Push；CI Run `44763816555` 僅對應基準 Commit `8e4f6bcf36a7ccd0382aafeb59c04606b563762a`，不涵蓋本次未提交異動。
+
+## M5-3 Attack Interaction — Implementation Snapshot (2026-11-21)
+
+以下為 Patch 1 前的歷史快照，現況與新增驗證以本節上方的 Patch 1 紀錄為準。
+
+- **Status**：IMPLEMENTED — PENDING REVIEW。M5-3 尚未完成 Independent Code Review 或 Product Owner Acceptance；不得視為正式結案。
+- **Implementation**：單位模型以 Presentation Focus 顯示金色焦點環，以正式攻擊合法目標顯示紅色環；Focus 脈動遵循 Reduced Motion。首次點擊合法攻擊目標顯示傷害與剩餘 HP 預覽，傷害沿用 `calculatePhysicalDamage()`；再次點擊同一目標或使用現有「確認攻擊」按鈕才確認。Undo 後自動進入 MOVE；COMMAND 有合法 Undo 時右鍵撤銷，MOVE 右鍵取消 MOVE，ATTACK 右鍵取消攻擊；右鍵拖曳超過 5px 不觸發快捷操作。Battle Reducer、PAS、AI、相機 Controller 與核心傷害規則未修改。
+- **Gate A — Unit Highlight**：Presentation Focus 金色環與 ATTACK 合法目標紅色環已實作；Production Route 測試確認 Active／Inspected Focus 與空白取消更新正確。Browser 已觀察到焦點與敵方目標環；Hover、死亡／Restart lifecycle 與 Reduced Motion Browser 情境尚未驗證，Gate A 為 PARTIAL。
+- **Gate B — Damage Forecast**：Forecast selector 重用正式傷害計算，Route Integration 驗證首次選取只顯示預覽、第二次選同一目標啟動 Attack Motion，並於確認後清除預覽。真實瀏覽器尚未取得合法目標以完成預覽／二次點擊，Browser 為 NOT VERIFIED。
+- **Gate C — Interaction UX**：Production Route 驗證 Undo 後自動進 MOVE、COMMAND 右鍵 Undo、MOVE 右鍵取消、ATTACK 右鍵取消，以及 Motion Busy 時不受快捷操作中斷；Pointer 測試覆蓋 5px click 邊界、拖曳閾值與 context menu cleanup。Browser 已確認右鍵 Undo／ATTACK 右鍵取消；右鍵拖曳旋轉仍未驗證，Gate C 為 PARTIAL。
+- **Automated Verification**：本次 `npm test` 301/301 PASS；`tests/battle.hud.test.mjs` 與 Production Route Integration 目標測試 26/26 PASS；`npm run lint` PASS；`npm run build` PASS，保留既有 >500 kB Battle chunk warning。`git -c core.whitespace=cr-at-eol diff --check` PASS。
+- **Browser Verification**：實際 WebGL 戰場可載入，觀察到角色 HUD、五方向輪盤、水平 Timeline 與焦點環；執行移動及右鍵 Undo，角色返回原位並進入 MOVE；ATTACK 右鍵返回 COMMAND、MOVE 右鍵取消 MOVE；390×845 viewport 的 document width 為 390px，無水平溢位。PARTIAL：未完成合法攻擊目標的傷害預覽／二次點擊攻擊、右鍵拖曳、Reduced Motion 與其他 viewport 驗證。Console 保留既有 `THREE.Clock` deprecated 與 `PCFSoftShadowMap` removed warnings。
+- **Acceptance / Scope**：Product Owner 驗收待確認；工作樹異動尚未 Commit／Push，CI Run `44763816555` 僅對應乾淨基準 Commit `8e4f6bcf36a7ccd0382aafeb59c04606b563762a`，不涵蓋本次異動。M5 維持 50%、Overall 45%、Completed Milestones 4/10。TD-022 保持 OPEN；未實作未行動友軍 gray-out，也未推測 PAS 行動狀態。
 
 ## M4 Formal Closure Record — 2026-11-20
 
@@ -100,7 +124,7 @@ AC-C25～C28 為 **PARTIAL — ACCEPTED / DEFERRED TO TD-010**；AC-C41、AC-C42
 
 ## M5-2B Battle Camera System — Implementation & Verification — 2026-11-20
 
-**Status：COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS。** M5-2B 已通過 Independent Code Review 與 Product Owner Browser Acceptance；正式結案保留既有核准限制。M5 為 50%，Overall 為 45%，Completed Milestones 維持 4/10；M5-3 為 PENDING — UP NEXT；TD-022 保持 OPEN。
+**Status：COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS。** M5-2B 已通過 Independent Code Review 與 Product Owner Browser Acceptance；正式結案保留既有核准限制。M5 為 50%，Overall 為 45%，Completed Milestones 維持 4/10；結案當時 M5-3 為 PENDING — UP NEXT；TD-022 保持 OPEN。M5-3 現況見上方目前基準與 Patch 1 紀錄。
 
 **焦點高度微調**：預設由畫面高度 64.5% 上移至 52%；水平定位與鎖定規則不變。1412×713 真實 WebGL 戰場實測開場輪盤中心約在畫面高度 50%。相機測試 7/7、Lint 與 Build 通過；Build 保留既有 chunk-size 警告。
 
@@ -968,4 +992,4 @@ M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A End Condition Framework & B
 
 ## Current Next Milestone
 
-M4 **COMPLETED — FORMALLY ACCEPTED**；M1–M4 進度 100%。M5 — 戰鬥 UI／UX **IN PROGRESS（37.5%）**；M5-1 **COMPLETED — FORMALLY ACCEPTED**，M5-2A **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**，M5-2B **IMPLEMENTED — PENDING REVIEW**，M5-3／M5-4 仍 PENDING。Completed Milestones 維持 4/10，Overall 為 43.75%。任務指引提及 M5-5 尚未在目前 Roadmap 定義；不推測其需求或驗收。
+M4 **COMPLETED — FORMALLY ACCEPTED**；M1–M4 進度 100%。M5 — 戰鬥 UI／UX **IN PROGRESS（50%）**；M5-1 **COMPLETED — FORMALLY ACCEPTED**，M5-2A／M5-2B **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**，M5-3 **IMPLEMENTED — PENDING REVIEW**，M5-4 PENDING。Completed Milestones 維持 4/10，Overall 為 45%。任務指引提及 M5-5 尚未在目前 Roadmap 定義；不推測其需求或驗收。
