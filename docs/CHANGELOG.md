@@ -2,6 +2,16 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M5-1 Formal Closure (COMPLETED — FORMALLY ACCEPTED)
+
+- **Verified Baseline**：`main` HEAD `ac074cda29ac7dad977d56e9fc720bb17e417205`；GitHub Actions Run [44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) SUCCESS。
+- **Acceptance / Review**：M5-1（含 UI Refinement Patch 1／2）COMPLETED — FORMALLY ACCEPTED；Independent Code Review APPROVED — MINOR DOCUMENTATION CORRECTIONS；Product Owner Visual Acceptance APPROVED。
+- **Traceability / Limitations**：保留先前 Agent Browser PARTIAL／NOT VERIFIED 紀錄；本次文件同步未執行 tests／lint/build，不新增測試通過聲明。
+- **Roadmap**：M5 25%（1/4），M5-2 NEXT；Overall 42.5%，Completed Milestones 4/10。
+- **Working Tree**：驗收 baseline 起始工作樹乾淨；本次僅更新 Markdown 文件，異動尚未提交，未修改 Production Source／Tests／Assets。
+
+> 以下 M5-1 Patch 2、Patch 1 與 Initial Implementation 項目保留其記錄當時的狀態及驗證結果；當時的 PENDING／PARTIAL／NOT VERIFIED 不代表目前結案狀態，亦不因 Formal Closure 而回溯改寫。
+
 ## 2026-11-20 — M5-1 UI Refinement Patch 2 (IMPLEMENTED — PENDING REVIEW)
 
 - **HUD Layout**：桌面面板移至底部偏左，寬 68vw／上限 1280px 並置於 CG 前方；手機保留緊湊全寬版。CG 尺寸及比例不變。

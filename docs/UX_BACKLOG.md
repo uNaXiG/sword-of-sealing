@@ -1,6 +1,6 @@
 # UI / UX Backlog
 
-以下需求目前均為 **PENDING**，Target Milestone 為 M5-3；M5-1 只實作既有操作的 HUD 呈現與 callback 接線，不提前實作這些快捷操作。所有新快捷操作都須保留 UI 按鈕以支援手機與觸控。
+以下需求目前均為 **PENDING**。UX-001～UX-005 的 Target Milestone 為 M5-3；UX-006 的 Target Milestone 為 M5-2。M5-1 只實作既有操作的 HUD 呈現與 callback 接線，不提前實作這些 UX 項目。所有新快捷操作都須保留 UI 按鈕以支援手機與觸控。
 
 ## UX-001：移動撤銷後自動進入 MOVE
 
@@ -50,4 +50,12 @@
 - **Expected Behavior**：右鍵單擊觸發目前操作的取消／撤銷；右鍵拖曳仍只旋轉鏡頭，不得誤觸單擊。
 - **Target Milestone**：M5-3
 - **Dependencies**：統一指標事件與拖曳閾值；支援 UX-002／UX-004。
+- **Status**：PENDING
+
+## UX-006：Active Unit Camera Framing
+
+- **ID**：UX-006
+- **Scope**：檢視目前行動角色的鏡頭構圖與取景；具體行為及驗收條件待 M5-2 規格確認。
+- **Target Milestone**：M5-2
+- **Dependencies**：待 M5-2 規格確認。
 - **Status**：PENDING

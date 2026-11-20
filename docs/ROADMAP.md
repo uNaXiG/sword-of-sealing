@@ -67,22 +67,22 @@ M3 完成度為 100%。正式驗收與 Git 基準見 [DEVELOPMENT_STATUS.md](./D
 | M4-4B | Overlay、Restart 與 Session Isolation | COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS |
 | M4-4C | Final Regression、Browser Verification、Independent Review 與 Formal Acceptance | COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS |
 
-M4-1～M4-3 與 M4-4A 均已完成。M4-4 正式結案日期為 2026-11-20，Verified Repository Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b` 對應 GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS；271/271 Automated Tests、6/6 Production Route Integration、ESLint、Production Build 與 GitHub Pages Deployment PASS。Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance APPROVED。PO BV-C01～C14 為 14/14 PASS，於 VA1 前取得並由正式結案採認，並非 VA1 後重測。保留 Agent 原始 PARTIAL／NOT VERIFIED 紀錄。C-T01～C36 36/36 PASS（依各項範圍及限制）；AC-C01～C45 統計為 40 PASS、1 PASS WITH APPROVED LIMITATIONS、4 PARTIAL — APPROVED DEFERRAL。RV-M4-4B-01／03 CLOSED — VERIFIED；RV-M4-4B-02 PARTIAL — DEFERRED TO TD-010。`renderer.info.memory`、GPU Disposal 與長時間資源穩定性未驗證。M4 Progress 100%；M1–M4 100%，M5–M10 0%，Completed Milestones 4/10，Overall 40%。完整結案證據見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+**M4 Formal Closure 快照（歷史）**：M4-1～M4-3 與 M4-4A 均已完成。M4-4 正式結案日期為 2026-11-20，Verified Repository Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b` 對應 GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS；271/271 Automated Tests、6/6 Production Route Integration、ESLint、Production Build 與 GitHub Pages Deployment PASS。Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance APPROVED。PO BV-C01～C14 為 14/14 PASS，於 VA1 前取得並由正式結案採認，並非 VA1 後重測。保留 Agent 原始 PARTIAL／NOT VERIFIED 紀錄。C-T01～C36 36/36 PASS（依各項範圍及限制）；AC-C01～C45 統計為 40 PASS、1 PASS WITH APPROVED LIMITATIONS、4 PARTIAL — APPROVED DEFERRAL。RV-M4-4B-01／03 CLOSED — VERIFIED；RV-M4-4B-02 PARTIAL — DEFERRED TO TD-010。`renderer.info.memory`、GPU Disposal 與長時間資源穩定性未驗證。當時 M4 Progress 100%；M1–M4 100%，M5–M10 0%，Completed Milestones 4/10，Overall 40%。完整結案證據見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 
 M4-4C Verification Addendum 1 補足 Production Victory／Defeat Route unmount 測試、十次 Restart 的逐次 lifecycle assertion，以及 Timer／Listener／Deferred Work 證據；正式基準為 271/271 Automated Tests、6/6 Production Route Integration。VA1 WebGL 量測觀察 14/14 Context Loss identity matches，最後 Route exit 後 0 connected Canvas；`renderer.info.memory`、GPU Disposal 與長時間資源穩定性仍 NOT VERIFIED，已核准延後至 TD-010。此為正式結案限制，不代表 GPU Resource Lifecycle 完整通過。
 
-## M5：戰鬥 UI／UX — IN PROGRESS
+## M5：戰鬥 UI／UX — IN PROGRESS（25%）
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
-| M5-1 | Battle HUD Redesign：角色資訊、響應式立繪、圖示化屬性、Active Unit 指標與靜態攻擊範圍縮圖 | IMPLEMENTED — PENDING REVIEW |
-| M5-2 | 行動選單及戰鬥交互體驗優化 | PENDING |
+| M5-1 | Battle HUD Redesign：角色資訊、響應式立繪、圖示化屬性、Active Unit 指標與靜態攻擊範圍縮圖 | COMPLETED — FORMALLY ACCEPTED |
+| M5-2 | 行動選單及戰鬥交互體驗優化 | UP NEXT |
 | M5-3 | 攻擊範圍與傷害預覽 | PENDING |
 | M5-4 | 戰鬥提示與結果介面 | PENDING |
 
-M5-1（含 UI Refinement Patch 1）尚待 Independent Review 與 Product Owner Browser Acceptance，不代表 M5-1 已正式結案。Patch 1 僅調整 presentation 與 HUD，不改 Battle Core 或 PAS。M5-1 的靜態攻擊幾何縮圖只呈現正式攻擊模式，不包含目標選擇或傷害預覽；動態攻擊範圍／傷害預覽維持 M5-3 PENDING。UX-001～UX-005 均維持 PENDING，Target Milestone 為 M5-3，詳見 [UX Backlog](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV（Movement Points）分開。
+M5-1（含 UI Refinement Patch 1／2）已 **COMPLETED — FORMALLY ACCEPTED**；Independent Code Review **APPROVED — MINOR DOCUMENTATION CORRECTIONS**，Product Owner Visual Acceptance **APPROVED**。Closure baseline 為 `main` HEAD `ac074cda29ac7dad977d56e9fc720bb17e417205`，GitHub Actions Run [44647602225](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44647602225) SUCCESS；完整 Git／CI 證據與歷史驗證限制見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。保留 Agent 原始 Browser PARTIAL／NOT VERIFIED，不回溯改寫。Patch 1／2 僅調整 presentation 與 HUD，不改 Battle Core 或 PAS。M5-1 的靜態攻擊幾何縮圖只呈現正式攻擊模式，不包含目標選擇或傷害預覽；動態攻擊範圍／傷害預覽維持 M5-3 PENDING。M5-1 完成後 M5 進度為 25%（1/4），M5-2 為 NEXT。UX-001～UX-005 維持 PENDING、Target Milestone 為 M5-3；新增 UX-006 Active Unit Camera Framing，PENDING、Target M5-2，詳見 [UX Backlog](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV（Movement Points）分開。
 
-執行指引提及 M5-5，但目前 Roadmap 的 M5 分解只定義到 M5-4；M5-5 的名稱與驗收範圍尚未定義，本次不推測補寫。M4 維持 100%、Overall 維持 40%（4/10）；M5-1 的實作狀態不增加已完成里程碑數或 Overall 百分比。
+執行指引提及 M5-5，但目前 Roadmap 的 M5 分解只定義到 M5-4；M5-5 的名稱與驗收範圍尚未定義，本次不推測補寫。M1–M4 維持 100%；M5 為 25%；M6–M10 為 0%。Completed Milestones 維持 4/10，Overall 為 42.5%（4 個完成的主要里程碑 + M5 的 25% 等權重貢獻）。
 
 ## M6：正式美術與動畫 — PENDING
 
@@ -129,4 +129,4 @@ M5-1（含 UI Refinement Patch 1）尚待 Independent Review 與 Product Owner B
 | M10-3 | 效能、手機及桌面適配 | PENDING |
 | M10-4 | GitHub Pages 正式發布 | PENDING |
 
-主要里程碑狀態為 M1–M4 100%、M5 IN PROGRESS（M5-1 IMPLEMENTED — PENDING REVIEW）、M6–M10 0%；完整結案主要里程碑仍為 4/10，等權重 Overall 維持 40%。M5-1 尚未正式驗收／結案，因此不增加完成里程碑數或 Overall 百分比。M5 完成後預計形成第一個可遊玩的戰鬥 Demo。此為 Roadmap Completion Percentage，不是實際工時比例。
+主要里程碑狀態為 M1–M4 100%、M5 IN PROGRESS（25%；M5-1 COMPLETED — FORMALLY ACCEPTED，M5-2 NEXT）、M6–M10 0%；完整結案主要里程碑仍為 4/10，等權重 Overall 為 42.5%。M5 尚未整體結案；完成後預計形成第一個可遊玩的戰鬥 Demo。此為 Roadmap Completion Percentage，不是實際工時比例。
