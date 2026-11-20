@@ -19,6 +19,7 @@
 - 四種攻擊模式、單目標普通攻擊、HP／傷害。
 - 六種基礎職業資料。
 - 物理競速式個體行動排序（PAS）。
+- 初始測試戰場使用奧黛（assassin）、迪歐（knight）及三名哥布林；M5-1 HUD 以正式 Battle Unit 顯示目前角色資料。
 
 ## M4-1：Physics-inspired Action System
 
@@ -37,7 +38,7 @@
 - Pre-impact Abort 是系統異常復原：不扣血、不完成 Turn，Combat Action 回到 AVAILABLE，但既有移動不恢復、Movement Initiation Lock 不解除。玩家沒有主動 Abort 入口。
 - 合法 Impact、攻擊完成或待命後完成目前 Turn；單純移動、Undo、Cancel Mode 或 Pre-impact Abort 不推進 PAS。新 Turn 依 `turnId/unitId` 重新初始化全部行動權。
 - 拉條、推條、加速及緩速留待 M7 規劃；PAS 不引入物理加速度。
-- M4-3 Rule-based Tactical AI 已正式驗收：敵人可直接攻擊、移動後攻擊、以路徑成本接近或安全待命；Development-only Standby 已移除。M4 目前進度為 75%；M4-4A 勝敗條件已正式結案；M4-4B Overlay、Restart 與 Session Isolation 已條件式驗收。Production Route Lifecycle、WebGL Resource Lifecycle 與 Production Runtime Integration 驗證移交 M4-4C；M4-4 整體 Formal Acceptance 仍未完成。
+- M4-3 Rule-based Tactical AI 已正式驗收：敵人可直接攻擊、移動後攻擊、以路徑成本接近或安全待命；Development-only Standby 已移除。M4 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**，進度 100%；M4-4B／M4-4C 的 GPU Resource Verification 限制維持核准延後至 TD-010。M5-1 Battle HUD 已實作但仍待獨立審查與 Product Owner Browser Acceptance，M5-1 未正式結案。
 - Action Advance、Action Delay、Speed Up／Down 屬 M7 規劃，M4-1 不提供這些效果 API。
 
 ## M4-4A：戰鬥勝敗條件
@@ -58,7 +59,9 @@
 
 ## M5 與規劃中：未來系統
 
-- M5 — 戰鬥 UI／UX：**NEXT — PENDING DEVELOPMENT**。本次 M4 結案文件同步不開始 M5 實作。
+- M5 — 戰鬥 UI／UX：**IN PROGRESS**；M5-1 Battle HUD Redesign 為 **IMPLEMENTED — PENDING REVIEW**，不得視為正式驗收或結案。M4 進度維持 100%，Overall 維持 40%（4/10）；里程碑百分比只在正式驗收與結案後更新。
+- M5-1 HUD 僅呈現 Active Unit 的立繪、HP／SP、圖示化 ATK／MOV／DEF、靜態攻擊幾何縮圖與目前允許的操作；目前沒有狀態效果資料，因此不顯示空容器或假效果。世界座標向下箭頭跟隨 PAS Active Unit；我方頭頂名稱／HP 標籤隱藏，敵方標籤保留，正式 Unit HP／Combat State 不變。其 View Model 不持有第二份戰鬥狀態；操作仍由既有 Hook／Reducer 決定。M5-1 將初始我方 roster 改為奧黛與迪歐，保留其 ID、職業資料、既有格位、三隻哥布林及其他職業 Registry／Factory。上述為 presentation-only 設計，M5-1 UI Refinement Patch 1 仍 **IMPLEMENTED — PENDING REVIEW**，不代表正式驗收。
+- 動態攻擊目標／傷害預覽、其他 UX Backlog 與 M5 後續階段不屬於 M5-1，維持各自規劃狀態。
 - M4-4C 已 **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**。GPU `renderer.info.memory`、GPU Disposal 與長時間資源穩定性仍 NOT VERIFIED，核准延後至 TD-010；不回溯改寫 Agent 原始驗證結果。詳見 [Development Status](./DEVELOPMENT_STATUS.md)。
 - 多角色完整行動限制。
 - 技能、裝備、經驗值、等級與成長。

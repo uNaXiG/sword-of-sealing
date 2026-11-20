@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { INITIAL_UNITS } from '../src/game/battle/battle.data.ts'
+import { createBattleUnit } from '../src/game/classes/class.factory.ts'
 import { reachableForUnit, moveUnit } from '../src/game/battle/battle.movement.ts'
 import { canUndoLastMove, createBattleState as createCoreBattleState } from '../src/game/battle/battle.state.ts'
 import { getOccupancy, unitAt } from '../src/game/battle/occupancy.ts'
@@ -48,19 +49,16 @@ function resolveAttack(state) {
   return battleReducer(state, { type: 'attack-complete', attackId })
 }
 
-test('八個角色資料包含互不重疊的初始位置', () => {
+test('初始戰場包含奧黛、迪歐與三名敵人且資料位置合法', () => {
   const state = createBattleState(INITIAL_UNITS)
-  assert.equal(state.units.length, 8)
-  assert.equal(getOccupancy(state.units).size, 8)
-  assert.deepEqual(state.units.map((unit) => unit.class), ['knight', 'assassin', 'mage', 'cleric', 'ranger', 'goblin', 'goblin', 'goblin'])
+  assert.equal(state.units.length, 5)
+  assert.equal(getOccupancy(state.units).size, 5)
+  assert.deepEqual(state.units.map((unit) => unit.class), ['knight', 'assassin', 'goblin', 'goblin', 'goblin'])
   assert.deepEqual(state.units[0].position, { column: 3, row: 3 })
-  assert.deepEqual(state.units.map((unit) => unit.attackRange), [1, 1, 2, 2, 3, 1, 1, 1])
+  assert.deepEqual(state.units.map((unit) => unit.attackRange), [1, 1, 1, 1, 1])
   assert.deepEqual(state.units.map(({ hp, maxHp, atk, def }) => ({ hp, maxHp, atk, def })), [
     { hp: 100, maxHp: 100, atk: 20, def: 10 },
     { hp: 75, maxHp: 75, atk: 28, def: 5 },
-    { hp: 65, maxHp: 65, atk: 12, def: 6 },
-    { hp: 80, maxHp: 80, atk: 24, def: 6 },
-    { hp: 80, maxHp: 80, atk: 18, def: 5 },
     { hp: 60, maxHp: 60, atk: 15, def: 5 },
     { hp: 60, maxHp: 60, atk: 15, def: 5 },
     { hp: 60, maxHp: 60, atk: 15, def: 5 },
@@ -197,12 +195,16 @@ test('一般 clear 仍只取消選取，不確認既有移動', () => {
 })
 
 test('角色不能移動到任何陣營的佔位格，各角色使用自己的移動力', () => {
-  const units = createBattleState(INITIAL_UNITS).units
+  const units = [
+    ...createBattleState(INITIAL_UNITS).units,
+    createBattleUnit({ id: 'mage', class: 'mage', faction: 'player', position: { column: 2, row: 4 } }),
+    createBattleUnit({ id: 'ranger', class: 'ranger', faction: 'player', position: { column: 4, row: 4 } }),
+  ]
   const knight = reachableForUnit(units, 'knight')
-  assert.equal(knight.has('2,4'), false)
+  assert.equal(knight.has('1,5'), false)
   assert.equal(knight.has('4,4'), false)
   assert.equal(knight.has('5,2'), false)
-  assert.throws(() => moveUnit(units, 'knight', { column: 2, row: 4 }), /Invalid movement/)
+  assert.throws(() => moveUnit(units, 'knight', { column: 1, row: 5 }), /Invalid movement/)
   assert.throws(() => moveUnit(units, 'goblin', { column: 3, row: 3 }), /Invalid movement/)
   assert.equal(reachableForUnit(units, 'mage').has('2,1'), true)
   assert.equal(reachableForUnit(units, 'ranger').has('4,7'), true)
@@ -219,7 +221,12 @@ test('其他角色佔據的格子會阻擋路徑且不可進入', () => {
 
 test('同陣營角色可穿越彼此，但不能停在佔位格', () => {
   const knight = { ...INITIAL_UNITS[0], position: { column: 1, row: 1 }, movementPoints: 3 }
-  const ranger = { ...INITIAL_UNITS[2], position: { column: 2, row: 1 } }
+  const ranger = createBattleUnit({
+    id: 'ranger',
+    class: 'ranger',
+    faction: 'player',
+    position: { column: 2, row: 1 },
+  })
   const goblinA = { ...initialGoblin, id: 'goblin-a', position: { column: 1, row: 5 }, movementPoints: 3 }
   const goblinB = { ...initialGoblin, id: 'goblin-b', position: { column: 2, row: 5 } }
 
@@ -260,10 +267,10 @@ test('移動動畫期間鎖定所有指令，完成後 Active Unit 保持操作�
   assert.equal(unitAt(state.units, { column: 3, row: 3 }), undefined)
   assert.equal(unitAt(state.units, { column: 3, row: 2 }).id, 'knight')
   assert.equal(state.units[0].movementPoints, INITIAL_UNITS[0].movementPoints)
-  assert.equal(reachableForUnit(state.units, 'mage').has('3,3'), true)
+  assert.equal(reachableForUnit(state.units, 'assassin').has('3,3'), true)
   assert.equal(state.turn.activeUnitId, 'knight')
   assert.equal(battleReducer(state, { type: 'select', unitId: 'mage' }), state)
-  assert.equal(getOccupancy(state.units).size, 8)
+  assert.equal(getOccupancy(state.units).size, 5)
 })
 
 test('取消移動保留原座標、解除佔位鎖定並忽略過期或重複事件', () => {
@@ -308,7 +315,7 @@ test('不論陣營，移動後均不可產生重複佔位', () => {
   units = moveUnit(units, 'goblin', { column: 6, row: 2 })
   assert.equal(unitAt(units, { column: 5, row: 2 }), undefined)
   assert.equal(unitAt(units, { column: 6, row: 2 }).id, 'goblin')
-  assert.equal(getOccupancy(units).size, 8)
+  assert.equal(getOccupancy(units).size, 5)
   assert.throws(() => createBattleState([...units, { ...units[0], id: 'duplicate' }]), /duplicate/)
   assert.throws(() => createBattleState([...units, { ...units[0], position: { column: 7, row: 7 } }]), /duplicate/)
 })
@@ -348,7 +355,7 @@ test('撤銷還原座標與佔位、不消耗 MP，且可重新移動', () => {
   assert.equal(state.units[0].movementPoints, originalMovementPoints)
   assert.equal(state.lastMove, null)
   assert.equal(state.interactionMode, 'COMMAND')
-  assert.equal(getOccupancy(state.units).size, 8)
+  assert.equal(getOccupancy(state.units).size, 5)
   assert.equal(battleReducer(state, { type: 'undo' }), state)
 
   state = beginMove(state)
@@ -375,7 +382,7 @@ test('無紀錄、移動中或撤銷條件失效時拒絕撤銷', () => {
     { ...completed, selectedUnitId: 'mage' },
     { ...completed, units: completed.units.filter((unit) => unit.id !== 'knight') },
     { ...completed, units: completed.units.map((unit) => unit.id === 'knight' ? { ...unit, position: { column: 5, row: 3 } } : unit) },
-    { ...completed, units: completed.units.map((unit) => unit.id === 'mage' ? { ...unit, position: { column: 3, row: 3 } } : unit) },
+    { ...completed, units: completed.units.map((unit) => unit.id === 'assassin' ? { ...unit, position: { column: 3, row: 3 } } : unit) },
     { ...completed, obstacles: [{ id: 'origin-wall', type: 'wall', position: { x: 3, y: 3 }, walkable: false }] },
   ]
   for (const invalid of invalidStates) {
@@ -467,7 +474,7 @@ test('攻擊模式點擊敵軍只選目標，空格或非法目標清除目標�
   assert.equal(state.motion, null)
   assert.equal(state.lastMove, moveRecord)
 
-  state = battleReducer(state, { type: 'select-attack-target', targetId: 'ranger' })
+  state = battleReducer(state, { type: 'select-attack-target', targetId: 'assassin' })
   assert.equal(state.selectedAttackTargetId, null)
   assert.equal(state.lastMove, moveRecord)
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
@@ -499,7 +506,7 @@ test('取消攻擊返回行動選單並保留移動撤銷能力', () => {
 test('確認攻擊建立延遲結算，合法命中造成傷害並建立攻擊結果', () => {
   let state = completeMoveAdjacentToGoblin()
   const attackerBefore = state.units.find((unit) => unit.id === 'knight')
-  const otherUnitBefore = state.units.find((unit) => unit.id === 'mage')
+  const otherUnitBefore = state.units.find((unit) => unit.id === 'assassin')
   const originalHp = state.units.find((unit) => unit.id === 'goblin').hp
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
@@ -524,7 +531,7 @@ test('確認攻擊建立延遲結算，合法命中造成傷害並建立攻擊�
   assert.equal(state.lastMove, null)
   assert.equal(state.units.find((unit) => unit.id === 'goblin').hp, originalHp - 15)
   assert.equal(state.units.find((unit) => unit.id === 'knight'), attackerBefore)
-  assert.equal(state.units.find((unit) => unit.id === 'mage'), otherUnitBefore)
+  assert.equal(state.units.find((unit) => unit.id === 'assassin'), otherUnitBefore)
   assert.equal(canUndoLastMove(state), false)
   assert.equal(battleReducer(state, { type: 'confirm-attack' }), state)
 })
@@ -552,7 +559,7 @@ test('Overkill 只扣除目標剩餘 HP，歸零角色仍保留模型資料與�
     isDefeated: true,
   })
   assert.equal(unitAt(state.units, goblinPosition).id, 'goblin')
-  assert.equal(state.units.length, 8)
+  assert.equal(state.units.length, 5)
 })
 
 test('確認前目標若已失效則拒絕攻擊且不確認移動', () => {
@@ -580,7 +587,7 @@ test('攻擊模式無法切換至非 Active Unit', () => {
   let state = completeMoveAdjacentToGoblin()
   state = battleReducer(state, { type: 'set-mode', mode: 'ATTACK' })
   state = battleReducer(state, { type: 'select-attack-target', targetId: 'goblin' })
-  const rejected = battleReducer(state, { type: 'select', unitId: 'mage' })
+  const rejected = battleReducer(state, { type: 'select', unitId: 'assassin' })
   assert.equal(rejected, state)
 })
 
@@ -663,7 +670,7 @@ test('HP 歸零的角色不可成為攻擊者，待機資料重建仍使用初�
   assert.equal(rejected.units.find((unit) => unit.id === 'goblin').hp, initialGoblin.hp)
   assert.equal(rejected.lastAttackResult, null)
 
-  assert.deepEqual(createBattleState(INITIAL_UNITS).units.map((unit) => unit.hp), [100, 75, 65, 80, 80, 60, 60, 60])
+  assert.deepEqual(createBattleState(INITIAL_UNITS).units.map((unit) => unit.hp), [100, 75, 60, 60, 60])
 })
 
 test('HP 歸零目標不能由 Reducer 攻擊，且死亡友軍的穿越規則不變', () => {
@@ -683,7 +690,10 @@ test('HP 歸零目標不能由 Reducer 攻擊，且死亡友軍的穿越規則�
   assert.equal(unitAt(rejected.units, { column: 4, row: 2 }).id, 'goblin')
 
   const knight = { ...INITIAL_UNITS[0], position: { column: 1, row: 1 }, movementPoints: 3 }
-  const deadAlly = { ...INITIAL_UNITS[2], position: { column: 2, row: 1 }, hp: 0 }
+  const deadAlly = {
+    ...createBattleUnit({ id: 'dead-ally', class: 'mage', faction: 'player', position: { column: 2, row: 1 } }),
+    hp: 0,
+  }
   const allyPaths = reachableForUnit([knight, deadAlly], knight.id)
   assert.equal(allyPaths.has('2,1'), false)
   assert.deepEqual(allyPaths.get('3,1')?.path, [

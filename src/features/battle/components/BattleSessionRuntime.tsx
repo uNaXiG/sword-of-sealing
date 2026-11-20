@@ -1,7 +1,7 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, OrthographicCamera } from '@react-three/drei'
 import { MOUSE } from 'three'
-import { useState } from 'react'
+import { useMemo, useState, type RefObject } from 'react'
 import GridMap from './GridMap'
 import UnitPlaceholder from './UnitPlaceholder'
 import AttackAnimationController from './AttackAnimationController'
@@ -11,13 +11,10 @@ import ObstacleMap from './ObstacleMap'
 import { useBattleMovement } from '../hooks/useBattleMovement'
 import type { Cell } from '../../../game/grid/grid.types'
 import { cellKey } from '../../../game/grid/grid.utils'
-import { CLASS_DEFINITIONS } from '../../../game/classes/class.data'
-import { ATTACK_PATTERN_NAMES } from '../../../game/classes/class.types'
 import '../BattleScene.css'
 import { useAttackAnimation } from '../hooks/useAttackAnimation'
 import { useDeathAnimation } from '../hooks/useDeathAnimation'
-import BattleTurnHUD from './BattleTurnHUD'
-import TurnOrderTimeline from './TurnOrderTimeline'
+import BattleHUD from './BattleHUD'
 import BattleResultOverlay from './BattleResultOverlay'
 
 function FitCamera() {
@@ -41,7 +38,7 @@ export default function BattleSessionRuntime({
     finishMove, cancelMove, undoMove, setInteractionMode, cancelMoveMode, cancelAttack, confirmAttack,
     impactAttack, completeAttack, abortAttack, attackMotion, confirmedImpacts, deathMotions, defeatedUnits,
     consumeImpact, completeDeath, abortDeath,
-    turn, activeUnit, upcomingTurns,
+    activeUnit,
     pendingTurnCompletion,
   } = useBattleMovement()
   const { clockRef, onImpact, onComplete, onAbort } = useAttackAnimation(impactAttack, completeAttack, abortAttack)
@@ -51,6 +48,11 @@ export default function BattleSessionRuntime({
     onAbort: onDeathAbort,
   } = useDeathAnimation(completeDeath, abortDeath)
   const [hoveredCell, setHoveredCell] = useState<Cell | null>(null)
+  const [indicatorPortalElement, setIndicatorPortalElement] = useState<HTMLDivElement | null>(null)
+  const indicatorPortal = useMemo<RefObject<HTMLElement> | null>(
+    () => indicatorPortalElement ? { current: indicatorPortalElement } : null,
+    [indicatorPortalElement],
+  )
   const preview = interactionMode === 'MOVE' && hoveredCell ? reachable.get(cellKey(hoveredCell)) ?? null : null
   const attackResultAttacker = lastAttackResult
     ? units.find((unit) => unit.id === lastAttackResult.attackerId) ?? null
@@ -59,6 +61,18 @@ export default function BattleSessionRuntime({
     ? units.find((unit) => unit.id === lastAttackResult.targetId)
       ?? defeatedUnits.find((record) => record.unit.id === lastAttackResult.targetId)?.unit
       ?? null
+    : null
+  const activityMessage = attackMotion
+    ? `${units.find((unit) => unit.id === attackMotion.attackerId)?.name ?? '角色'}正在攻擊……`
+    : deathMotions.length > 0
+      ? units.length > 0 ? '正在結算死亡動畫……' : '正在結算戰鬥單位……'
+      : null
+  const combatFeedback = lastAttackResult && attackResultAttacker && attackResultTarget
+    ? `${attackResultAttacker.name} 對 ${attackResultTarget.name} 造成 ${lastAttackResult.damage} 點傷害${
+      lastAttackResult.appliedDamage !== lastAttackResult.damage
+        ? `（實際扣除 ${lastAttackResult.appliedDamage} 點 HP）`
+        : ''
+    }${lastAttackResult.isDefeated ? `；${attackResultTarget.name}失去戰鬥能力。` : '。'}`
     : null
   const clearBattleSelection = () => {
     setHoveredCell(null)
@@ -148,7 +162,8 @@ export default function BattleSessionRuntime({
               key={unit.id}
               unit={unit}
               selected={unit.id === selectedUnit?.id}
-              active={unit.id === activeUnit?.id}
+              activeUnitId={activeUnit?.id ?? null}
+              indicatorPortal={indicatorPortal}
               attackableTarget={attackableTargetIds.has(unit.id)}
               selectedAttackTarget={unit.id === selectedAttackTargetId}
               path={motion?.unitId === unit.id ? motion.path : null}
@@ -168,86 +183,32 @@ export default function BattleSessionRuntime({
           <OrbitControls makeDefault enableDamping minZoom={12} maxZoom={140} maxPolarAngle={Math.PI / 2.1} target={[0, 0, 0]} mouseButtons={{ LEFT: MOUSE.PAN, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE }} />
         </Canvas>
       </div>
-      <header className="battle-header">
-        <div>
-          <p>封印之劍 · 場景預覽</p>
-          <h1>王國邊境</h1>
-          <span>8 × 8 戰場測試</span>
-        </div>
-        <a href="#">返回主選單</a>
-      </header>
-      <BattleTurnHUD turn={turn} activeUnit={activeUnit} />
-      <TurnOrderTimeline turn={turn} units={units} upcomingTurns={upcomingTurns} />
-      <aside className="battle-info" aria-live="polite">
-        <div className="battle-info-title">✦ 戰場資訊</div>
-        {selectedUnit && (
-          <div className="battle-selection">
-            <p>{selectedUnit.name} · {CLASS_DEFINITIONS[selectedUnit.class].name}</p>
-            <p>HP：{selectedUnit.hp} / {selectedUnit.maxHp} · SP：{selectedUnit.sp} / {selectedUnit.maxSp}</p>
-            <p>ATK：{selectedUnit.atk} · DEF：{selectedUnit.def} · AGI：{selectedUnit.agi} · MOV：{selectedUnit.movementPoints}</p>
-            <p>
-              攻擊距離：{selectedUnit.minAttackRange === selectedUnit.attackRange
-                ? selectedUnit.attackRange
-                : `${selectedUnit.minAttackRange}–${selectedUnit.attackRange}`}（{ATTACK_PATTERN_NAMES[selectedUnit.attackPattern]}）
-            </p>
-          </div>
-        )}
-        {attackMotion && (
-          <p className="battle-animation-status" role="status">
-            {units.find((unit) => unit.id === attackMotion.attackerId)?.name ?? '角色'}正在攻擊……
-          </p>
-        )}
-        {!attackMotion && deathMotions.length > 0 && (
-          <p className="battle-animation-status" role="status">
-            {units.length > 0 ? '正在結算死亡動畫……' : '正在結算戰鬥單位……'}
-          </p>
-        )}
-        {selectedUnit && !battleBusy && !pendingTurnCompletion && interactionMode === 'COMMAND' && (
-          <div className="battle-actions">
-            {canEnterMoveMode && (
-              <button className="battle-deselect" type="button" onClick={handleMoveMode}>移動</button>
-            )}
-            {canEnterAttackMode && (
-              <button className="battle-deselect" type="button" onClick={handleAttackMode}>攻擊</button>
-            )}
-            {lastMove?.unitId === selectedUnit.id && (
-              <button className="battle-deselect battle-undo" type="button" disabled={!canUndoMove} onClick={handleUndoMove}>
-                取消
-              </button>
-            )}
-            <button className="battle-deselect" type="button" disabled={!canStandby} onClick={handleStandby}>待命</button>
-          </div>
-        )}
-        {selectedUnit && !motion && interactionMode === 'MOVE' && (
-          <div className="battle-actions">
-            <button className="battle-deselect" type="button" onClick={handleCancelMoveMode}>取消移動</button>
-          </div>
-        )}
-        {selectedUnit && interactionMode === 'ATTACK' && (
-          <div className="battle-combat-details">
-            <p>攻擊距離：{selectedUnit.attackRange} · 合法目標：{attackableTargets.length}</p>
-            {selectedAttackTarget && (
-              <p>目標：{selectedAttackTarget.name} · 距離：{selectedAttackTargetDistance} 格</p>
-            )}
-            <div className="battle-actions">
-              <button className="battle-deselect" type="button" disabled={!canConfirmAttack} onClick={handleConfirmAttack}>
-                確認攻擊
-              </button>
-              <button className="battle-deselect" type="button" onClick={handleCancelAttack}>
-                取消攻擊
-              </button>
-            </div>
-          </div>
-        )}
-        {lastAttackResult && attackResultAttacker && attackResultTarget && (
-          <p className="battle-combat-feedback" role="status">
-            {attackResultAttacker.name} 對 {attackResultTarget.name} 造成 {lastAttackResult.damage} 點傷害
-            {lastAttackResult.appliedDamage !== lastAttackResult.damage && `（實際扣除 ${lastAttackResult.appliedDamage} 點 HP）`}
-            {lastAttackResult.isDefeated && `；${attackResultTarget.name}失去戰鬥能力。`}
-            {!lastAttackResult.isDefeated && '。'}
-          </p>
-        )}
-      </aside>
+      <div className="battle-world-indicator-layer" ref={setIndicatorPortalElement} aria-hidden="true" />
+      <BattleHUD
+        activeUnit={activeUnit}
+        selectedUnit={selectedUnit}
+        interactionMode={interactionMode}
+        canEnterMoveMode={canEnterMoveMode}
+        canEnterAttackMode={canEnterAttackMode}
+        canConfirmAttack={canConfirmAttack}
+        canStandby={canStandby}
+        canUndoMove={canUndoMove}
+        hasUndoRecord={lastMove?.unitId === selectedUnit?.id}
+        battleBusy={battleBusy}
+        pendingTurnCompletion={pendingTurnCompletion !== null}
+        attackableTargetCount={attackableTargets.length}
+        selectedAttackTarget={selectedAttackTarget}
+        selectedAttackTargetDistance={selectedAttackTargetDistance}
+        activityMessage={activityMessage}
+        combatFeedback={combatFeedback}
+        onMoveMode={handleMoveMode}
+        onAttackMode={handleAttackMode}
+        onUndoMove={handleUndoMove}
+        onStandby={handleStandby}
+        onCancelMoveMode={handleCancelMoveMode}
+        onConfirmAttack={handleConfirmAttack}
+        onCancelAttack={handleCancelAttack}
+      />
       {outcome !== null && (
         <BattleResultOverlay outcome={outcome} onRestart={handleRestart} />
       )}

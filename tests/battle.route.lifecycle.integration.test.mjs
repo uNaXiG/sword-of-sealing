@@ -36,11 +36,9 @@ const nativeQueueMicrotask = globalThis.queueMicrotask.bind(globalThis)
 const visualStubs = new Map([
   [runtimePath.replace(/\\/g, '/'), new Map([
     ['./GridMap', 'GridMap'],
+    ['./UnitPlaceholder', 'UnitPlaceholder'],
     ['./Environment', 'Environment'],
     ['./ObstacleMap', 'ObstacleMap'],
-  ])],
-  [resolve(projectRoot, 'src/features/battle/components/UnitPlaceholder.tsx').replace(/\\/g, '/'), new Map([
-    ['./UnitLabel', 'UnitLabel'],
   ])],
   [resolve(projectRoot, 'src/features/battle/components/AttackAnimationController.tsx').replace(/\\/g, '/'), new Map([
     ['./AttackProjectile', 'AttackProjectile'],
@@ -72,6 +70,21 @@ function createRouteIntegrationPlugin() {
     },
     load(id) {
       if (!id.startsWith('\0route-visual:')) return null
+      if (id === '\0route-visual:UnitPlaceholder') {
+        return `
+          import { useEffect } from 'react'
+          export default function UnitPlaceholder({ unit, activeUnitId }) {
+            useEffect(() => {
+              return globalThis.__battleRouteRegistry?.registerUnitPresentation(
+                unit.id,
+                unit.faction,
+                activeUnitId,
+              )
+            }, [unit.id, unit.faction, activeUnitId])
+            return null
+          }
+        `
+      }
       return 'export default function VisualStub() { return null }'
     },
     transform(code, id) {
@@ -89,16 +102,6 @@ function createRouteIntegrationPlugin() {
           const bindings = match.slice(match.indexOf('{') + 1, match.lastIndexOf('}'))
           return `const battle = useBattleMovement()\n  globalThis.__battleRouteRegistry?.capture(generation, battle, requestRestart)\n  const {${bindings}} = battle`
         })
-      }
-
-      if (normalizedId.endsWith('/src/features/battle/components/UnitPlaceholder.tsx')) {
-        const source = code.replace(/\r\n/g, '\n')
-        const startMarker = '  return (\n    <group ref={group}'
-        const endMarker = '    </group>\n  )'
-        const start = source.indexOf(startMarker)
-        const end = source.indexOf(endMarker, start)
-        if (start < 0 || end < 0) throw new Error(`Unit visual test replacement target changed: ${normalizedId}`)
-        return `${source.slice(0, start)}  return null${source.slice(end + endMarker.length)}`
       }
 
       if (normalizedId.endsWith('/src/features/battle/components/AttackAnimationController.tsx')) {
@@ -177,6 +180,7 @@ async function enterBattle() {
 }
 
 async function leaveBattle() {
+  const leavingRecord = routeRegistry.current()
   await navigateHash('')
   await waitFor(
     () => container.querySelector('.title-screen') && !container.querySelector('.battle-screen'),
@@ -186,6 +190,7 @@ async function leaveBattle() {
   assert.equal(container.querySelectorAll('.battle-screen').length, 0)
   assert.equal(deferredWork.pending, 0)
   assert.equal(deferredWork.scheduled, deferredWork.completed)
+  assert.equal(leavingRecord.unitPresentations.size, 0)
 }
 
 async function run(callback) {
@@ -378,6 +383,11 @@ async function restartFromOutcome(record) {
   assert.equal(current.generation, previousGeneration + 1)
   assert.equal(current.latest.outcome, null)
   assert.deepEqual(current.latest.units, current.session.initialState.units)
+  assert.equal(record.unitPresentations.size, 0)
+  const activeIndicators = [...current.unitPresentations.values()].filter((unit) => unit.showActiveIndicator)
+  assert.equal(activeIndicators.length, 1)
+  assert.equal(activeIndicators[0].unitId, current.latest.activeUnit.id)
+  assert.equal(activeIndicators[0].unitId, 'assassin')
   assert.equal(container.querySelector('dialog'), null)
   assert.equal(container.querySelectorAll('.battle-screen').length, 1)
   assert.ok(framesAfter.cleanups > framesBefore.cleanups)
@@ -445,13 +455,25 @@ async function mountApp() {
       const session = battle.__testSession
       let record = this.records.find((candidate) => candidate.session === session)
       if (!record) {
-        record = { generation, session, latest: null, renders: 0, aiCaptures: [] }
+        record = { generation, session, latest: null, renders: 0, aiCaptures: [], unitPresentations: new Map() }
         this.records.push(record)
       }
       record.generation = generation
       record.latest = battle
       record.restartHandler = restartHandler
       record.renders += 1
+    },
+    registerUnitPresentation(unitId, faction, activeUnitId) {
+      const record = this.current()
+      if (!record) return undefined
+      record.unitPresentations.set(unitId, {
+        unitId,
+        faction,
+        activeUnitId,
+        showNameAndHealth: faction === 'enemy',
+        showActiveIndicator: unitId === activeUnitId,
+      })
+      return () => record.unitPresentations.delete(unitId)
     },
     captureAI(state, dispatch) {
       const activeUnit = state.units.find((unit) => unit.id === state.turn.activeUnitId)
@@ -486,6 +508,9 @@ async function unmountApp() {
   }
   assert.equal(deferredWork.pending, 0)
   assert.equal(deferredWork.scheduled, deferredWork.completed)
+  for (const record of routeRegistry.records) {
+    assert.equal(record.unitPresentations.size, 0)
+  }
 }
 
 before(async () => {
@@ -608,6 +633,64 @@ test('Production App route entry, idle exit, and re-entry create isolated Sessio
   assert.equal(routeHarness.getCanvasHarnessStats().activeCanvases, 0)
   assert.equal(activeHashChangeListeners.size, 0)
   assert.equal(container.querySelectorAll('.battle-screen').length, 0)
+})
+
+test('Production Battle HUD follows the active unit and dispatches player commands', async () => {
+  await mountApp()
+  const record = await enterBattle()
+
+  assert.equal(record.latest.activeUnit.id, 'assassin')
+  assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '奧黛')
+  assert.match(container.querySelector('.battle-hud__identity').textContent, /刺客/)
+  assert.match(container.querySelector('.battle-hud__resources').textContent, /75\s*\/\s*75/)
+  assert.match(container.querySelector('.battle-hud__resources').textContent, /35\s*\/\s*35/)
+  assert.equal(container.querySelectorAll('.battle-hud__attack-cell').length, 9)
+  assert.equal(container.querySelector('.battle-hud__effects'), null)
+  assert.equal(container.querySelectorAll('.battle-hud__attribute img').length, 3)
+  assert.deepEqual(
+    [...container.querySelectorAll('.battle-hud__attribute img')].map((image) => image.getAttribute('src').split('/').at(-1)),
+    ['atk.png', 'mov.png', 'def.png'],
+  )
+  assert.equal(record.unitPresentations.get('assassin').showActiveIndicator, true)
+  assert.equal(record.unitPresentations.get('assassin').showNameAndHealth, false)
+  assert.equal(record.unitPresentations.get('goblin').showNameAndHealth, true)
+
+  const portrait = container.querySelector('.battle-hud__portrait-image')
+  assert.match(portrait.src, /%E5%A5%B3%E4%B8%BB/)
+  await run(() => portrait.dispatchEvent(new dom.window.Event('error')))
+  assert.equal(container.querySelector('.battle-hud__portrait-fallback').textContent, '立繪無法載入')
+
+  await run(() => record.latest.clearSelection())
+  assert.equal(container.querySelector('button[aria-label="移動"]'), null)
+  await run(() => record.latest.selectUnit(record.latest.activeUnit.id))
+  assert.ok(container.querySelector('button[aria-label="移動"]'))
+  await run(() => container.querySelector('button[aria-label="移動"]').click())
+  assert.equal(currentFor(record.session).latest.interactionMode, 'MOVE')
+  await run(() => container.querySelector('button[aria-label="取消移動"]').click())
+  assert.equal(currentFor(record.session).latest.interactionMode, 'COMMAND')
+  await run(() => container.querySelector('button[aria-label="待命"]').click())
+
+  assert.equal(currentFor(record.session).latest.activeUnit.id, 'knight')
+  assert.equal(container.querySelector('.battle-hud__identity h2').textContent, '迪歐')
+  assert.match(container.querySelector('.battle-hud__portrait-image').src, /%E7%94%B7%E4%B8%BB/)
+  assert.equal(record.unitPresentations.get('assassin').showActiveIndicator, false)
+  assert.equal(record.unitPresentations.get('knight').showActiveIndicator, true)
+
+  await run(() => container.querySelector('button[aria-label="待命"]').click())
+  const enemyTurn = await advanceRuntimeBattle(
+    record,
+    'DEFEAT',
+    2400,
+    (battle) => battle.activeUnit?.faction === 'enemy' && Boolean(battle.motion || battle.attackMotion),
+  )
+  assert.equal(enemyTurn.stopped, true)
+  const enemyIndicators = [...record.unitPresentations.values()].filter((unit) => unit.showActiveIndicator)
+  assert.equal(enemyIndicators.length, 1)
+  assert.equal(enemyIndicators[0].faction, 'enemy')
+  assert.equal(record.unitPresentations.get('knight').showActiveIndicator, false)
+
+  await unmountApp()
+  assert.equal(frameHarness.getFrameHarnessStats().activeCallbacks, 0)
 })
 
 test('Production Runtime Move and Player callbacks with colliding IDs stay bound to the old Session', async () => {

@@ -83,11 +83,12 @@ test('RS-02 正式初始戰場 17 次順序與 Round 正確', () => {
   }
 
   assert.deepEqual(actual.map(({ unitId }) => unitId), [
-    'assassin', 'cleric', 'ranger', 'knight', 'mage', 'goblin', 'goblin-b', 'goblin-c',
-    'assassin', 'cleric', 'ranger', 'assassin', 'knight', 'mage', 'goblin', 'goblin-b', 'goblin-c',
+    'assassin', 'knight', 'goblin', 'goblin-b', 'goblin-c',
+    'assassin', 'assassin', 'knight', 'goblin', 'goblin-b', 'goblin-c',
+    'assassin', 'knight', 'goblin', 'goblin-b', 'goblin-c', 'assassin',
   ])
   assert.deepEqual(actual.map(({ round }) => round), [
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
+    1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
   ])
 })
 
@@ -120,7 +121,8 @@ test('行動預覽唯讀且包含可重複出現的未來 10 次', () => {
   const preview = predictUpcomingTurns(state.turn, state.units)
   assert.equal(preview.length, 10)
   assert.deepEqual(preview.map(({ unitId }) => unitId), [
-    'cleric', 'ranger', 'knight', 'mage', 'goblin', 'goblin-b', 'goblin-c', 'assassin', 'cleric', 'ranger',
+    'knight', 'goblin', 'goblin-b', 'goblin-c', 'assassin',
+    'assassin', 'knight', 'goblin', 'goblin-b', 'goblin-c',
   ])
   assert.deepEqual(state, snapshot)
   assert.ok(preview.some((entry, index) => index > 0 && preview[index - 1].battleTime === entry.battleTime))

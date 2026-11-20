@@ -74,12 +74,23 @@ test('Battle State 驗證 SP、AGI、職業與攻擊模式欄位', () => {
   }
 })
 
-test('初始測試戰場包含五名我方、三名敵方且位置全部合法', () => {
+test('初始戰場配置奧黛與迪歐及原有三名敵方且位置全部合法', () => {
   const state = createBattleState(INITIAL_UNITS, INITIAL_OBSTACLES)
-  assert.equal(state.units.length, 8)
-  assert.equal(state.units.filter((unit) => unit.faction === 'player').length, 5)
+  const players = state.units.filter((unit) => unit.faction === 'player')
+  const enemies = state.units.filter((unit) => unit.faction === 'enemy')
+  assert.equal(state.units.length, 5)
+  assert.deepEqual(players.map(({ id, name }) => [id, name]), [
+    ['knight', '迪歐'],
+    ['assassin', '奧黛'],
+  ])
+  assert.deepEqual(players.map(({ class: unitClass }) => unitClass), ['knight', 'assassin'])
+  assert.equal(new Set(state.units.map((unit) => unit.id)).size, state.units.length)
   assert.equal(state.units.filter((unit) => unit.faction === 'enemy').length, 3)
-  assert.equal(new Set(state.units.map((unit) => unit.id)).size, 8)
+  assert.deepEqual(enemies.map(({ id, class: unitClass, name }) => [id, unitClass, name]), [
+    ['goblin', 'goblin', '哥布林 A'],
+    ['goblin-b', 'goblin', '哥布林 B'],
+    ['goblin-c', 'goblin', '哥布林 C'],
+  ])
   for (const unit of state.units) {
     assert.notEqual(getTerrainType(unit.position, INITIAL_OBSTACLES), TerrainType.ROCK)
     assert.notEqual(getTerrainType(unit.position, INITIAL_OBSTACLES), TerrainType.WALL)

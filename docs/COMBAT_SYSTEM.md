@@ -357,16 +357,15 @@ Patch 1 導入的 AI Effect Phase Transition 使新 AttackMotion 可能先被 `u
 
 | ID | 陣營 | 職業 | Column | Row |
 | --- | --- | --- | ---: | ---: |
-| knight | player | 劍士 | 3 | 3 |
-| assassin | player | 刺客 | 1 | 5 |
-| mage | player | 法師 | 2 | 4 |
-| cleric | player | 牧師 | 3 | 6 |
-| ranger | player | 遊俠 | 4 | 4 |
+| knight | player | 劍士（迪歐） | 3 | 3 |
+| assassin | player | 刺客（奧黛） | 1 | 5 |
 | goblin | enemy | 哥布林 A | 5 | 2 |
 | goblin-b | enemy | 哥布林 B | 5 | 3 |
 | goblin-c | enemy | 哥布林 C | 7 | 3 |
 
 七個靜態障礙位於 `INITIAL_OBSTACLES`，角色皆由 Factory 建立。
+
+M5-1 的 Battle HUD 直接顯示正式 Active Unit 的 HP／SP 與職業屬性；靜態攻擊縮圖共用 `getAttackableTiles()` 規則，不改變 Reducer 的目標驗證、傷害或行動經濟。SP 目前只作正式角色資料顯示，沒有新增消耗或狀態效果。
 
 ## M4-4A 勝敗條件與 Outcome
 
@@ -410,7 +409,7 @@ VA1 Browser measurement 完成 2 次 warm-up 與 10 次量測的 Menu／Battle �
 
 ## 已知限制
 
-- M4-4A End Condition Framework & Battle Outcome **COMPLETED — FORMALLY ACCEPTED**；Patch 1 **COMPLETED — ACCEPTED**，Final Review Correction **COMPLETED — VERIFIED**。M4-4B 與 M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；VA1 **COMPLETED — ACCEPTED**。Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance APPROVED。M4 Combat System 與 M4 整體均正式結案。GPU disposal、`renderer.info.memory` 與長時間資源穩定性維持 NOT VERIFIED，已核准延後至 TD-010；M5 仍待開發。Commit／CI 與逐項驗證見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
+- M4-4A End Condition Framework & Battle Outcome **COMPLETED — FORMALLY ACCEPTED**；Patch 1 **COMPLETED — ACCEPTED**，Final Review Correction **COMPLETED — VERIFIED**。M4-4B 與 M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；VA1 **COMPLETED — ACCEPTED**。Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance APPROVED。M4 Combat System 與 M4 整體均正式結案。GPU disposal、`renderer.info.memory` 與長時間資源穩定性維持 NOT VERIFIED，已核准延後至 TD-010。M5-1 Battle HUD **IMPLEMENTED — PENDING REVIEW**，尚未獲得獨立審查或 Product Owner Browser Acceptance。Commit／CI 與逐項驗證見 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md)。
 - 無技能、AOE、視線、魔法屬性、暴擊、閃避或隨機傷害。
 - 尚未導入攻擊音效、正式骨架動畫或 Physics；目前的死亡演出使用 Placeholder 模型。
 - UI 目前要求選取目標後再確認攻擊。

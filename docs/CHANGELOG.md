@@ -2,6 +2,32 @@
 
 僅記錄可由 Git、測試、CI 或已確認驗收結果支持的歷史。日期使用 UTC+8；有對應 Commit 時以其日期為準。
 
+## 2026-11-20 — M5-1 UI Refinement Patch 2 (IMPLEMENTED — PENDING REVIEW)
+
+- **HUD Layout**：桌面面板移至底部偏左，寬 68vw／上限 1280px 並置於 CG 前方；手機保留緊湊全寬版。CG 尺寸及比例不變。
+- **Indicator / CG Mask**：箭頭調整為桌面 62px、手機 50px，錨點略靠近角色頭部；CG 後方漸層遮罩延伸至完整 viewport 高度，寬度依立繪原始比例計算，左側 alpha 30%、45% 位置 20%，向右淡至透明；手機定位納入立繪底部避讓距離。偽元素與立繪均不攔截 Pointer Events。
+- **HUD Finish**：底部資訊面板採用黑色水平漸層（alpha .7 至 .5 at 80% 至 0），圓角 48px；不加入金色邊框、陰影或 backdrop blur。
+- **Mapping Test Alignment**：保留現有 `女主-戰鬥1.png` mapping（1024×1536），不變更資產選擇；修正 HUD test URL assertion 以符合來源。
+- **Browser Verification**：桌面 1232×862 實測 HUD 寬 68%、CG 高 86%；遮罩上下邊界延伸至 viewport 邊緣（誤差小於 1px）、寬度依立繪比例。HUD 背景在桌面與手機 390×845 均實測為目前 CSS 的水平黑色漸層，面板 border-radius 為 48px；手機無水平溢位且操作按鈕位於 viewport 內。先前 Patch 2 已確認 Canvas 收到 CG／Mask 區域 pointer event、Move／Cancel、Attack／Cancel、Standby 與 Active Unit 更新；本次為 CSS 調整，未重測操作流程。Reduced Motion 停用箭頭動畫。Result Overlay 未在瀏覽器觸發。
+- **Automated Verification**：先前 Patch 2 基準 `npm test` 279/279 PASS、Lint PASS；本次 CSS 後續調整執行 `npm run build` 與 Diff Check PASS，未重跑 tests／lint。Build 的 1,021.91 kB Battle Chunk warning 保留。
+- **Status / Scope**：M5-1 維持 IMPLEMENTED — PENDING REVIEW，Product Owner Acceptance PENDING；M5／Overall 百分比不變。未修改 Battle Core、PAS、AI、Roster、Unit Position、Restart Authority 或使用者素材；未 Commit／Push。
+
+## 2026-11-20 — M5-1 UI Refinement Patch 1 (IMPLEMENTED — PENDING REVIEW)
+
+- **Visual Refinement**：角色 CG 使用透明背景戰鬥圖並依 viewport 響應縮放；HUD 改用 ATK／MOV／DEF 圖示與正式 Unit 數值，移除沒有狀態資料時的空容器；我方 overhead name／HP 僅在 presentation 隱藏，敵方資訊保留。
+- **Active Unit Indicator**：透過 Drei `Html` 對應 PAS Active Unit 世界座標，使用 click-through overlay 並支援 reduced motion；不改 Battle Core 或 Unit Position。
+- **Automated Verification**：`npm test` 279/279 PASS（新增 3 項 Unit Presentation 測試）；Production Route Integration 7/7、HUD 4/4、Unit Presentation 3/3 PASS；Lint、Build、Diff Check PASS。Battle Chunk 1,022.08 kB，>500 kB warning 保留。
+- **Browser Verification**：實際 WebGL 畫面觀察 CG 86% viewport 高度、PAS 切換後指標更新、敵方標籤保留；六種 viewport 無水平溢位；立繪覆蓋區 pointer event 仍到達 Canvas；Reduced Motion 停用指標動畫；主選單 Route unmount／re-entry 後新 Session 與指標重設。
+- **Limitations / Status**：Browser Move／Attack／Cancel 與 Victory／Defeat／Restart 流程未完成（P-BV09、P-BV11 NOT VERIFIED）；P-BV10 僅有 viewport 幾何／溢位量測，標記 PARTIAL。後續 WebGL fallback 與 context-type diagnostic warning 使 P-BV12 為 PARTIAL，GPU lifecycle 不作通過宣告。Independent Review 與 Product Owner Acceptance PENDING；M5-1 維持 IMPLEMENTED — PENDING REVIEW，M5／Overall 百分比不變，未 Commit／Push。M4 Commit／CI 是歷史基準，不涵蓋本次未提交異動。
+
+## 2026-11-20 — M5-1 Battle HUD Redesign — Initial Implementation (Pre-Patch 1)
+
+- **HUD**：正式 Runtime 改用 Battle HUD 顯示 Active Unit 立繪、HP／SP、屬性、空狀態效果提示、靜態正式攻擊幾何縮圖及既有操作按鈕；保留 Result Overlay、Session／Reducer 與既有戰鬥規則。
+- **Roster**：初始我方改為奧黛（assassin）及迪歐（knight），沿用原 ID、職業數值與格位；保留三隻 Goblin、其他職業 Registry／Factory。
+- **Verification**：`npm test` 276/276 PASS，Production Route Integration 7/7 PASS，HUD helper 4/4 PASS；Lint、Build PASS。Build 保留 Battle Chunk 約 1,014 kB 的 >500 kB warning。
+- **Agent Browser Verification**：PARTIAL。五種 desktop／mobile viewport 的 HUD 資料、素材載入、面板尺寸、無水平溢位／立繪重疊及按鈕／主選單操作均已檢查；WebGL fallback 阻止 3D／OrbitControls 驗證，Screenshot Capture 不可用。記錄到 Three.js Clock deprecated 與 PCFSoftShadowMap removed warnings。
+- **Status / Scope**：Independent Review 與 Product Owner Acceptance PENDING；M5-2～M5-4 未開始，M5-5 未於目前 Roadmap 定義；M4 維持 100%，Overall 40%。工作樹未提交，未 Commit／Push；保留 11 個使用者未追蹤 UI 素材，不修改、不暫存。M4 的 Git／CI 僅為既有驗證基準，不涵蓋本次異動。
+
 ## 2026-11-20 — M4 Formal Closure & Documentation Synchronization
 
 - **Formal Acceptance**：M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B、M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；VA1 **COMPLETED — ACCEPTED**；M4 Combat System 與 M4 **COMPLETED — FORMALLY ACCEPTED**。Architecture Review APPROVED、Independent Code Review APPROVED WITH LIMITATIONS、Product Owner Acceptance APPROVED。

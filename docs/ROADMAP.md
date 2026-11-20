@@ -71,16 +71,18 @@ M4-1～M4-3 與 M4-4A 均已完成。M4-4 正式結案日期為 2026-11-20，Ver
 
 M4-4C Verification Addendum 1 補足 Production Victory／Defeat Route unmount 測試、十次 Restart 的逐次 lifecycle assertion，以及 Timer／Listener／Deferred Work 證據；正式基準為 271/271 Automated Tests、6/6 Production Route Integration。VA1 WebGL 量測觀察 14/14 Context Loss identity matches，最後 Route exit 後 0 connected Canvas；`renderer.info.memory`、GPU Disposal 與長時間資源穩定性仍 NOT VERIFIED，已核准延後至 TD-010。此為正式結案限制，不代表 GPU Resource Lifecycle 完整通過。
 
-## M5：戰鬥 UI／UX — NEXT — PENDING DEVELOPMENT
+## M5：戰鬥 UI／UX — IN PROGRESS
 
 | ID | 項目 | 狀態 |
 | --- | --- | --- |
-| M5-1 | 角色資訊、HP、SP 顯示 | PENDING |
+| M5-1 | Battle HUD Redesign：角色資訊、響應式立繪、圖示化屬性、Active Unit 指標與靜態攻擊範圍縮圖 | IMPLEMENTED — PENDING REVIEW |
 | M5-2 | 行動選單及戰鬥交互體驗優化 | PENDING |
 | M5-3 | 攻擊範圍與傷害預覽 | PENDING |
 | M5-4 | 戰鬥提示與結果介面 | PENDING |
 
-M5-2 包含 [UX-001 至 UX-005](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV（Movement Points）分開。
+M5-1（含 UI Refinement Patch 1）尚待 Independent Review 與 Product Owner Browser Acceptance，不代表 M5-1 已正式結案。Patch 1 僅調整 presentation 與 HUD，不改 Battle Core 或 PAS。M5-1 的靜態攻擊幾何縮圖只呈現正式攻擊模式，不包含目標選擇或傷害預覽；動態攻擊範圍／傷害預覽維持 M5-3 PENDING。UX-001～UX-005 均維持 PENDING，Target Milestone 為 M5-3，詳見 [UX Backlog](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV（Movement Points）分開。
+
+執行指引提及 M5-5，但目前 Roadmap 的 M5 分解只定義到 M5-4；M5-5 的名稱與驗收範圍尚未定義，本次不推測補寫。M4 維持 100%、Overall 維持 40%（4/10）；M5-1 的實作狀態不增加已完成里程碑數或 Overall 百分比。
 
 ## M6：正式美術與動畫 — PENDING
 
@@ -127,4 +129,4 @@ M5-2 包含 [UX-001 至 UX-005](./UX_BACKLOG.md)。SP 是 Skill Points，與 MOV
 | M10-3 | 效能、手機及桌面適配 | PENDING |
 | M10-4 | GitHub Pages 正式發布 | PENDING |
 
-主要里程碑完成度為 M1–M4 100%、M5–M10 0%；完整結案主要里程碑為 4/10，等權重 Overall 40%。M5 完成後預計形成第一個可遊玩的戰鬥 Demo。此為 Roadmap Completion Percentage，不是實際工時比例。
+主要里程碑狀態為 M1–M4 100%、M5 IN PROGRESS（M5-1 IMPLEMENTED — PENDING REVIEW）、M6–M10 0%；完整結案主要里程碑仍為 4/10，等權重 Overall 維持 40%。M5-1 尚未正式驗收／結案，因此不增加完成里程碑數或 Overall 百分比。M5 完成後預計形成第一個可遊玩的戰鬥 Demo。此為 Roadmap Completion Percentage，不是實際工時比例。

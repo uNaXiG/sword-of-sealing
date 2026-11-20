@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { INITIAL_UNITS } from '../src/game/battle/battle.data.ts'
+import { createBattleUnit } from '../src/game/classes/class.factory.ts'
 import {
   canAttackTarget,
   getAttackableTargets,
@@ -46,7 +47,12 @@ test('合法攻擊目標限於範圍內敵軍，陣營規則不綁定玩家角�
   const attacker = { ...knightAtCenter, attackRange: 2 }
   const enemy = { ...initialGoblin, position: { column: 5, row: 3 } }
   const farEnemy = { ...initialGoblin, id: 'far-enemy', position: { column: 6, row: 3 } }
-  const ally = { ...INITIAL_UNITS.find((unit) => unit.id === 'mage'), position: { column: 3, row: 4 } }
+  const ally = createBattleUnit({
+    id: 'mage',
+    class: 'mage',
+    faction: 'player',
+    position: { column: 3, row: 4 },
+  })
   const units = [attacker, enemy, farEnemy, ally]
 
   assert.deepEqual(getAttackableTargets(units, attacker.id).map((unit) => unit.id), [enemy.id])

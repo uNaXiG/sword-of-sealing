@@ -1,0 +1,635 @@
+.battle-hud {
+  position: absolute;
+  z-index: auto;
+  inset: 0;
+  overflow: hidden;
+  color: #f7f1df;
+  pointer-events: none;
+}
+
+.battle-hud__topbar {
+  position: absolute;
+  z-index: 4;
+  top: calc(12px + env(safe-area-inset-top));
+  left: calc(16px + env(safe-area-inset-left));
+  right: calc(16px + env(safe-area-inset-right));
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.battle-hud__brand {
+  display: grid;
+  gap: 3px;
+  padding: 9px 13px;
+  border-left: 2px solid #d5b66e;
+  color: #f9f2df;
+  background: linear-gradient(90deg, rgba(14, 30, 43, .76), rgba(14, 30, 43, 0));
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .8);
+}
+
+.battle-hud__brand span {
+  color: #e6ca8c;
+  font-size: 10px;
+  letter-spacing: .18em;
+}
+
+.battle-hud__brand strong {
+  font-family: 'Microsoft JhengHei', 'Noto Serif TC', serif;
+  font-size: 19px;
+  letter-spacing: .12em;
+}
+
+.battle-hud__menu-link {
+  pointer-events: auto;
+  padding: 10px 15px;
+  border: 1px solid rgba(224, 197, 138, .8);
+  color: #fff8e6;
+  background: rgba(17, 34, 48, .82);
+  box-shadow: 0 6px 18px rgba(8, 20, 31, .3);
+  font-size: 12px;
+  text-decoration: none;
+  transition: background-color .18s ease, border-color .18s ease;
+  backdrop-filter: blur(8px);
+}
+
+.battle-hud__menu-link:hover {
+  border-color: #f1d58f;
+  background: rgba(53, 86, 106, .9);
+}
+
+.battle-hud__menu-link:focus-visible,
+.battle-hud__action:focus-visible {
+  outline: 3px solid #f1d58f;
+  outline-offset: 3px;
+}
+
+.battle-hud__portrait {
+  --portrait-height: 86svh;
+  --portrait-image-ratio: .667;
+  --portrait-mask-width: min(64vw, calc(var(--portrait-height) * var(--portrait-image-ratio)));
+  --portrait-bottom: 0px;
+  position: absolute;
+  z-index: 1;
+  bottom: var(--portrait-bottom);
+  left: 0;
+  display: flex;
+  width: min(64vw, calc(var(--portrait-height) * .85));
+  height: var(--portrait-height);
+  align-items: flex-end;
+  justify-content: flex-start;
+  margin: 0;
+  pointer-events: none;
+}
+
+.battle-hud__portrait::before {
+  position: absolute;
+  z-index: 0;
+  top: calc(var(--portrait-height) + var(--portrait-bottom) - 100svh);
+  bottom: calc(0px - var(--portrait-bottom));
+  left: 0;
+  width: var(--portrait-mask-width);
+  content: '';
+  background: linear-gradient(90deg, rgba(0, 0, 0, .8) 0%, rgba(0, 0, 0, .3) 60%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
+}
+
+.battle-hud__portrait-image {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left bottom;
+  filter: drop-shadow(0 12px 20px rgba(5, 15, 25, .48));
+  user-select: none;
+  pointer-events: none;
+}
+
+.battle-hud__portrait-fallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: end center;
+  padding-bottom: 24px;
+  color: #ebd69f;
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-shadow: 0 2px 8px #081723;
+}
+
+.battle-hud__status {
+  position: absolute;
+  z-index: 3;
+  left: clamp(20px, 5vw, 72px);
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 12px;
+  width: min(68vw, 1280px);
+  max-width: none;
+  margin: 0;
+  padding: 20px 30px 20px 25px;
+  border: none;
+  border-radius: 48px;
+  color: #f7f1df;
+  background: linear-gradient(90deg, rgba(11, 11, 11, .7) 0%, rgba(11, 11, 11, .5) 80%, rgba(11, 11, 11, 0) 100%);
+}
+
+.battle-hud__status-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 100px 112px;
+  gap: 16px;
+  align-items: center;
+}
+
+.battle-hud__identity-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.battle-hud__identity h2 {
+  margin: 0;
+  color: #fff5dc;
+  font-family: 'Microsoft JhengHei', 'Noto Serif TC', serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: .08em;
+}
+
+.battle-hud__identity > p {
+  margin: 4px 0 11px;
+  color: #c2ced0;
+  font-size: 12px;
+}
+
+.battle-hud__faction {
+  padding: 3px 8px;
+  border: 1px solid rgba(107, 178, 213, .6);
+  color: #b7e0f3;
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+
+.battle-hud__faction--enemy {
+  border-color: rgba(196, 118, 108, .75);
+  color: #e9aaa1;
+}
+
+.battle-hud__resources {
+  display: grid;
+  gap: 9px;
+}
+
+.battle-hud__resource-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: #f1ead8;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.battle-hud__resource-label span:first-child {
+  color: #dfc987;
+  font-weight: 700;
+  letter-spacing: .07em;
+}
+
+.battle-hud__resource-track {
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .25);
+  background: rgba(0, 0, 0, .46);
+}
+
+.battle-hud__resource-track > span {
+  display: block;
+  height: 100%;
+  transition: width .22s ease-out;
+}
+
+.battle-hud__resource--hp .battle-hud__resource-track > span {
+  background: linear-gradient(90deg, #4d9b61, #86d584);
+}
+
+.battle-hud__resource--sp .battle-hud__resource-track > span {
+  background: linear-gradient(90deg, #397bad, #77c4ed);
+}
+
+.battle-hud__attack-preview {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  align-self: stretch;
+}
+
+.battle-hud__section-label {
+  color: #e6ca8c;
+  font-size: 11px;
+  letter-spacing: .1em;
+  white-space: nowrap;
+}
+
+.battle-hud__attack-grid {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  gap: 2px;
+  align-self: center;
+}
+
+.battle-hud__attack-cell {
+  min-width: 0;
+  border: 1px solid rgba(200, 213, 211, .24);
+  background: rgba(255, 255, 255, .045);
+}
+
+.battle-hud__attack-cell--center {
+  border-color: #f0d58e;
+  background: #bd9851;
+  box-shadow: 0 0 7px rgba(240, 213, 142, .35);
+}
+
+.battle-hud__attack-cell--attack {
+  border-color: rgba(111, 177, 221, .8);
+  background: rgba(73, 139, 184, .8);
+}
+
+.battle-hud__attack-label {
+  color: #d3dbd7;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.battle-hud__attributes {
+  display: grid;
+  gap: 7px;
+  align-content: center;
+}
+
+.battle-hud__attribute {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 10px;
+  color: #fff2d1;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.battle-hud__attribute img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .5));
+  pointer-events: none;
+}
+
+.battle-hud__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 42px;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid rgba(226, 205, 159, .28);
+  pointer-events: auto;
+}
+
+.battle-hud__action {
+  display: inline-flex;
+  min-width: 94px;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 11px;
+  border: 1px solid rgba(213, 183, 117, .75);
+  color: #fff7e2;
+  background: linear-gradient(180deg, rgba(56, 88, 106, .94), rgba(38, 63, 80, .94));
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  transition: background-color .16s ease, border-color .16s ease, opacity .16s ease;
+}
+
+.battle-hud__action img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.battle-hud__action:hover:not(:disabled) {
+  border-color: #f0d58e;
+  background: linear-gradient(180deg, rgba(82, 115, 138, .98), rgba(53, 83, 104, .98));
+}
+
+.battle-hud__action:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+.battle-hud__controls-hint,
+.battle-hud__activity,
+.battle-hud__combat-feedback,
+.battle-hud__empty {
+  margin: 0;
+  color: #e0dbca;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.battle-hud__controls-hint {
+  padding-top: 9px;
+  border-top: 1px solid rgba(226, 205, 159, .28);
+}
+
+.battle-hud__activity {
+  color: #f1d99c;
+}
+
+.battle-hud__combat-feedback {
+  color: #d0d9d6;
+}
+
+@media (max-width: 900px) {
+  .battle-hud__topbar {
+    top: calc(8px + env(safe-area-inset-top));
+    left: calc(9px + env(safe-area-inset-left));
+    right: calc(9px + env(safe-area-inset-right));
+  }
+
+  .battle-hud__brand {
+    padding: 7px 9px;
+  }
+
+  .battle-hud__brand span {
+    font-size: 9px;
+  }
+
+  .battle-hud__brand strong {
+    font-size: 15px;
+  }
+
+  .battle-hud__menu-link {
+    padding: 8px 11px;
+    font-size: 11px;
+  }
+
+  .battle-hud__portrait {
+    --portrait-height: min(36svh, 300px);
+    --portrait-mask-width: min(42vw, calc(var(--portrait-height) * var(--portrait-image-ratio)));
+    --portrait-bottom: calc(190px + env(safe-area-inset-bottom));
+    left: calc(2px + env(safe-area-inset-left));
+    width: min(42vw, calc(var(--portrait-height) * .85));
+    height: var(--portrait-height);
+  }
+
+  .battle-hud__status {
+    right: calc(8px + env(safe-area-inset-right));
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    left: calc(8px + env(safe-area-inset-left));
+    width: auto;
+    max-width: none;
+    gap: 9px;
+    padding: 12px 13px 10px;
+    margin: 0;
+  }
+
+  .battle-hud__status-content {
+    grid-template-columns: minmax(0, 1fr) 76px 86px;
+    gap: 10px;
+  }
+
+  .battle-hud__identity h2 {
+    font-size: 18px;
+  }
+
+  .battle-hud__identity > p {
+    margin: 3px 0 8px;
+    font-size: 11px;
+  }
+
+  .battle-hud__resources {
+    gap: 7px;
+  }
+
+  .battle-hud__resource-label {
+    font-size: 11px;
+  }
+
+  .battle-hud__resource-track {
+    height: 8px;
+  }
+
+  .battle-hud__section-label {
+    font-size: 10px;
+  }
+
+  .battle-hud__attack-grid {
+    width: 64px;
+    height: 64px;
+  }
+
+  .battle-hud__attack-label {
+    font-size: 9px;
+  }
+
+  .battle-hud__attributes {
+    gap: 4px;
+  }
+
+  .battle-hud__attribute {
+    min-height: 27px;
+    gap: 7px;
+    font-size: 14px;
+  }
+
+  .battle-hud__attribute img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .battle-hud__actions {
+    gap: 6px;
+    min-height: 36px;
+    padding-top: 7px;
+  }
+
+  .battle-hud__action {
+    min-width: 82px;
+    min-height: 36px;
+    gap: 6px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .battle-hud__action img {
+    width: 19px;
+    height: 19px;
+  }
+
+  .battle-hud__controls-hint,
+  .battle-hud__activity,
+  .battle-hud__combat-feedback,
+  .battle-hud__empty {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 500px) {
+  .battle-hud__portrait {
+    --portrait-height: min(34svh, 280px);
+    --portrait-mask-width: min(45vw, calc(var(--portrait-height) * var(--portrait-image-ratio)));
+    --portrait-bottom: calc(184px + env(safe-area-inset-bottom));
+    width: min(45vw, calc(var(--portrait-height) * .85));
+    height: var(--portrait-height);
+  }
+
+  .battle-hud__status {
+    gap: 7px;
+    padding: 9px 9px 8px;
+  }
+
+  .battle-hud__status-content {
+    grid-template-columns: minmax(0, 1fr) 58px 66px;
+    gap: 6px;
+  }
+
+  .battle-hud__identity-heading {
+    gap: 6px;
+  }
+
+  .battle-hud__identity h2 {
+    font-size: 16px;
+  }
+
+  .battle-hud__faction {
+    padding: 2px 5px;
+    font-size: 9px;
+  }
+
+  .battle-hud__identity > p {
+    margin: 2px 0 6px;
+    font-size: 9px;
+  }
+
+  .battle-hud__resources {
+    gap: 5px;
+  }
+
+  .battle-hud__resource-label {
+    gap: 4px;
+    margin-bottom: 3px;
+    font-size: 9px;
+  }
+
+  .battle-hud__resource-track {
+    height: 6px;
+  }
+
+  .battle-hud__section-label {
+    font-size: 8px;
+  }
+
+  .battle-hud__attack-preview {
+    gap: 4px;
+  }
+
+  .battle-hud__attack-grid {
+    width: 50px;
+    height: 50px;
+    gap: 1px;
+  }
+
+  .battle-hud__attack-label {
+    font-size: 7px;
+  }
+
+  .battle-hud__attributes {
+    gap: 2px;
+  }
+
+  .battle-hud__attribute {
+    min-height: 22px;
+    gap: 4px;
+    font-size: 12px;
+  }
+
+  .battle-hud__attribute img {
+    width: 19px;
+    height: 19px;
+  }
+
+  .battle-hud__actions {
+    gap: 5px;
+    padding-top: 6px;
+  }
+
+  .battle-hud__action {
+    min-width: 0;
+    min-height: 34px;
+    flex: 1 1 78px;
+    gap: 4px;
+    padding: 4px 5px;
+    font-size: 10px;
+  }
+
+  .battle-hud__action img {
+    width: 17px;
+    height: 17px;
+  }
+
+  .battle-hud__controls-hint,
+  .battle-hud__activity,
+  .battle-hud__combat-feedback,
+  .battle-hud__empty {
+    font-size: 9px;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .battle-hud__portrait {
+    --portrait-height: 45svh;
+    --portrait-mask-width: min(31vw, calc(var(--portrait-height) * var(--portrait-image-ratio)));
+    --portrait-bottom: calc(153px + env(safe-area-inset-bottom));
+    width: min(31vw, calc(var(--portrait-height) * .85));
+    height: var(--portrait-height);
+  }
+
+  .battle-hud__status {
+    gap: 5px;
+    padding-block: 7px;
+  }
+
+  .battle-hud__status-content {
+    grid-template-columns: minmax(0, 1fr) 62px 70px;
+    gap: 7px;
+  }
+
+  .battle-hud__identity > p {
+    margin-bottom: 4px;
+  }
+
+  .battle-hud__resource-track {
+    height: 6px;
+  }
+
+  .battle-hud__attack-grid {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battle-hud__menu-link,
+  .battle-hud__resource-track > span,
+  .battle-hud__action {
+    transition: none;
+  }
+}

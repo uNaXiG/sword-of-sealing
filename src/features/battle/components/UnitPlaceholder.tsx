@@ -12,6 +12,9 @@ import { getDeathDirection, getDeathTimelineFrame } from '../../../game/battle/b
 import type { Cell } from '../../../game/grid/grid.types'
 import { cellPosition } from './grid'
 import UnitLabel from './UnitLabel'
+import ActiveUnitIndicator from './ActiveUnitIndicator'
+import { getUnitOverheadPresentation } from '../unitPresentation'
+import type { RefObject } from 'react'
 import type { AttackAnimationClockRef } from '../hooks/useAttackAnimation'
 import type { DeathAnimationClockMapRef } from '../hooks/useDeathAnimation'
 
@@ -31,7 +34,8 @@ function isCurrentGeneration(generationRef: { current: number }, generation: num
 export default function UnitPlaceholder({
   unit,
   selected,
-  active,
+  activeUnitId,
+  indicatorPortal,
   attackableTarget,
   selectedAttackTarget,
   path,
@@ -48,7 +52,8 @@ export default function UnitPlaceholder({
 }: {
   unit: BattleUnit
   selected: boolean
-  active: boolean
+  activeUnitId: string | null
+  indicatorPortal: RefObject<HTMLElement> | null
   attackableTarget: boolean
   selectedAttackTarget: boolean
   path: Cell[] | null
@@ -63,6 +68,8 @@ export default function UnitPlaceholder({
   onMoveComplete: (unitId: string, motionId: number) => void
   onMoveCancelled: (unitId: string, motionId: number) => void
 }) {
+  const overheadPresentation = getUnitOverheadPresentation(unit, activeUnitId)
+  const active = unit.id === activeUnitId
   const group = useRef<Group>(null)
   const visualRoot = useRef<Group>(null)
   const deathPivot = useRef<Group>(null)
@@ -148,9 +155,14 @@ export default function UnitPlaceholder({
 
   return (
     <group ref={group} position={cellPosition(unit.position)}>
-      <group ref={labelRoot}>
-        <UnitLabel unit={unit} />
-      </group>
+      {overheadPresentation.showNameAndHealth && (
+        <group ref={labelRoot}>
+          <UnitLabel unit={unit} />
+        </group>
+      )}
+      {overheadPresentation.showActiveIndicator && indicatorPortal && (
+        <ActiveUnitIndicator portal={indicatorPortal} />
+      )}
       <group ref={selectionRing}>
         {active && (
           <mesh position={[0, 0.085, 0]} rotation={[-Math.PI / 2, 0, 0]}>

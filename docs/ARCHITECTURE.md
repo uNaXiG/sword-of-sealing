@@ -97,8 +97,10 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `game/classes/` | 職業型別、Registry、驗證與 Factory |
 | `features/battle/hooks/useBattleMovement.ts` | State Hook、Derived State 與 Action 介面 |
 | `features/battle/hooks/useBattleAI.ts` | Enemy Active Turn Controller、受控 Intent 提交、Move／Attack Lifecycle 進階與有限 Recovery |
-| `features/battle/components/BattleTurnHUD.tsx` | Round、Battle Time、Turn ID 與 Active Unit HUD |
-| `features/battle/components/TurnOrderTimeline.tsx` | Active Unit 與未來 10 次唯讀行動預覽 |
+| `features/battle/battleHud.ts` | BattleUnit 到 HUD View Model 的純轉換、資產 URL、資源百分比與正式攻擊範圍縮圖 |
+| `features/battle/components/BattleHUD.tsx` | Active Unit 角色資訊、HP／SP、屬性圖示與 Session callback 控制 |
+| `features/battle/unitPresentation.ts` | 依 faction 與 PAS Active Unit ID 選擇 overhead label／active indicator 呈現 |
+| `features/battle/components/ActiveUnitIndicator.tsx` | 將 active indicator 投影至單位世界座標的 Drei Html 呈現 |
 | `features/battle/hooks/useAttackAnimation.ts` | 單一動畫時鐘介面 |
 | `features/battle/hooks/attackAnimationControllerLifecycle.ts` | React 與 Frame Harness 共用的 Clock／事件／Abort Lifecycle Runtime |
 | `features/battle/components/AttackAnimationController.tsx` | Wind-up／Impact／Recovery 的權威計時與事件派送 |
@@ -107,7 +109,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 | `features/battle/components/AttackProjectile.tsx` | 魔法球、箭矢與聖光投射物 |
 | `features/battle/components/HitEffect.tsx` / `FloatingDamage.tsx` | 命中特效與 Applied Damage 漂浮數字 |
 | `features/battle/components/UnitLabel.tsx` / `unitLabel.utils.ts` | 單一 CanvasTexture／Sprite、HP 視覺過渡與同畫布繪製 |
-| `features/battle/BattleScene.tsx` | Canvas、UI 與 Hook 整合 |
+| `features/battle/BattleScene.tsx` | Canvas、Battle HUD、Result Overlay 與 Hook 整合 |
 | `features/battle/components/` | 棋盤、模型、標籤與障礙 Rendering |
 
 `useBattleMovement` 已承擔超出移動的整體戰鬥職責；其重新命名屬於未授權技術債，不應自行重構。
@@ -116,7 +118,7 @@ Game Logic 位於 `src/game`，Rendering 位於 `src/features`。UI 可產生 Ac
 
 `BattleTurnState` 集中保存 `battleTime`、`round`、`turnId`、`activeUnitId` 與每個合格單位的 Remaining Distance／Velocity。PAS 使用均速 Remaining Distance Model 與 DES：只在取得或完成個體回合時推進虛擬 Battle Time，不由現實時間、Renderer 或 `useFrame` 驅動。
 
-純 Domain Functions 負責 AV、Round、最小抵達時間、確定性 Tie-break、同步 Distance 更新與 Preview；`battleReducer` 驗證 Active Unit 與 Turn ID，並獨占 Turn 生命週期。Renderer 只顯示 Derived HUD／Timeline，點擊預覽不授予操作權。
+純 Domain Functions 負責 AV、Round、最小抵達時間、確定性 Tie-break、同步 Distance 更新與 Preview；`battleReducer` 驗證 Active Unit 與 Turn ID，並獨占 Turn 生命週期。M5-1 HUD 只顯示 Derived Active Unit 資訊；未來 10 次行動仍由 Domain Preview 計算，但目前不渲染 Timeline，預覽資料不授予操作權。
 
 ```mermaid
 flowchart LR
@@ -126,7 +128,7 @@ flowchart LR
     Reducer --> PAS[PAS Domain Scheduler]
     PAS --> Turn[BattleTurnState]
     Turn --> Preview[Pure 10-turn Prediction]
-    Turn --> UI[HUD / Timeline / Active Highlight]
+    Turn --> UI[Active Unit HUD / Active Highlight]
 ```
 
 Attack Complete 或 Post-impact Abort 在存在 DeathMotion 時保留 `PendingTurnCompletion`。最後一個阻擋 Motion 結束後才原子重置 Active Unit Distance、清理舊 Turn 操作上下文並排程下一位。
@@ -155,6 +157,8 @@ M4-3 Patch 2 補足 Rendering / Effect 競態邊界。有效 AttackMotion 可能
 
 M4-3 的正式資料流包含 Pure AI Decision Layer、AI Command Gateway、Reducer Authorization Boundary、AI Controller Intent，以及 React Battle Controller。AttackAnimationController 將 R3F `useFrame` 接至 Attack Animation Lifecycle Runtime；Impact、Complete、Abort callbacks 派送至 Reducer。Reducer 是 HP、Attack Motion、Turn State 與 Death Barrier 的唯一正式更新入口；PAS Scheduler 仍由既有 Turn Completion 流程呼叫，不由 AI 或 Renderer 直接推進。
 
+M5-1 Battle HUD 是 `BattleSessionRuntime` 中的 Presentation Layer。`BattleHUD` 接收 Hook 提供的 Active／Selected Unit、可用操作及 Session-owned callbacks；角色資料由 `battleHud.ts` 從正式 `BattleUnit` 投影，HP／SP 與屬性不另行維護。範圍縮圖呼叫 `getAttackableTiles()`，僅供靜態資訊呈現，不建立另一套合法目標或傷害規則；SP 只讀取正式資料，不消耗或產生效果。裝飾層不攔截棋盤 Pointer，僅按鈕與返回主選單連結接收輸入；所有操作仍經既有 Hook／Reducer 驗證。角色立繪依穩定單位 ID 選取，資產 URL 使用 Vite `BASE_URL`。
+
 TEST-M4-3-01 的 React Controller 整合邊界：
 
 ```text
@@ -181,7 +185,7 @@ HP / Attack Motion / Turn State
 
 此測試真實掛載 React Controller；Frame Scheduler 使用可控制時序與 delta 的測試替身；Lifecycle Runtime 與 Reducer 不被 Mock，Visual Components 以 Stub 隔離。這是 Node + jsdom 的 Controller／Reducer 整合測試，不涵蓋 WebGL Rendering、視覺驗收或完整 E2E。
 
-M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，其正式結案 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4-4C Addendum 1 **COMPLETED — ACCEPTED**。Verified M4 Formal Closure baseline 為 Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`／GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS，271/271 Tests、6/6 Production Route Integration、Lint、Build 與 Pages Deployment PASS。Product Owner BV-C01～C14 為 14/14 PASS；此驗收先於 VA1，與 Agent 原始 PARTIAL／NOT VERIFIED 結果分開記錄。RV-M4-4B-02 的 GPU Resource Verification 核准移交 TD-010；M4 為 100%、Overall 40%，M5 為下一階段。
+M4-3 Patch 3 已納入 Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`，Gameplay CI Run `44496931887` SUCCESS。M4-3 已正式驗收。M4-4A 已於 2026-11-20 **COMPLETED — FORMALLY ACCEPTED**；Feature Commit `1cce94613791548cc1717942b72d1513487db857`，其正式結案 Repository Commit `41b43c77e849276847c8c643deedd3a7ca0b0747` 的 GitHub Actions Run `44596893220` SUCCESS。M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M4-4C Addendum 1 **COMPLETED — ACCEPTED**。Verified M4 Formal Closure baseline 為 Commit `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`／GitHub Actions Run [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) SUCCESS，271/271 Tests、6/6 Production Route Integration、Lint、Build 與 Pages Deployment PASS。Product Owner BV-C01～C14 為 14/14 PASS；此驗收先於 VA1，與 Agent 原始 PARTIAL／NOT VERIFIED 結果分開記錄。RV-M4-4B-02 的 GPU Resource Verification 核准移交 TD-010；M4 為 100%、Overall 40%。M5-1 已實作但仍待獨立審查與 Product Owner 瀏覽器驗收；此狀態不代表 M5 或 M5-1 已正式結案。
 
 ## Battle State 與 Reducer
 
@@ -209,9 +213,11 @@ flowchart LR
 
 ## React Hooks 與 UI
 
-Hook 計算選中單位、可移動格、攻擊範圍、合法目標、距離、Undo／Confirm 可用性，並把 Action 封裝為 callback。`BattleScene` 負責 Canvas、Orthographic Camera、OrbitControls 與行動選單。
+Hook 計算選中單位、可移動格、攻擊範圍、合法目標、距離、Undo／Confirm 可用性，並把 Action 封裝為 callback。`BattleScene` 負責 Canvas、Orthographic Camera、OrbitControls、Battle HUD 與 Result Overlay；HUD 不自行推導戰鬥權限或修改正式 State。
 
 Rendering 座標由 `column/row` 透過 `cellPosition()` 轉換為 Three.js 世界座標。
+
+HUD 只呈現正式 Active Unit 的資料與既有 callback。`unitPresentation.ts` 僅控制 presentation：隱藏我方頭頂名稱／HP 標籤、保留敵方標籤，並依 PAS 的 `activeUnitId` 顯示目前單位指標；不刪除或修改 `BattleUnit` 的 HP／Combat State。`ActiveUnitIndicator` 透過 Drei `Html` 綁定單位世界座標，輸出到 pointer-events-none overlay，避免攔截 Canvas／OrbitControls 輸入；浮動動畫遵守 `prefers-reduced-motion`。目前 `BattleUnit` 沒有狀態效果資料，故 HUD 不建立空容器或虛構效果。這些呈現變更不改 Reducer、PAS、AI、戰鬥規則或 Session Restart Authority。
 
 ## 自動化測試
 

@@ -13,17 +13,17 @@
 | 項目 | 狀態 |
 | --- | --- |
 | Current Verified Repository Baseline | `uNaXiG/sword-of-sealing` · `main` @ `b21b36c8b8343865b8abd457cdd70c8b332dfc7b` — M4 Formal Closure baseline |
-| Latest Verified Repository CI Run | [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) — SUCCESS（`main` / `b21b36c`；Build、Test、Pages deploy jobs SUCCESS） |
+| Latest Verified Repository CI Run | [44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) — SUCCESS（`main` / `b21b36c`；Build、Test、Pages deploy jobs SUCCESS；不涵蓋後續本機異動） |
 | Latest Verified M4-4A Feature Commit | `main` @ `1cce94613791548cc1717942b72d1513487db857`；End Condition Framework & Battle Outcome |
-| Latest Verified Repository Commit | `main` @ `b21b36c8b8343865b8abd457cdd70c8b332dfc7b`；本機 HEAD 及 `origin/main` tracking ref 相符；本次 Closure Documentation 不屬於此 Commit／CI |
+| Current Repository HEAD | `main`／`origin/main` @ `8d1e88bdbef34ca13d3ace1db5f991a9013d0739`（本次結束已核對）；此 HEAD 未被記錄為通過最新 CI |
 | Latest Verified GitHub Pages Deployment | [Run 44617918846](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44617918846) — Deploy job SUCCESS |
 | M4-3 Gameplay Commit / CI | Commit `6052c6197588b00c8732f34b7dbda0a3dc696a25`；[Run 44496931887](https://github.com/uNaXiG/sword-of-sealing/actions/runs/44496931887) — SUCCESS |
 | M4-4A Patch 1 Session Start Baseline | 歷史基準：`main` HEAD `11b1652d1702376d703da8eed4cb83586e23401e`；當時工作樹乾淨，之後 Patch 1 與原 M4-4A 異動已納入 `1cce946` |
 | M4-4B Conditional Closure Commit | `e299fa48e28d16e24aadba9cc7925bedf4d53895`；16 個異動檔案；Battle Core Modification 0 |
 | M4-4C Session Start Baseline | `main`／HEAD／`origin/main` `3705dfe0737fe0df1798f280c5e1c5c8056f8ad9`；開始時工作樹乾淨 |
-| Current Working Tree | M4 Formal Closure 文件同步僅修改 README 與七份 `docs/` 文件；無 Runtime／Battle Core／Test／Dependency／Asset 異動；目前未提交，未 Commit／Push |
-| 最近完成項目 | M4-1：COMPLETED — Conditional Closure；M4-2：COMPLETED — Formal Acceptance Approved；M4-3：COMPLETED — FORMALLY ACCEPTED |
-| 主要里程碑狀態 | M1–M4 **COMPLETED**；M4-4A **COMPLETED — FORMALLY ACCEPTED**；M4-4B／M4-4C **COMPLETED — FORMALLY ACCEPTED WITH LIMITATIONS**；M5 **NEXT — PENDING DEVELOPMENT**；安排以 [ROADMAP.md](./ROADMAP.md) 為準 |
+| Current Working Tree | M5-1 HUD 與 UI Refinement Patch 1／2 的程式、測試、文件尚未提交；保留 11 個未追蹤 `public/assets/images/ui/` 使用者素材，不修改、不暫存；本次不 Commit／Push |
+| 最近完成項目 | M5-1 Battle HUD Redesign／UI Refinement Patch 1／2：IMPLEMENTED — PENDING REVIEW；M4-1～M4-4 既有正式結案狀態不變 |
+| 主要里程碑狀態 | M1–M4 **COMPLETED**；M5 **IN PROGRESS**、M5-1 **IMPLEMENTED — PENDING REVIEW**；其餘 M5 項目依 [ROADMAP.md](./ROADMAP.md)，不代表 M5 已結案 |
 | M3-4 與 Patch 1（Revision 2） | **COMPLETED**；已實作、已驗收、已提交並通過 CI |
 | M3 進度 | 100% |
 | M4 進度 | 100%（4/4） |
@@ -84,7 +84,38 @@ Microtask instrumentation 僅涵蓋測試操作範圍；R3F／Drei adapter 與�
 
 AC-C25～C28 為 **PARTIAL — ACCEPTED / DEFERRED TO TD-010**；AC-C41、AC-C42 為 PASS；AC-C45 為 PASS WITH APPROVED LIMITATIONS。AC-C01～C45 綜合結果為 **40 PASS、1 PASS WITH APPROVED LIMITATIONS、4 PARTIAL — APPROVED DEFERRAL**；C-T01～C-T36 為 36/36 PASS，依各項既定測試範圍與限制。
 
-**Roadmap：** M1–M4 100%；M5–M10 0%；Completed Milestones 4/10；Overall 40%。M5 — 戰鬥 UI／UX 為 **NEXT — PENDING DEVELOPMENT**。TD-010 保持 PARTIALLY RESOLVED；資源量測與建議追蹤時程見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)。TD-006、TD-007、TD-014、TD-018、TD-019、TD-021 與 UX Backlog 維持原狀。
+**Roadmap at M4 Closure：** M1–M4 100%；當時 M5–M10 0%；Completed Milestones 4/10；Overall 40%。此為 M4 結案時的歷史狀態；目前 M5-1 已實作但待審查，M5 整體仍未完成。TD-010 保持 PARTIALLY RESOLVED；資源量測與建議追蹤時程見 [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)。TD-006、TD-007、TD-014、TD-018、TD-019、TD-021 與 UX Backlog 既有技術債狀態未變更。
+
+## M5-1 Battle HUD Redesign — Initial Implementation Snapshot (Pre-Patch 1)
+
+以下保留 Patch 1 前的實作與 Agent Browser Verification 歷史紀錄，不代表本次 Patch 1 的瀏覽器結果。
+
+- **Status**：IMPLEMENTED — PENDING REVIEW。尚未完成 Independent Review 或 Product Owner Browser Acceptance，不代表 M5-1 或 M5 已正式結案。
+- **Runtime scope**：Production Runtime 使用 `BattleHUD` 取代舊 Debug HUD／Timeline 掛載；正式 Result Overlay、Session／Reducer、戰鬥規則與 callback 來源不變。HUD 依 Active Unit 顯示立繪、HP／SP、攻擊／防禦／移動、無狀態效果提示、靜態攻擊模式縮圖及既有操作按鈕。
+- **Roster**：初始我方調整為保留 ID／職業／格位的迪歐（knight）與奧黛（assassin）；三隻 Goblin 的配置不變。其他職業 Registry／Factory 保留，不調整職業屬性。
+- **Automated Verification**：`npm test` 276/276 PASS；Production Route Integration 7/7 PASS；`tests/battle.hud.test.mjs` 4/4 PASS；`npm run lint` PASS；`npm run build` PASS。Build 的 Battle Chunk 約 1,014 kB，既有 >500 kB chunk warning 仍在。
+- **Agent Browser Verification**：PARTIAL。於 1920×1080、1366×768、1280×720、390×844、844×390 viewport 操作；HUD 角色資料／立繪及圖示載入、面板與按鈕留在 viewport、面板與立繪無水平重疊、文件無水平溢位；實際操作 Move／Cancel、Attack／Cancel、Standby 及返回主選單。五種尺寸均顯示 WebGL fallback，無法驗證 3D 戰場、OrbitControls 或棋盤 Pointer 互動；Browser Screenshot Capture 不可用。觀察到 Three.js `Clock` deprecated 與 `PCFSoftShadowMap` removed warnings。
+- **Traceability / Scope**：HUD helper 的四項測試覆蓋角色資料與 Base Path、敵方立繪隔離、資源百分比、防止攻擊縮圖偏離正式 attack geometry；Production Route Integration 覆蓋正式 Runtime HUD 更新及操作 callbacks。M5-2～M5-4 仍 PENDING；M5-5 在目前 Roadmap 尚未定義。UX-001～005 保持 PENDING、Target Milestone 為 M5-3。
+- **Acceptance / Git**：Product Owner Acceptance PENDING。M4 維持 100%、Completed Milestones 4/10、Overall 40%。M5-1 工作樹異動尚未提交，沒有對應的新 Commit／CI；M4 Formal Closure Commit／Run 僅為先前驗證基準。
+
+## M5-1 UI Refinement Patch 1 — Implementation & Verification
+
+- **Status**：IMPLEMENTED — PENDING REVIEW。Independent Review 與 Product Owner Acceptance 尚未完成；M5、Overall、M4 進度與既有驗收狀態不變。
+- **Presentation changes**：桌面角色 CG 維持原比例並以 `86svh` 高度呈現；依 viewport 縮小。ATK／MOV／DEF 使用現有 UI 圖示與 Active Unit 正式資料；移除空狀態效果容器（BattleUnit 目前沒有狀態效果資料）。我方 overhead name／HP 只在 presentation 隱藏；敵方標籤保留。
+- **Active Unit Indicator**：Drei `Html` 綁定單位世界座標，依 PAS `activeUnitId` 更新，並輸出至 pointer-events-none overlay；浮動動畫支援 `prefers-reduced-motion`。不修改 Battle Core、PAS、Unit Position 或 Restart Authority。
+- **Automated Verification**：`npm test` 279/279 PASS（相較 Patch 前 276 項新增 3 項 Unit Presentation 測試）；Production Route Integration 7/7 PASS；HUD mapping 4/4、Unit Presentation 3/3 PASS；Lint PASS；Production Build PASS。Battle Chunk 1,022.08 kB，保留 >500 kB chunk warning。`git -c core.whitespace=cr-at-eol diff --check` PASS。
+- **Browser Verification**：在實際 WebGL 可用時，桌面 CG 實測為 viewport 高度 86%；六種 desktop／mobile viewport 的文件無水平溢位，mobile CG 縮小至 24%／45%。實際觀察 Active Unit 從奧黛切換至迪歐後指標跟隨、敵方標籤保留；pointer probe 在立繪覆蓋區收到 Canvas `pointerdown`；Reduced Motion 時指標 `animation-name: none`。透過正式主選單離開戰場時 HUD、portal 與 indicator 卸載，重新進入後新 Session 回到奧黛並重新顯示 indicator。
+- **Browser Limitations**：未在瀏覽器完成 Move／Attack／Cancel 與 Victory／Defeat／Restart 結果流程；對應 callback／Session 行為由自動化測試涵蓋。P-BV10 僅完成六種 viewport 的幾何／溢位量測，未完成各尺寸的視覺與操作驗收，標記 PARTIAL。多次路由及 reload 後 Browser 顯示 WebGL fallback；其後的診斷曾嘗試在 WebGL2 Canvas 讀取另一種 context，產生 context-type warning，因此該晚期 Browser 狀態不作為乾淨的 GPU／Console 證據。P-BV09、P-BV11 為 NOT VERIFIED，P-BV12 為 PARTIAL；不宣稱 GPU／WebGL lifecycle 通過。
+- **Scope / Acceptance**：M4 automated regression 279/279 PASS；不代表 P-BV11 的瀏覽器勝敗流程已驗證。M5-2～M5-4 仍 PENDING，M5-5 未於 Roadmap 定義；Product Owner Acceptance PENDING。工作樹未提交，沒有本次 Commit／CI。
+
+## M5-1 UI Refinement Patch 2 — Styling Update
+
+- **Status**：IMPLEMENTED — PENDING REVIEW；Patch 2 不改 M5、Overall、M4 進度或驗收狀態。
+- **HUD / CG / Indicator**：桌面面板左偏約 5vw、寬 68vw（上限 1280px）、z-index 3；手機維持底部緊湊全寬版。桌面 CG 維持 `86svh` 與 `object-fit: contain`。CG 後方 pointer-events-none 漸層遮罩延伸至完整 viewport 高度，寬度依立繪原始比例計算；左側 alpha 30%、45% 位置 20%，向右淡至透明，手機定位包含立繪底部避讓距離。底部 HUD 採用水平黑色漸層（alpha .7 至 .5 at 80% 至 0）及 48px 圓角，無外框、陰影及 backdrop blur。指標由 110px 調為 62px（約 56%），手機由 88px 調為 50px；Html 錨點由 y=2.05 調至 1.88，不修改 Unit Position／PAS。
+- **Portrait Mapping / Test**：沿用既有 `女主-戰鬥1.png` mapping（1024×1536），本 Patch 不改資產選擇；同步 `battle.hud.test.mjs` URL assertion 以符合目前來源。Patch 1 的歷史紀錄保留原狀。
+- **Browser Verification**：桌面 1232×862 實測 HUD 寬 68%、左距 5%、CG 高 86%；箭頭實測約 62px。桌面及手機直向 390×845、橫向 846×390 遮罩均延伸至 viewport 邊緣（誤差小於 1px）、寬度依立繪比例且無水平溢位。本次 HUD 背景在 desktop/mobile 實測為目前 CSS 的水平黑色漸層，border-radius 計算值為 48px；手機操作按鈕仍在 viewport 內。先前 Patch 2 已確認 CG／gradient 區域 pointer event 到達 Canvas、Move／Cancel、Attack／Cancel、Standby 操作正常與 Reduced Motion 停用動畫；本次 CSS 調整未重測操作流程。Result Overlay 未在瀏覽器觸發驗證；勝敗與 Restart 自動化回歸由既有 `npm test` 覆蓋。
+- **Automated Verification**：先前 Patch 2 基準 `npm test` 279/279 PASS、Lint PASS；此輪 CSS 後續調整 `npm run build` PASS（Battle Chunk 1,021.91 kB，>500 kB chunk warning 保留）及 Diff Check PASS；未重跑 tests／lint。Three.js `Clock` deprecated 與 `PCFSoftShadowMap` removed warnings 為既有警告。
+- **Scope / Git**：僅調整 HUD／CG／indicator presentation CSS、indicator anchor 與 portrait URL test assertion；未修改 Battle Core、Roster、Unit Position、AI、PAS、Session Restart 或使用者素材。工作樹未提交；不 Commit／Push。
 
 ## 驗證結果
 
@@ -747,7 +778,7 @@ T-28 保留的 10 個 TEST-M4-3-01 Test Names（對照 `tests/battle.animation.r
 
 ## 已知阻擋問題
 
-M4 已正式結案。剩餘明確驗證限制為 TD-010：`renderer.info.memory`、GPU Disposal 與長時間資源穩定性未驗證，AC-C25～C28 已核准延後；這不是已確認可重現的 Resource Leak。Agent 原始 PARTIAL／NOT VERIFIED 與 PO Acceptance 分開保留。M5 尚未開始。
+M4 已正式結案。剩餘明確驗證限制為 TD-010：`renderer.info.memory`、GPU Disposal 與長時間資源穩定性未驗證，AC-C25～C28 已核准延後；這不是已確認可重現的 Resource Leak。Agent 原始 PARTIAL／NOT VERIFIED 與 PO Acceptance 分開保留。M5-1 已實作但仍待獨立審查與 Product Owner Browser Acceptance；M5 整體未結案。
 
 ## M4-1 狀態
 
@@ -829,4 +860,4 @@ M4-3 已 **COMPLETED — FORMALLY ACCEPTED**。M4-4A End Condition Framework & B
 
 ## Current Next Milestone
 
-M4 **COMPLETED — FORMALLY ACCEPTED**；M1–M4 進度 100%，Overall 40%，Completed Milestones 4/10。M5 — 戰鬥 UI／UX 為 **NEXT — PENDING DEVELOPMENT**；不得將本次結案文件同步擴展為 M5 實作。
+M4 **COMPLETED — FORMALLY ACCEPTED**；M1–M4 進度 100%，Overall 40%，Completed Milestones 4/10。M5 — 戰鬥 UI／UX **IN PROGRESS**；M5-1 **IMPLEMENTED — PENDING REVIEW**，M5-2～M5-4 仍 PENDING。任務指引提及的 M5-5 尚未在目前 Roadmap 定義；不推測其需求或驗收。
